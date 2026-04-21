@@ -376,9 +376,9 @@ const Header: React.FC<{
         <div
           className="relative h-10 w-10 shrink-0 rounded-xl flex items-center justify-center overflow-hidden"
           style={{
-            background: "var(--accent-soft)",
-            border: "1px solid var(--accent-edge)",
-            boxShadow: "0 2px 10px -4px var(--accent-glow)",
+            background: "var(--surface-1)",
+            border: "1px solid var(--border)",
+            boxShadow: "var(--shadow-soft)",
           }}
         >
           <Image
@@ -388,15 +388,6 @@ const Header: React.FC<{
             height={28}
             priority
             className="h-7 w-7 object-contain logo-invert"
-          />
-          <span
-            aria-hidden
-            className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full"
-            style={{
-              background: "var(--accent)",
-              boxShadow:
-                "0 0 0 2px var(--surface-0), 0 0 12px var(--accent-glow)",
-            }}
           />
         </div>
         <div className="min-w-0">
