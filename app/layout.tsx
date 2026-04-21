@@ -36,7 +36,7 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MeowCap — captions that purr",
+  title: "MeowCap",
   description:
     "Drop a clip. Get captions that earn their airtime.",
 };

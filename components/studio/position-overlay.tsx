@@ -93,7 +93,10 @@ export const CaptionPositionOverlay: React.FC<Props> = ({
       <div
         role="slider"
         tabIndex={0}
-        aria-label="Caption position — drag to reposition"
+        aria-label="Caption position, drag to reposition"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(position.y * 100)}
         aria-valuetext={`x ${Math.round(position.x * 100)}%, y ${Math.round(
           position.y * 100,
         )}%`}

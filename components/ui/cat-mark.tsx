@@ -7,7 +7,7 @@ type Props = {
 
 /**
  * Filled cat silhouette. currentColor drives the fill so it inherits
- * from its container — which lets us recolor in dark mode for free.
+ * from its container, which lets us recolor in dark mode for free.
  */
 export const CatMark: React.FC<Props> = ({
   className,

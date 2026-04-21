@@ -115,7 +115,7 @@ export const ApiKeyDialog: React.FC<Props> = ({
                 Add your API key
               </h2>
               <p className="text-[0.75rem] text-[color:var(--muted)] mt-0.5">
-                <span className="ital-label">Stored locally</span> — never
+                <span className="ital-label">Stored locally.</span> Never
                 leaves your device.
               </p>
             </div>

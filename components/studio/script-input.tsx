@@ -44,7 +44,7 @@ export const ScriptInput: React.FC<Props> = ({
         className="text-[0.75rem] text-[color:var(--muted)] leading-relaxed"
       >
         When you provide a script we transcribe for timing, then snap your
-        exact words on top — captions read exactly as written.
+        exact words on top so captions read exactly as written.
       </p>
     </div>
   );

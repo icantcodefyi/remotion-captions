@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
-/* ————————————————————————————————————————————————————————
-   Tokens — light is default, dark overrides on [data-theme="dark"]
+/* --------------------------------------------------------
+   Tokens - light is default, dark overrides on [data-theme="dark"]
    All color in OKLCH. All spacing in a semantic 4pt scale.
    Neutrals are tinted ~0.008 chroma toward warm paper (hue 90).
-   The lime accent lives alone — there is no secondary accent.
-   ———————————————————————————————————————————————————————— */
+   The lime accent lives alone - there is no secondary accent.
+   -------------------------------------------------------- */
 
 :root,
 html[data-theme="light"] {
-  /* Surfaces — warm paper */
+  /* Surfaces - warm paper */
   --surface-0: oklch(97.6% 0.010 95);   /* page wash */
   --surface-1: oklch(99.2% 0.006 95);   /* panels */
   --surface-2: oklch(95.2% 0.012 92);   /* inset */
@@ -17,13 +17,13 @@ html[data-theme="light"] {
   --border: oklch(89% 0.015 90);
   --border-strong: oklch(82% 0.018 88);
 
-  /* Ink — warm near-black */
+  /* Ink - warm near-black */
   --fg: oklch(20% 0.020 90);
   --fg-weak: oklch(38% 0.018 90);
   --muted: oklch(58% 0.015 92);
   --muted-soft: oklch(72% 0.012 95);
 
-  /* Accent — acid lime, hue 128. Single accent, no exceptions. */
+  /* Accent - acid lime, hue 128. Single accent, no exceptions. */
   --accent: oklch(78% 0.20 128);
   --accent-ink: oklch(38% 0.13 128);
   --accent-deep: oklch(32% 0.10 128);
@@ -31,13 +31,13 @@ html[data-theme="light"] {
   --accent-edge: oklch(70% 0.16 128 / 0.45);
   --accent-glow: oklch(78% 0.20 128 / 0.28);
 
-  /* Semantic — muted, not candy */
+  /* Semantic - muted, not candy */
   --success: oklch(58% 0.13 150);
   --success-soft: oklch(94% 0.06 150);
   --danger: oklch(58% 0.18 27);
   --danger-soft: oklch(95% 0.05 27);
 
-  /* Shadows — paper, not plastic */
+  /* Shadows - paper, not plastic */
   --shadow-soft:
     0 1px 0 oklch(100% 0 0 / 0.7) inset,
     0 1px 2px oklch(20% 0.02 90 / 0.04),
@@ -56,7 +56,7 @@ html[data-theme="light"] {
 }
 
 html[data-theme="dark"] {
-  /* Surfaces — warm near-black, lifting for depth, no pure black */
+  /* Surfaces - warm near-black, lifting for depth, no pure black */
   --surface-0: oklch(16% 0.012 95);
   --surface-1: oklch(19% 0.014 95);
   --surface-2: oklch(23% 0.016 92);
@@ -123,7 +123,7 @@ html[data-theme="dark"] {
   --font-display: var(--font-display), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-mono), ui-monospace, "JetBrains Mono", monospace;
 
-  /* 4pt spacing — semantic names */
+  /* 4pt spacing - semantic names */
   --space-2xs: 4px;
   --space-xs: 8px;
   --space-sm: 12px;
@@ -133,15 +133,15 @@ html[data-theme="dark"] {
   --space-2xl: 48px;
   --space-3xl: 64px;
 
-  /* Type scale — fixed rem, 1.25 ratio for product UI */
-  --text-2xs: 0.6875rem;   /* 11 — micro labels */
+  /* Type scale - fixed rem, 1.25 ratio for product UI */
+  --text-2xs: 0.6875rem;   /* 11 - micro labels */
   --text-xs: 0.75rem;      /* 12 */
-  --text-sm: 0.8125rem;    /* 13 — base UI */
-  --text-base: 0.9375rem;  /* 15 — body */
-  --text-md: 1.0625rem;    /* 17 — emphasis */
-  --text-lg: 1.3125rem;    /* 21 — subheading */
-  --text-xl: 1.625rem;     /* 26 — section title */
-  --text-2xl: 2.0625rem;   /* 33 — hero */
+  --text-sm: 0.8125rem;    /* 13 - base UI */
+  --text-base: 0.9375rem;  /* 15 - body */
+  --text-md: 1.0625rem;    /* 17 - emphasis */
+  --text-lg: 1.3125rem;    /* 21 - subheading */
+  --text-xl: 1.625rem;     /* 26 - section title */
+  --text-2xl: 2.0625rem;   /* 33 - hero */
 
   --radius-xs: 4px;
   --radius-sm: 6px;
@@ -154,7 +154,7 @@ html[data-theme="dark"] {
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-quart: cubic-bezier(0.5, 0, 0.75, 0);
 
-  /* Semantic z-index — no arbitrary 9999s */
+  /* Semantic z-index - no arbitrary 9999s */
   --z-dropdown: 100;
   --z-sticky: 200;
   --z-backdrop: 300;
@@ -163,9 +163,9 @@ html[data-theme="dark"] {
   --z-tooltip: 600;
 }
 
-/* ————————————————————————————————————————————————————————
+/* --------------------------------------------------------
    Base
-   ———————————————————————————————————————————————————————— */
+   -------------------------------------------------------- */
 
 html,
 body {
@@ -203,7 +203,7 @@ html[data-theme="dark"] body {
       transparent 60%
     ),
     var(--surface-0);
-  /* Light text on dark reads lighter — slightly reduce weight */
+  /* Light text on dark reads lighter - slightly reduce weight */
   font-weight: 380;
 }
 
@@ -223,7 +223,7 @@ button {
   color: oklch(20% 0.05 128);
 }
 
-/* Keyboard-only focus rings — intentional, accent-colored, offset */
+/* Keyboard-only focus rings - intentional, accent-colored, offset */
 :focus {
   outline: none;
 }
@@ -233,7 +233,7 @@ button {
   border-radius: 4px;
 }
 
-/* Scrollbar — paper-tone */
+/* Scrollbar - paper-tone */
 *::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -253,9 +253,9 @@ button {
   border: 2px solid transparent;
 }
 
-/* ————————————————————————————————————————————————————————
-   Paper texture — subtle grain, mixes into surface in light only
-   ———————————————————————————————————————————————————————— */
+/* --------------------------------------------------------
+   Paper texture - subtle grain, mixes into surface in light only
+   -------------------------------------------------------- */
 
 .paper-grain {
   position: fixed;
@@ -280,9 +280,9 @@ html[data-theme="dark"] .logo-invert {
   filter: invert(1);
 }
 
-/* ————————————————————————————————————————————————————————
-   Panel — crisp surface with paper shadow, container-query aware
-   ———————————————————————————————————————————————————————— */
+/* --------------------------------------------------------
+   Panel - crisp surface with paper shadow, container-query aware
+   -------------------------------------------------------- */
 
 .panel {
   background: var(--surface-1);
@@ -307,7 +307,7 @@ html[data-theme="dark"] .logo-invert {
   border-radius: var(--radius);
 }
 
-/* Utility — editorial serif numerals. Use on stats, durations, filesizes.
+/* Utility - editorial serif numerals. Use on stats, durations, filesizes.
    This is the one flourish that separates this from every other AI tool. */
 .tnum-serif {
   font-family: var(--font-serif), ui-serif, Georgia, serif;
@@ -330,9 +330,9 @@ html[data-theme="dark"] .logo-invert {
   letter-spacing: -0.015em;
 }
 
-/* ————————————————————————————————————————————————————————
-   Motion — entrance stagger, reduced-motion aware
-   ———————————————————————————————————————————————————————— */
+/* --------------------------------------------------------
+   Motion - entrance stagger, reduced-motion aware
+   -------------------------------------------------------- */
 
 @keyframes fade-rise {
   from {

@@ -14,7 +14,7 @@ export const EmptyPreview: React.FC = () => (
           aria-hidden
         />
         <div
-          className="relative h-16 w-16 items-center justify-center rounded-2xl inline-flex overflow-hidden"
+          className="relative h-20 w-24 items-center justify-center rounded-2xl inline-flex overflow-hidden"
           style={{
             background: "var(--surface-1)",
             border: "1px solid var(--border)",
@@ -23,12 +23,12 @@ export const EmptyPreview: React.FC = () => (
           }}
         >
           <Image
-            src="/meowcap-logo.png"
+            src="/cat-spill.png"
             alt=""
-            width={44}
-            height={44}
+            width={84}
+            height={58}
             priority
-            className="h-11 w-11 object-contain logo-invert"
+            className="h-auto w-[4.75rem] object-contain logo-invert"
           />
         </div>
       </div>
