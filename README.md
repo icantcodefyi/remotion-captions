@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Caption Studio
 
-## Getting Started
+A Remotion-powered web app for generating beautiful captions for any video.
 
-First, run the development server:
+## Features
+
+- Drop any video or audio file
+- Transcribe with Deepgram Nova-3 (word-level timestamps)
+- Optionally paste a script — we align your exact words to the audio timing
+- 8 premium caption styles (TikTok, Hormozi, Beast, Karaoke, Minimal, Neon, Typewriter, Broadcast)
+- Live Remotion preview with per-style customization
+- Export as SRT or JSON
+
+## Setup
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open http://localhost:3000 and click **Add key** in the top-right to
+paste your Deepgram key — it's stored in your browser's `localStorage` and
+sent to the server only as a request header during transcription. No
+`.env.local` required. Get a free key at https://console.deepgram.com.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+If you'd rather set a server-side default (e.g. for shared deployments),
+you can still export `DEEPGRAM_API_KEY` as an env var — it's used as a
+fallback when the client doesn't supply a header.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## How it works
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `@remotion/player` renders a live preview of the composition in the browser
+- `@remotion/captions` provides the Caption data shape and TikTok-style page grouping
+- Caption styles are Remotion components that animate with `useCurrentFrame`
+- The server route POSTs your video to Deepgram and returns a `Caption[]` JSON
+- For the script mode, the server runs a Needleman-Wunsch alignment between script
+  tokens and transcript tokens, then interpolates timings for any unmatched words
