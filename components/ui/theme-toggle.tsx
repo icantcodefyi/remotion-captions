@@ -37,10 +37,8 @@ export const ThemeToggle: React.FC<{ className?: string }> = ({
         "relative inline-flex items-center justify-center h-8 w-8 rounded-md",
         "border border-[color:var(--border)] bg-[var(--surface-1)]",
         "text-[color:var(--muted)]",
-        "transition-[transform,background,border-color,color] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
         "[@media(hover:hover)]:hover:border-[color:var(--border-strong)]",
         "[@media(hover:hover)]:hover:text-[color:var(--fg)]",
-        "[@media(hover:hover)]:hover:-translate-y-[1px]",
         "[@media(pointer:coarse)]:h-10 [@media(pointer:coarse)]:w-10",
         className,
       )}

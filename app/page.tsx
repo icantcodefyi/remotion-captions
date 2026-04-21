@@ -21,7 +21,6 @@ import { StyleGrid } from "@/components/studio/style-grid";
 import { StyleControls } from "@/components/studio/style-controls";
 import { PreviewPlayer } from "@/components/studio/preview-player";
 import { CaptionPositionOverlay } from "@/components/studio/position-overlay";
-import { StatusPill } from "@/components/studio/status-pill";
 import { ApiKeyBanner } from "@/components/studio/api-key-banner";
 import { ApiKeyDialog } from "@/components/studio/api-key-dialog";
 import { EmptyPreview } from "@/components/studio/empty-preview";
@@ -39,13 +38,6 @@ import {
 const FPS = 30;
 
 type JobStatus = "idle" | "running" | "ready" | "error";
-
-const STATUS_LABELS: Record<JobStatus, string> = {
-  idle: "Ready when you are",
-  running: "Generating",
-  ready: "Captions ready",
-  error: "Something broke",
-};
 
 export default function StudioPage() {
   const [file, setFile] = React.useState<File | null>(null);
@@ -169,7 +161,6 @@ export default function StudioPage() {
   return (
     <main className="h-dvh w-dvw flex flex-col overflow-hidden">
       <Header
-        status={status}
         hasCaptions={hasCaptions}
         hasKey={Boolean(deepgramKey)}
         onOpenKeyDialog={() => setKeyDialogOpen(true)}
@@ -363,14 +354,12 @@ const Divider: React.FC = () => (
 );
 
 const Header: React.FC<{
-  status: JobStatus;
   hasCaptions: boolean;
   hasKey: boolean;
   onOpenKeyDialog: () => void;
   onDownloadSrt: () => void;
   onDownloadJson: () => void;
 }> = ({
-  status,
   hasCaptions,
   hasKey,
   onOpenKeyDialog,
@@ -398,18 +387,8 @@ const Header: React.FC<{
           />
         </div>
         <div className="min-w-0">
-          <div className="display text-[1.0625rem] font-semibold tracking-[-0.02em] flex items-center gap-1.5 text-[color:var(--fg)] leading-none">
+          <div className="display text-[1.0625rem] font-semibold tracking-[-0.02em] text-[color:var(--fg)] leading-none">
             MeowCap
-            <span
-              className="text-[0.625rem] font-semibold uppercase tracking-[0.16em] px-1.5 py-0.5 rounded-full"
-              style={{
-                background: "var(--accent-soft)",
-                color: "var(--accent-ink)",
-                border: "1px solid var(--accent-edge)",
-              }}
-            >
-              beta
-            </span>
           </div>
           <div className="ital-label text-[0.75rem] text-[color:var(--muted)] mt-1">
             captions that purr
@@ -418,13 +397,6 @@ const Header: React.FC<{
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="hidden sm:block">
-          <StatusPill status={status} label={STATUS_LABELS[status]} />
-        </div>
-        <div
-          aria-hidden
-          className="hidden sm:block h-5 w-px bg-[color:var(--border)] mx-1.5"
-        />
         <ThemeToggle />
         <Button
           variant={hasKey ? "ghost" : "secondary"}
