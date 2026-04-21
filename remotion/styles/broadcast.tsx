@@ -3,7 +3,7 @@
 import React from "react";
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { FONTS } from "../fonts";
-import { positionStyles, type CaptionStyleProps } from "./types";
+import { captionFrameStyle, type CaptionStyleProps } from "./types";
 
 export const BroadcastStyle: React.FC<CaptionStyleProps> = ({ page, options }) => {
   const frame = useCurrentFrame();
@@ -20,20 +20,13 @@ export const BroadcastStyle: React.FC<CaptionStyleProps> = ({ page, options }) =
   const baseSize = 48 * options.fontScale;
 
   return (
-    <AbsoluteFill
-      style={{
-        display: "flex",
-        alignItems: "center",
-        ...positionStyles(options.position),
-        paddingLeft: "6%",
-        paddingRight: "6%",
-      }}
-    >
+    <AbsoluteFill>
+      <div style={captionFrameStyle(options.position, 88)}>
       <div
         style={{
           display: "flex",
           alignItems: "stretch",
-          maxWidth: "92%",
+          maxWidth: "100%",
           transform: `translateX(${(1 - slide) * -80}px)`,
           opacity: slide,
           boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
@@ -74,6 +67,7 @@ export const BroadcastStyle: React.FC<CaptionStyleProps> = ({ page, options }) =
             );
           })}
         </div>
+      </div>
       </div>
     </AbsoluteFill>
   );

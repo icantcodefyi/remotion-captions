@@ -3,7 +3,7 @@
 import React from "react";
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { FONTS } from "../fonts";
-import { positionStyles, type CaptionStyleProps } from "./types";
+import { captionFrameStyle, type CaptionStyleProps } from "./types";
 
 export const TikTokStyle: React.FC<CaptionStyleProps> = ({ page, options }) => {
   const frame = useCurrentFrame();
@@ -20,15 +20,8 @@ export const TikTokStyle: React.FC<CaptionStyleProps> = ({ page, options }) => {
   const baseSize = 110 * options.fontScale;
 
   return (
-    <AbsoluteFill
-      style={{
-        display: "flex",
-        alignItems: "center",
-        ...positionStyles(options.position),
-        paddingLeft: "6%",
-        paddingRight: "6%",
-      }}
-    >
+    <AbsoluteFill>
+      <div style={captionFrameStyle(options.position, 88)}>
       <div
         style={{
           transform: `scale(${entrance}) translateY(${(1 - entrance) * 30}px)`,
@@ -36,7 +29,7 @@ export const TikTokStyle: React.FC<CaptionStyleProps> = ({ page, options }) => {
           display: "flex",
           flexWrap: "wrap",
           justifyContent: "center",
-          maxWidth: "92%",
+          maxWidth: "100%",
           fontFamily: FONTS.poppins,
           fontWeight: 900,
           fontSize: baseSize,
@@ -68,6 +61,7 @@ export const TikTokStyle: React.FC<CaptionStyleProps> = ({ page, options }) => {
             </span>
           );
         })}
+      </div>
       </div>
     </AbsoluteFill>
   );

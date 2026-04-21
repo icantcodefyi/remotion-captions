@@ -3,7 +3,7 @@
 import React from "react";
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { FONTS } from "../fonts";
-import { positionStyles, type CaptionStyleProps } from "./types";
+import { captionFrameStyle, type CaptionStyleProps } from "./types";
 
 const BEAST_PALETTE = [
   "#FF3D7F",
@@ -30,15 +30,8 @@ export const BeastStyle: React.FC<CaptionStyleProps> = ({ page, options, pageInd
   const baseSize = 120 * options.fontScale;
 
   return (
-    <AbsoluteFill
-      style={{
-        display: "flex",
-        alignItems: "center",
-        ...positionStyles(options.position),
-        paddingLeft: "5%",
-        paddingRight: "5%",
-      }}
-    >
+    <AbsoluteFill>
+      <div style={captionFrameStyle(options.position, 90)}>
       <div
         style={{
           transform: `scale(${0.6 + bounce * 0.4}) translateY(${
@@ -51,7 +44,7 @@ export const BeastStyle: React.FC<CaptionStyleProps> = ({ page, options, pageInd
           display: "flex",
           flexWrap: "wrap",
           justifyContent: "center",
-          maxWidth: "90%",
+          maxWidth: "100%",
           fontFamily: FONTS.poppins,
           fontWeight: 900,
           fontSize: baseSize,
@@ -87,6 +80,7 @@ export const BeastStyle: React.FC<CaptionStyleProps> = ({ page, options, pageInd
             </span>
           );
         })}
+      </div>
       </div>
     </AbsoluteFill>
   );

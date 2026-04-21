@@ -12,7 +12,7 @@ export type CaptionStyleId =
   | "typewriter"
   | "broadcast";
 
-export type CaptionPosition = "top" | "center" | "bottom";
+export type CaptionPosition = { x: number; y: number };
 
 export type StyleOptions = {
   position: CaptionPosition;
@@ -23,12 +23,20 @@ export type StyleOptions = {
 };
 
 export const DEFAULT_STYLE_OPTIONS: StyleOptions = {
-  position: "bottom",
+  position: { x: 0.5, y: 0.85 },
   fontScale: 1,
   wordsPerPage: 3,
   accentColor: "#C4FF3D",
   shadow: true,
 };
+
+export const POSITION_PRESETS: { id: "top" | "center" | "bottom"; label: string; value: CaptionPosition }[] = [
+  { id: "top", label: "Top", value: { x: 0.5, y: 0.12 } },
+  { id: "center", label: "Center", value: { x: 0.5, y: 0.5 } },
+  { id: "bottom", label: "Bottom", value: { x: 0.5, y: 0.85 } },
+];
+
+export const POSITION_CLAMP = { minX: 0.15, maxX: 0.85, minY: 0.05, maxY: 0.95 };
 
 export type CaptionStyleMeta = {
   id: CaptionStyleId;

@@ -20,6 +20,7 @@ import { ScriptInput } from "@/components/studio/script-input";
 import { StyleGrid } from "@/components/studio/style-grid";
 import { StyleControls } from "@/components/studio/style-controls";
 import { PreviewPlayer } from "@/components/studio/preview-player";
+import { CaptionPositionOverlay } from "@/components/studio/position-overlay";
 import { StatusPill } from "@/components/studio/status-pill";
 import { ApiKeyBanner } from "@/components/studio/api-key-banner";
 import { ApiKeyDialog } from "@/components/studio/api-key-dialog";
@@ -299,6 +300,12 @@ export default function StudioPage() {
                       styleId,
                       styleOptions,
                     }}
+                  />
+                  <CaptionPositionOverlay
+                    position={styleOptions.position}
+                    onChange={(position) =>
+                      setStyleOptions((prev) => ({ ...prev, position }))
+                    }
                   />
                 </div>
               </div>

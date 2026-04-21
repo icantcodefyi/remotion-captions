@@ -3,7 +3,7 @@
 import React from "react";
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { FONTS } from "../fonts";
-import { positionStyles, type CaptionStyleProps } from "./types";
+import { captionFrameStyle, type CaptionStyleProps } from "./types";
 
 export const KaraokeStyle: React.FC<CaptionStyleProps> = ({ page, options }) => {
   const frame = useCurrentFrame();
@@ -20,15 +20,8 @@ export const KaraokeStyle: React.FC<CaptionStyleProps> = ({ page, options }) => 
   const baseSize = 80 * options.fontScale;
 
   return (
-    <AbsoluteFill
-      style={{
-        display: "flex",
-        alignItems: "center",
-        ...positionStyles(options.position),
-        paddingLeft: "8%",
-        paddingRight: "8%",
-      }}
-    >
+    <AbsoluteFill>
+      <div style={captionFrameStyle(options.position, 84)}>
       <div
         style={{
           opacity: entrance,
@@ -36,7 +29,7 @@ export const KaraokeStyle: React.FC<CaptionStyleProps> = ({ page, options }) => 
           display: "flex",
           flexWrap: "wrap",
           justifyContent: "center",
-          maxWidth: "80%",
+          maxWidth: "100%",
           padding: "24px 36px",
           background: "rgba(10,10,15,0.55)",
           backdropFilter: "blur(12px)",
@@ -90,6 +83,7 @@ export const KaraokeStyle: React.FC<CaptionStyleProps> = ({ page, options }) => 
             </span>
           );
         })}
+      </div>
       </div>
     </AbsoluteFill>
   );

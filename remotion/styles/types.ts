@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { TikTokPage } from "@remotion/captions";
 import type { StyleOptions } from "@/lib/types";
 
@@ -7,26 +8,19 @@ export type CaptionStyleProps = {
   pageIndex: number;
 };
 
-export function positionStyles(position: StyleOptions["position"]) {
-  switch (position) {
-    case "top":
-      return {
-        justifyContent: "flex-start",
-        paddingTop: "8%",
-        paddingBottom: "0%",
-      } as const;
-    case "center":
-      return {
-        justifyContent: "center",
-        paddingTop: "0%",
-        paddingBottom: "0%",
-      } as const;
-    case "bottom":
-    default:
-      return {
-        justifyContent: "flex-end",
-        paddingTop: "0%",
-        paddingBottom: "14%",
-      } as const;
-  }
+export function captionFrameStyle(
+  position: StyleOptions["position"],
+  widthPct = 88,
+): CSSProperties {
+  return {
+    position: "absolute",
+    top: `${position.y * 100}%`,
+    left: `${position.x * 100}%`,
+    transform: "translate(-50%, -50%)",
+    width: `${widthPct}%`,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+  };
 }

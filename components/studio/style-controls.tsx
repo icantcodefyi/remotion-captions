@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
+import { Move } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
-import { Segmented } from "@/components/ui/segmented";
 import { Switch } from "@/components/ui/switch";
 import { SectionLabel } from "@/components/ui/label";
-import type { CaptionPosition, StyleOptions } from "@/lib/types";
+import { cn } from "@/lib/cn";
+import { POSITION_PRESETS, type StyleOptions } from "@/lib/types";
 
 const COLOR_PRESETS = [
   "#C4FF3D",
@@ -28,22 +29,60 @@ export const StyleControls: React.FC<Props> = ({ value, onChange }) => {
   const set = <K extends keyof StyleOptions>(key: K, v: StyleOptions[K]) =>
     onChange({ ...value, [key]: v });
 
+  const activePresetId = POSITION_PRESETS.find(
+    (p) =>
+      Math.abs(p.value.x - value.position.x) < 0.01 &&
+      Math.abs(p.value.y - value.position.y) < 0.01,
+  )?.id;
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2.5">
-        <SectionLabel>Position</SectionLabel>
-        <Segmented<CaptionPosition>
-          value={value.position}
-          onChange={(v) => set("position", v)}
-          size="sm"
-          ariaLabel="Caption position"
-          className="w-full"
-          options={[
-            { value: "top", label: "Top" },
-            { value: "center", label: "Center" },
-            { value: "bottom", label: "Bottom" },
-          ]}
-        />
+        <div className="flex items-center justify-between">
+          <SectionLabel>Position</SectionLabel>
+          <span className="flex items-center gap-1 text-[0.65rem] text-[color:var(--muted)] ital-label normal-case tracking-normal">
+            <Move className="h-3 w-3" />
+            drag on preview to fine-tune
+          </span>
+        </div>
+        <div
+          role="radiogroup"
+          aria-label="Caption position"
+          className="inline-flex items-center p-1 rounded-lg bg-[var(--surface-2)] border border-[color:var(--border)] w-full"
+        >
+          {POSITION_PRESETS.map((preset) => {
+            const selected = activePresetId === preset.id;
+            return (
+              <button
+                key={preset.id}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => set("position", preset.value)}
+                className={cn(
+                  "relative flex-1 rounded-md font-medium h-7 px-3 text-[0.75rem]",
+                  "transition-[background,color,box-shadow] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                  "[@media(pointer:coarse)]:h-9",
+                  selected
+                    ? "bg-[var(--surface-1)] text-[color:var(--fg)] shadow-[0_1px_2px_oklch(20%_0.02_90/0.08),0_0_0_1px_var(--border)]"
+                    : "text-[color:var(--muted)] [@media(hover:hover)]:hover:text-[color:var(--fg)]",
+                )}
+              >
+                {preset.label}
+              </button>
+            );
+          })}
+        </div>
+        {!activePresetId ? (
+          <div className="flex items-center justify-between rounded-md px-2.5 py-1.5 bg-[var(--surface-2)] border border-[color:var(--border)]">
+            <span className="ital-label normal-case tracking-normal text-[0.7rem] text-[color:var(--muted)]">
+              custom
+            </span>
+            <span className="tnum-serif text-[0.7rem] text-[color:var(--fg)]">
+              {Math.round(value.position.x * 100)}% · {Math.round(value.position.y * 100)}%
+            </span>
+          </div>
+        ) : null}
       </div>
 
       <Slider

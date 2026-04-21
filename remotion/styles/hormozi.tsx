@@ -3,7 +3,7 @@
 import React from "react";
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { FONTS } from "../fonts";
-import { positionStyles, type CaptionStyleProps } from "./types";
+import { captionFrameStyle, type CaptionStyleProps } from "./types";
 
 export const HormoziStyle: React.FC<CaptionStyleProps> = ({ page, options }) => {
   const frame = useCurrentFrame();
@@ -20,15 +20,8 @@ export const HormoziStyle: React.FC<CaptionStyleProps> = ({ page, options }) => 
   const baseSize = 130 * options.fontScale;
 
   return (
-    <AbsoluteFill
-      style={{
-        display: "flex",
-        alignItems: "center",
-        ...positionStyles(options.position),
-        paddingLeft: "4%",
-        paddingRight: "4%",
-      }}
-    >
+    <AbsoluteFill>
+      <div style={captionFrameStyle(options.position, 92)}>
       <div
         style={{
           transform: `translateY(${(1 - entrance) * 40}px)`,
@@ -37,7 +30,7 @@ export const HormoziStyle: React.FC<CaptionStyleProps> = ({ page, options }) => 
           flexWrap: "wrap",
           justifyContent: "center",
           gap: "8px 14px",
-          maxWidth: "96%",
+          maxWidth: "100%",
           fontFamily: FONTS.anton,
           fontWeight: 400,
           fontSize: baseSize,
@@ -76,6 +69,7 @@ export const HormoziStyle: React.FC<CaptionStyleProps> = ({ page, options }) => 
             </span>
           );
         })}
+      </div>
       </div>
     </AbsoluteFill>
   );

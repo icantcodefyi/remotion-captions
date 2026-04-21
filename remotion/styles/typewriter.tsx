@@ -3,7 +3,7 @@
 import React from "react";
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { FONTS } from "../fonts";
-import { positionStyles, type CaptionStyleProps } from "./types";
+import { captionFrameStyle, type CaptionStyleProps } from "./types";
 
 export const TypewriterStyle: React.FC<CaptionStyleProps> = ({ page, options }) => {
   const frame = useCurrentFrame();
@@ -41,15 +41,8 @@ export const TypewriterStyle: React.FC<CaptionStyleProps> = ({ page, options }) 
   const showCursor = Math.floor(frame / 8) % 2 === 0;
 
   return (
-    <AbsoluteFill
-      style={{
-        display: "flex",
-        alignItems: "center",
-        ...positionStyles(options.position),
-        paddingLeft: "10%",
-        paddingRight: "10%",
-      }}
-    >
+    <AbsoluteFill>
+      <div style={captionFrameStyle(options.position, 80)}>
       <div
         style={{
           opacity: entrance,
@@ -80,6 +73,7 @@ export const TypewriterStyle: React.FC<CaptionStyleProps> = ({ page, options }) 
             background: showCursor ? options.accentColor : "transparent",
           }}
         />
+      </div>
       </div>
     </AbsoluteFill>
   );
