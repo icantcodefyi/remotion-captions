@@ -20,12 +20,7 @@ export const ApiKeyDialog: React.FC<Props> = ({
 }) => {
   const dialogRef = React.useRef<HTMLDialogElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
-  const [value, setValue] = React.useState(currentKey ?? "");
   const [visible, setVisible] = React.useState(false);
-
-  React.useEffect(() => {
-    if (open) setValue(currentKey ?? "");
-  }, [open, currentKey]);
 
   React.useEffect(() => {
     const dialog = dialogRef.current;
@@ -47,14 +42,14 @@ export const ApiKeyDialog: React.FC<Props> = ({
   }, [onOpenChange]);
 
   const handleSave = () => {
-    const trimmed = value.trim();
+    const trimmed = inputRef.current?.value.trim() ?? "";
     onSave(trimmed.length > 0 ? trimmed : null);
     onOpenChange(false);
   };
 
   const handleClear = () => {
     onSave(null);
-    setValue("");
+    if (inputRef.current) inputRef.current.value = "";
     onOpenChange(false);
   };
 
@@ -136,11 +131,11 @@ export const ApiKeyDialog: React.FC<Props> = ({
           </label>
           <div className="relative mt-2">
             <input
+              key={`${open ? "open" : "closed"}-${currentKey ?? ""}`}
               ref={inputRef}
               id="deepgram-key"
               type={visible ? "text" : "password"}
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
+              defaultValue={currentKey ?? ""}
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleSave();
               }}
@@ -217,7 +212,6 @@ export const ApiKeyDialog: React.FC<Props> = ({
               variant="primary"
               size="sm"
               onClick={handleSave}
-              disabled={value.trim().length === 0}
             >
               <Check className="h-[13px] w-[13px]" /> Save key
             </Button>

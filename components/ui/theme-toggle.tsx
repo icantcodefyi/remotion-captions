@@ -9,22 +9,23 @@ type Theme = "light" | "dark";
 export const ThemeToggle: React.FC<{ className?: string }> = ({
   className,
 }) => {
-  const [theme, setTheme] = React.useState<Theme>("light");
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    const current = (document.documentElement.dataset.theme as Theme) ?? "light";
-    setTheme(current);
-    setMounted(true);
-  }, []);
+  const theme = React.useSyncExternalStore(
+    (onStoreChange) => {
+      window.addEventListener("meowcap-theme-change", onStoreChange);
+      return () =>
+        window.removeEventListener("meowcap-theme-change", onStoreChange);
+    },
+    () => (document.documentElement.dataset.theme as Theme) ?? "light",
+    () => "light",
+  );
 
   const toggle = () => {
     const next: Theme = theme === "light" ? "dark" : "light";
-    setTheme(next);
     document.documentElement.dataset.theme = next;
     try {
       localStorage.setItem("meowcap-theme", next);
     } catch {}
+    window.dispatchEvent(new Event("meowcap-theme-change"));
   };
 
   return (
@@ -47,14 +48,10 @@ export const ThemeToggle: React.FC<{ className?: string }> = ({
         aria-hidden
         className="relative inline-flex items-center justify-center h-4 w-4"
       >
-        {mounted ? (
-          theme === "dark" ? (
-            <Sun className="h-4 w-4" />
-          ) : (
-            <Moon className="h-4 w-4" />
-          )
+        {theme === "dark" ? (
+          <Sun className="h-4 w-4" />
         ) : (
-          <Moon className="h-4 w-4 opacity-0" />
+          <Moon className="h-4 w-4" />
         )}
       </span>
     </button>
