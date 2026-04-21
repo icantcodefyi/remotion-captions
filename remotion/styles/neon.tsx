@@ -26,7 +26,8 @@ export const NeonStyle: React.FC<CaptionStyleProps> = ({ page, options }) => {
         display: "flex",
         alignItems: "center",
         ...positionStyles(options.position),
-        padding: "0 6%",
+        paddingLeft: "6%",
+        paddingRight: "6%",
       }}
     >
       <div

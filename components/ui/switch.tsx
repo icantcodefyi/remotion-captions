@@ -18,57 +18,67 @@ export const Switch: React.FC<Props> = ({
   description,
   className,
 }) => {
+  const id = React.useId();
+  const descId = description ? `${id}-desc` : undefined;
   return (
-    <label
+    <div
       className={cn(
-        "flex items-center justify-between gap-4 cursor-pointer select-none",
+        "flex items-start justify-between gap-4",
         className,
       )}
     >
       {(label || description) && (
-        <div className="flex flex-col">
+        <div className="flex flex-col min-w-0">
           {label && (
-            <span className="text-xs uppercase tracking-wider text-[var(--color-muted)] font-medium">
+            <label
+              htmlFor={id}
+              className="text-[0.6875rem] uppercase tracking-[0.14em] text-[color:var(--muted)] font-semibold cursor-pointer"
+            >
               {label}
-            </span>
+            </label>
           )}
           {description && (
-            <span className="text-[11px] text-[var(--color-muted)] mt-0.5">
+            <span
+              id={descId}
+              className="text-[0.75rem] text-[color:var(--muted)] mt-1 leading-relaxed"
+            >
               {description}
             </span>
           )}
         </div>
       )}
-      <span
+      <button
+        id={id}
+        type="button"
         role="switch"
         aria-checked={checked}
+        aria-describedby={descId}
         onClick={() => onCheckedChange(!checked)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onCheckedChange(!checked);
-          }
-        }}
-        tabIndex={0}
         className={cn(
-          "relative inline-flex h-5 w-9 rounded-full border transition-colors",
+          "relative shrink-0 inline-flex h-6 w-11 rounded-full border",
+          "transition-[background,border-color,box-shadow] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "[@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:w-12",
           checked
-            ? "bg-[var(--color-accent)] border-[var(--color-accent)]"
-            : "bg-[var(--color-surface-3)] border-[var(--color-border-strong)]",
+            ? "bg-[var(--accent)] border-transparent"
+            : "bg-[var(--surface-3)] border-[color:var(--border-strong)]",
         )}
         style={{
           boxShadow: checked
-            ? "0 0 18px var(--color-accent-glow)"
-            : undefined,
+            ? "0 0 14px var(--accent-glow), inset 0 1px 0 oklch(100% 0 0 / 0.3)"
+            : "inset 0 1px 2px oklch(20% 0.02 90 / 0.06)",
         }}
       >
         <span
+          aria-hidden
           className={cn(
-            "absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform",
-            checked && "translate-x-4",
+            "absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white",
+            "shadow-[0_1px_3px_oklch(20%_0.02_90/0.22)]",
+            "transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            "[@media(pointer:coarse)]:h-6 [@media(pointer:coarse)]:w-6",
+            checked && "translate-x-5",
           )}
         />
-      </span>
-    </label>
+      </button>
+    </div>
   );
 };

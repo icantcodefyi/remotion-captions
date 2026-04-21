@@ -25,7 +25,8 @@ export const KaraokeStyle: React.FC<CaptionStyleProps> = ({ page, options }) => 
         display: "flex",
         alignItems: "center",
         ...positionStyles(options.position),
-        padding: "0 8%",
+        paddingLeft: "8%",
+        paddingRight: "8%",
       }}
     >
       <div

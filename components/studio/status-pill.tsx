@@ -11,27 +11,38 @@ type Props = {
 };
 
 const STATUS_CLASSES: Record<Status, string> = {
-  idle: "bg-[var(--color-surface-3)] text-[var(--color-muted)]",
-  running: "bg-[var(--color-accent-glow)]/20 text-[var(--color-accent)]",
-  ready: "bg-[#26c76d]/15 text-[#3BE6A6]",
-  error: "bg-[var(--color-danger)]/15 text-[var(--color-danger)]",
+  idle:
+    "bg-[var(--surface-2)] text-[color:var(--muted)] border border-[color:var(--border)]",
+  running:
+    "bg-[var(--accent-soft)] text-[color:var(--accent-ink)] border border-[color:var(--accent-edge)]",
+  ready:
+    "bg-[var(--success-soft)] text-[color:var(--success)] border border-[color:color-mix(in_oklab,var(--success)_30%,transparent)]",
+  error:
+    "bg-[var(--danger-soft)] text-[color:var(--danger)] border border-[color:color-mix(in_oklab,var(--danger)_30%,transparent)]",
 };
 
 const DOT_CLASSES: Record<Status, string> = {
-  idle: "bg-[var(--color-muted)]",
-  running: "bg-[var(--color-accent)] pulse-dot",
-  ready: "bg-[#3BE6A6]",
-  error: "bg-[var(--color-danger)]",
+  idle: "bg-[var(--muted-soft)]",
+  running: "bg-[var(--accent)] pulse-dot",
+  ready: "bg-[var(--success)]",
+  error: "bg-[var(--danger)]",
 };
 
 export const StatusPill: React.FC<Props> = ({ status, label }) => (
   <div
     className={cn(
-      "inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full text-[11px] font-medium tracking-tight",
+      "inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full",
+      "text-[0.7rem] font-semibold tracking-tight",
+      "transition-colors duration-300",
       STATUS_CLASSES[status],
     )}
+    role="status"
+    aria-live="polite"
   >
-    <span className={cn("h-1.5 w-1.5 rounded-full", DOT_CLASSES[status])} />
+    <span
+      aria-hidden
+      className={cn("h-1.5 w-1.5 rounded-full", DOT_CLASSES[status])}
+    />
     {label}
   </div>
 );

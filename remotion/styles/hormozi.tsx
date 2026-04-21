@@ -25,7 +25,8 @@ export const HormoziStyle: React.FC<CaptionStyleProps> = ({ page, options }) => 
         display: "flex",
         alignItems: "center",
         ...positionStyles(options.position),
-        padding: "0 4%",
+        paddingLeft: "4%",
+        paddingRight: "4%",
       }}
     >
       <div

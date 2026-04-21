@@ -35,7 +35,8 @@ export const BeastStyle: React.FC<CaptionStyleProps> = ({ page, options, pageInd
         display: "flex",
         alignItems: "center",
         ...positionStyles(options.position),
-        padding: "0 5%",
+        paddingLeft: "5%",
+        paddingRight: "5%",
       }}
     >
       <div

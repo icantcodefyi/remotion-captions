@@ -29,13 +29,14 @@ export const StyleControls: React.FC<Props> = ({ value, onChange }) => {
     onChange({ ...value, [key]: v });
 
   return (
-    <div className="flex flex-col gap-5">
-      <div>
-        <SectionLabel className="mb-2">Position</SectionLabel>
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-2.5">
+        <SectionLabel>Position</SectionLabel>
         <Segmented<CaptionPosition>
           value={value.position}
           onChange={(v) => set("position", v)}
           size="sm"
+          ariaLabel="Caption position"
           className="w-full"
           options={[
             { value: "top", label: "Top" },
@@ -64,30 +65,56 @@ export const StyleControls: React.FC<Props> = ({ value, onChange }) => {
         onChange={(v) => set("wordsPerPage", v)}
       />
 
-      <div>
-        <SectionLabel className="mb-2">Accent color</SectionLabel>
-        <div className="flex flex-wrap gap-2">
-          {COLOR_PRESETS.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => set("accentColor", c)}
-              className="h-7 w-7 rounded-full border border-[var(--color-border-strong)] transition-all hover:scale-110 relative"
-              style={{
-                background: c,
-                boxShadow:
-                  value.accentColor === c
-                    ? `0 0 0 2px var(--color-background), 0 0 0 4px ${c}`
-                    : undefined,
-              }}
-              aria-label={`Accent ${c}`}
-            />
-          ))}
+      <div className="flex flex-col gap-2.5">
+        <SectionLabel>Accent color</SectionLabel>
+        <div
+          className="flex flex-wrap gap-2"
+          role="radiogroup"
+          aria-label="Accent color"
+        >
+          {COLOR_PRESETS.map((c) => {
+            const selected = value.accentColor.toUpperCase() === c.toUpperCase();
+            return (
+              <button
+                key={c}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => set("accentColor", c)}
+                className={[
+                  "relative h-7 w-7 rounded-full",
+                  "border border-[color:var(--border-strong)]",
+                  "transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                  "[@media(hover:hover)]:hover:scale-110",
+                  "[@media(hover:hover)]:hover:-translate-y-[1px]",
+                  "[@media(pointer:coarse)]:h-9 [@media(pointer:coarse)]:w-9",
+                ].join(" ")}
+                style={{
+                  background: c,
+                  boxShadow: selected
+                    ? `0 0 0 2px var(--surface-1), 0 0 0 4px ${c}, 0 4px 10px -4px ${c}66`
+                    : "inset 0 1px 0 oklch(100% 0 0 / 0.2), 0 1px 2px oklch(20% 0.02 90 / 0.06)",
+                }}
+                aria-label={`Accent ${c}`}
+                title={c}
+              />
+            );
+          })}
           <label
-            className="h-7 w-7 rounded-full border border-dashed border-[var(--color-border-strong)] flex items-center justify-center cursor-pointer hover:border-[var(--color-foreground)] text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
-            aria-label="Custom color"
+            className={[
+              "relative h-7 w-7 rounded-full",
+              "border border-dashed border-[color:var(--border-strong)]",
+              "flex items-center justify-center cursor-pointer",
+              "text-[color:var(--muted)] transition-colors",
+              "[@media(hover:hover)]:hover:border-[color:var(--fg)]",
+              "[@media(hover:hover)]:hover:text-[color:var(--fg)]",
+              "[@media(hover:hover)]:hover:bg-[var(--surface-2)]",
+              "[@media(pointer:coarse)]:h-9 [@media(pointer:coarse)]:w-9",
+            ].join(" ")}
+            aria-label="Pick a custom color"
+            title="Pick a custom color"
           >
-            <span className="text-[10px] font-bold">+</span>
+            <span className="text-[0.7rem] font-bold">+</span>
             <input
               type="color"
               value={value.accentColor}
@@ -100,7 +127,7 @@ export const StyleControls: React.FC<Props> = ({ value, onChange }) => {
 
       <Switch
         label="Shadow"
-        description="Drop shadow under text for readability"
+        description="Soft drop shadow behind caption text for readability on bright footage."
         checked={value.shadow}
         onCheckedChange={(v) => set("shadow", v)}
       />

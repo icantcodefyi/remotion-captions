@@ -5,24 +5,48 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/cn";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all select-none disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-background)]",
+  [
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium select-none",
+    "disabled:opacity-50 disabled:pointer-events-none",
+    "transition-[transform,background,border-color,color,box-shadow] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
+    "active:scale-[0.985]",
+  ].join(" "),
   {
     variants: {
       variant: {
-        primary:
-          "bg-[var(--color-accent)] text-[#0a0a0f] hover:brightness-105 active:brightness-95 shadow-[0_8px_30px_-8px_var(--color-accent-glow)]",
-        secondary:
-          "bg-[var(--color-surface-2)] text-[var(--color-foreground)] border border-[var(--color-border)] hover:bg-[var(--color-surface-3)] hover:border-[var(--color-border-strong)]",
-        ghost:
-          "bg-transparent text-[var(--color-muted-strong)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-foreground)]",
-        danger:
-          "bg-[var(--color-danger)]/90 text-white hover:bg-[var(--color-danger)]",
+        primary: [
+          "bg-[var(--accent)] text-[color:var(--accent-deep)]",
+          "border border-[color:var(--accent-edge)]",
+          "shadow-[0_8px_22px_-12px_var(--accent-glow),inset_0_1px_0_oklch(100%_0_0/0.35)]",
+          "font-semibold",
+          "[@media(hover:hover)]:hover:-translate-y-[1px]",
+          "[@media(hover:hover)]:hover:brightness-[1.04]",
+        ].join(" "),
+        secondary: [
+          "bg-[var(--surface-1)] text-[color:var(--fg)]",
+          "border border-[color:var(--border)]",
+          "shadow-[var(--shadow-soft)]",
+          "[@media(hover:hover)]:hover:bg-[var(--surface-2)]",
+          "[@media(hover:hover)]:hover:border-[color:var(--border-strong)]",
+          "[@media(hover:hover)]:hover:-translate-y-[1px]",
+        ].join(" "),
+        ghost: [
+          "bg-transparent text-[color:var(--fg-weak)]",
+          "[@media(hover:hover)]:hover:bg-[var(--surface-2)]",
+          "[@media(hover:hover)]:hover:text-[color:var(--fg)]",
+        ].join(" "),
+        danger: [
+          "bg-[var(--danger)] text-white",
+          "[@media(hover:hover)]:hover:brightness-[1.05]",
+          "shadow-[0_8px_22px_-12px_color-mix(in_oklab,var(--danger)_55%,transparent)]",
+        ].join(" "),
       },
       size: {
-        sm: "h-8 px-3 text-xs rounded-md",
-        md: "h-10 px-4 text-sm rounded-lg",
-        lg: "h-12 px-5 text-base rounded-xl",
-        icon: "h-9 w-9 rounded-lg p-0",
+        /* Touch-target padding kicks in on coarse pointers */
+        sm: "h-8 px-3 text-[0.75rem] rounded-md [@media(pointer:coarse)]:h-10",
+        md: "h-10 px-4 text-[0.8125rem] rounded-lg [@media(pointer:coarse)]:h-11",
+        lg: "h-12 px-5 text-[0.9375rem] rounded-xl",
+        icon: "h-9 w-9 rounded-lg p-0 [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11",
       },
     },
     defaultVariants: {

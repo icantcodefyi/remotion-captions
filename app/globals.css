@@ -1,33 +1,171 @@
 @import "tailwindcss";
 
+/* ————————————————————————————————————————————————————————
+   Tokens — light is default, dark overrides on [data-theme="dark"]
+   All color in OKLCH. All spacing in a semantic 4pt scale.
+   Neutrals are tinted ~0.008 chroma toward warm paper (hue 90).
+   The lime accent lives alone — there is no secondary accent.
+   ———————————————————————————————————————————————————————— */
+
+:root,
+html[data-theme="light"] {
+  /* Surfaces — warm paper */
+  --surface-0: oklch(97.6% 0.010 95);   /* page wash */
+  --surface-1: oklch(99.2% 0.006 95);   /* panels */
+  --surface-2: oklch(95.2% 0.012 92);   /* inset */
+  --surface-3: oklch(91.5% 0.014 90);   /* chips */
+  --border: oklch(89% 0.015 90);
+  --border-strong: oklch(82% 0.018 88);
+
+  /* Ink — warm near-black */
+  --fg: oklch(20% 0.020 90);
+  --fg-weak: oklch(38% 0.018 90);
+  --muted: oklch(58% 0.015 92);
+  --muted-soft: oklch(72% 0.012 95);
+
+  /* Accent — acid lime, hue 128. Single accent, no exceptions. */
+  --accent: oklch(78% 0.20 128);
+  --accent-ink: oklch(38% 0.13 128);
+  --accent-deep: oklch(32% 0.10 128);
+  --accent-soft: oklch(95% 0.09 125);
+  --accent-edge: oklch(70% 0.16 128 / 0.45);
+  --accent-glow: oklch(78% 0.20 128 / 0.28);
+
+  /* Semantic — muted, not candy */
+  --success: oklch(58% 0.13 150);
+  --success-soft: oklch(94% 0.06 150);
+  --danger: oklch(58% 0.18 27);
+  --danger-soft: oklch(95% 0.05 27);
+
+  /* Shadows — paper, not plastic */
+  --shadow-soft:
+    0 1px 0 oklch(100% 0 0 / 0.7) inset,
+    0 1px 2px oklch(20% 0.02 90 / 0.04),
+    0 0 0 1px oklch(20% 0.02 90 / 0.035);
+  --shadow-lift:
+    0 1px 0 oklch(100% 0 0 / 0.7) inset,
+    0 10px 24px -14px oklch(20% 0.02 90 / 0.15),
+    0 2px 6px -2px oklch(20% 0.02 90 / 0.06),
+    0 0 0 1px oklch(20% 0.02 90 / 0.05);
+  --shadow-pop:
+    0 22px 60px -20px oklch(20% 0.02 90 / 0.22),
+    0 4px 14px -4px oklch(20% 0.02 90 / 0.10),
+    0 0 0 1px oklch(20% 0.02 90 / 0.07);
+
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  /* Surfaces — warm near-black, lifting for depth, no pure black */
+  --surface-0: oklch(16% 0.012 95);
+  --surface-1: oklch(19% 0.014 95);
+  --surface-2: oklch(23% 0.016 92);
+  --surface-3: oklch(28% 0.018 90);
+  --border: oklch(32% 0.015 90);
+  --border-strong: oklch(42% 0.018 90);
+
+  --fg: oklch(96% 0.010 95);
+  --fg-weak: oklch(82% 0.012 95);
+  --muted: oklch(68% 0.012 92);
+  --muted-soft: oklch(54% 0.010 92);
+
+  --accent: oklch(82% 0.20 128);
+  --accent-ink: oklch(94% 0.14 128);
+  --accent-deep: oklch(72% 0.18 128);
+  --accent-soft: oklch(30% 0.10 128);
+  --accent-edge: oklch(78% 0.18 128 / 0.50);
+  --accent-glow: oklch(82% 0.20 128 / 0.35);
+
+  --success: oklch(72% 0.13 150);
+  --success-soft: oklch(28% 0.06 150);
+  --danger: oklch(72% 0.15 27);
+  --danger-soft: oklch(30% 0.08 27);
+
+  --shadow-soft:
+    0 0 0 1px oklch(100% 0 0 / 0.035),
+    0 1px 2px oklch(0% 0 0 / 0.35);
+  --shadow-lift:
+    0 0 0 1px oklch(100% 0 0 / 0.04),
+    0 14px 30px -14px oklch(0% 0 0 / 0.55),
+    0 2px 6px -2px oklch(0% 0 0 / 0.35);
+  --shadow-pop:
+    0 0 0 1px oklch(100% 0 0 / 0.055),
+    0 26px 70px -20px oklch(0% 0 0 / 0.75),
+    0 6px 18px -4px oklch(0% 0 0 / 0.4);
+
+  color-scheme: dark;
+}
+
 @theme inline {
-  --color-background: #07070a;
-  --color-surface: #0d0d12;
-  --color-surface-2: #131319;
-  --color-surface-3: #1a1a22;
-  --color-border: #22222c;
-  --color-border-strong: #2e2e3a;
-  --color-foreground: #f4f4f6;
-  --color-muted: #8a8a98;
-  --color-muted-strong: #b4b4c0;
-  --color-accent: #c4ff3d;
-  --color-accent-glow: rgba(196, 255, 61, 0.35);
-  --color-danger: #ff4d6d;
+  /* Expose tokens to Tailwind utilities where useful */
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-fg-weak: var(--fg-weak);
+  --color-muted: var(--muted);
+  --color-muted-soft: var(--muted-soft);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-edge: var(--accent-edge);
+  --color-accent-glow: var(--accent-glow);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
 
-  --font-sans: var(--font-geist-sans), "Inter", ui-sans-serif, system-ui,
-    sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-serif), ui-serif, Georgia, serif;
+  --font-display: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, "JetBrains Mono", monospace;
 
+  /* 4pt spacing — semantic names */
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* Type scale — fixed rem, 1.25 ratio for product UI */
+  --text-2xs: 0.6875rem;   /* 11 — micro labels */
+  --text-xs: 0.75rem;      /* 12 */
+  --text-sm: 0.8125rem;    /* 13 — base UI */
+  --text-base: 0.9375rem;  /* 15 — body */
+  --text-md: 1.0625rem;    /* 17 — emphasis */
+  --text-lg: 1.3125rem;    /* 21 — subheading */
+  --text-xl: 1.625rem;     /* 26 — section title */
+  --text-2xl: 2.0625rem;   /* 33 — hero */
+
+  --radius-xs: 4px;
   --radius-sm: 6px;
   --radius: 10px;
   --radius-lg: 16px;
   --radius-xl: 22px;
 
-  --shadow-soft: 0 1px 0 rgba(255, 255, 255, 0.03) inset,
-    0 0 0 1px rgba(255, 255, 255, 0.02);
-  --shadow-pop: 0 20px 80px -20px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.04);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-quart: cubic-bezier(0.5, 0, 0.75, 0);
+
+  /* Semantic z-index — no arbitrary 9999s */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-backdrop: 300;
+  --z-dialog: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
 }
+
+/* ————————————————————————————————————————————————————————
+   Base
+   ———————————————————————————————————————————————————————— */
 
 html,
 body {
@@ -37,20 +175,36 @@ body {
 body {
   background:
     radial-gradient(
-      1200px 600px at 20% -10%,
-      rgba(196, 255, 61, 0.08),
-      transparent 50%
+      1200px 600px at 8% -8%,
+      color-mix(in oklab, var(--accent) 12%, transparent),
+      transparent 58%
     ),
+    var(--surface-0);
+  color: var(--fg);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  overflow: hidden;
+  font-feature-settings: "ss01", "cv11";
+  padding:
+    env(safe-area-inset-top)
+    env(safe-area-inset-right)
+    env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+
+html[data-theme="dark"] body {
+  background:
     radial-gradient(
-      1000px 500px at 120% 10%,
-      rgba(120, 90, 255, 0.08),
+      1200px 600px at 8% -8%,
+      color-mix(in oklab, var(--accent) 8%, transparent),
       transparent 60%
     ),
-    var(--color-background);
-  color: var(--color-foreground);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  overflow: hidden;
+    var(--surface-0);
+  /* Light text on dark reads lighter — slightly reduce weight */
+  font-weight: 380;
 }
 
 *,
@@ -61,14 +215,25 @@ body {
 
 button {
   cursor: pointer;
+  font-family: inherit;
 }
 
 ::selection {
-  background: var(--color-accent);
-  color: #0b0b0f;
+  background: var(--accent);
+  color: oklch(20% 0.05 128);
 }
 
-/* Scrollbar */
+/* Keyboard-only focus rings — intentional, accent-colored, offset */
+:focus {
+  outline: none;
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Scrollbar — paper-tone */
 *::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -77,43 +242,112 @@ button {
   background: transparent;
 }
 *::-webkit-scrollbar-thumb {
-  background: var(--color-border-strong);
+  background: color-mix(in oklab, var(--border-strong) 60%, transparent);
   border-radius: 999px;
-  border: 2px solid var(--color-background);
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: #3a3a48;
+  background: var(--border-strong);
+  background-clip: padding-box;
+  border: 2px solid transparent;
 }
 
-/* Fine grain noise overlay for premium feel */
-.noise-overlay {
+/* ————————————————————————————————————————————————————————
+   Paper texture — subtle grain, mixes into surface in light only
+   ———————————————————————————————————————————————————————— */
+
+.paper-grain {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.035;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.7'/></svg>");
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.65'/></svg>");
 }
 
-/* Elevated panel */
+html[data-theme="dark"] .paper-grain {
+  opacity: 0.06;
+  mix-blend-mode: screen;
+}
+
+/* Invert the mono logo in dark mode so the black silhouette reads as light. */
+.logo-invert {
+  transition: filter 200ms ease;
+}
+html[data-theme="dark"] .logo-invert {
+  filter: invert(1);
+}
+
+/* ————————————————————————————————————————————————————————
+   Panel — crisp surface with paper shadow, container-query aware
+   ———————————————————————————————————————————————————————— */
+
 .panel {
-  background: color-mix(in oklab, var(--color-surface) 92%, transparent);
-  border: 1px solid var(--color-border);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(14px);
+  container-type: inline-size;
+  transition:
+    box-shadow 400ms var(--ease-out-soft),
+    border-color 260ms ease;
 }
 
-.panel-2 {
-  background: var(--color-surface-2);
-  border: 1px solid var(--color-border);
+@media (hover: hover) {
+  .panel:hover {
+    box-shadow: var(--shadow-lift);
+  }
+}
+
+.panel-inset {
+  background: color-mix(in oklab, var(--surface-2) 82%, transparent);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
 }
 
-.ring-focus {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+/* Utility — editorial serif numerals. Use on stats, durations, filesizes.
+   This is the one flourish that separates this from every other AI tool. */
+.tnum-serif {
+  font-family: var(--font-serif), ui-serif, Georgia, serif;
+  font-weight: 500;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  letter-spacing: -0.01em;
+}
+
+.ital-label {
+  font-family: var(--font-serif), ui-serif, Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* Display font on masthead and big numbers. */
+.display {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "ss01", "ss02";
+  letter-spacing: -0.015em;
+}
+
+/* ————————————————————————————————————————————————————————
+   Motion — entrance stagger, reduced-motion aware
+   ———————————————————————————————————————————————————————— */
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-rise {
+  animation: fade-rise 500ms var(--ease-out-expo) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
 }
 
 @keyframes spin-slow {
@@ -128,7 +362,7 @@ button {
 @keyframes pulse-dot {
   0%,
   100% {
-    opacity: 0.6;
+    opacity: 0.55;
     transform: scale(1);
   }
   50% {
@@ -140,26 +374,64 @@ button {
   animation: pulse-dot 1.4s ease-in-out infinite;
 }
 
+@keyframes accent-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 8px 22px -12px var(--accent-glow),
+      0 0 0 1px color-mix(in oklab, var(--accent-ink) 8%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 14px 32px -12px var(--accent-glow),
+      0 0 0 1px color-mix(in oklab, var(--accent-ink) 16%, transparent);
+  }
+}
+.accent-pulse {
+  animation: accent-pulse 3.4s ease-in-out infinite;
+}
+
 @keyframes shimmer {
   0% {
-    background-position: -1000px 0;
+    background-position: -600px 0;
   }
   100% {
-    background-position: 1000px 0;
+    background-position: 600px 0;
   }
 }
 .shimmer {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.06) 50%,
+    color-mix(in oklab, var(--fg) 6%, transparent) 50%,
     transparent 100%
   );
-  background-size: 1000px 100%;
-  animation: shimmer 1.8s linear infinite;
+  background-size: 600px 100%;
+  animation: shimmer 1.6s linear infinite;
 }
 
-/* Tailwind base tweaks */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .fade-rise {
+    animation: fade-rise 0.001ms both;
+  }
+}
+
 .text-balance {
   text-wrap: balance;
+}
+.text-pretty {
+  text-wrap: pretty;
+}
+
+/* Logos shipped as dark-on-transparent PNGs read wrong on dark mode.
+   Invert + subtle hue-rotate keeps brand feel instead of pure white. */
+html[data-theme="dark"] .logo-invert {
+  filter: invert(1) hue-rotate(180deg) saturate(0.9) brightness(0.95);
 }

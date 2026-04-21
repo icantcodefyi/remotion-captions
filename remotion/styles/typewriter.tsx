@@ -46,7 +46,8 @@ export const TypewriterStyle: React.FC<CaptionStyleProps> = ({ page, options }) 
         display: "flex",
         alignItems: "center",
         ...positionStyles(options.position),
-        padding: "0 10%",
+        paddingLeft: "10%",
+        paddingRight: "10%",
       }}
     >
       <div
