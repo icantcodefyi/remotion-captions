@@ -28,6 +28,12 @@ import { getVideoMetaFromFile, type VideoMeta } from "@/lib/video-meta";
 import { downloadSrt, downloadJson } from "@/lib/export";
 import { useDeepgramKey, DEEPGRAM_KEY_HEADER } from "@/lib/api-key";
 import {
+  deriveBreaks,
+  joinCaptions,
+  stripForAlignment,
+  useDelimiter,
+} from "@/lib/delimiter";
+import {
   CAPTION_STYLES,
   DEFAULT_STYLE_OPTIONS,
   type CaptionStyleId,
@@ -39,17 +45,22 @@ const FPS = 30;
 
 type JobStatus = "idle" | "running" | "ready" | "error";
 type RightTab = "style" | "edit";
+type GenerationMode = "align" | "transcribe";
 
 export function StudioPage() {
   const [file, setFile] = React.useState<File | null>(null);
   const [videoMeta, setVideoMeta] = React.useState<VideoMeta | null>(null);
   const [script, setScript] = React.useState("");
   const [captions, setCaptions] = React.useState<Caption[] | null>(null);
+  const [breaks, setBreaks] = React.useState<number[]>([]);
   const [status, setStatus] = React.useState<JobStatus>("idle");
+  const [generationMode, setGenerationMode] =
+    React.useState<GenerationMode>("transcribe");
   const [styleId, setStyleId] = React.useState<CaptionStyleId>("tiktok");
   const [styleOptions, setStyleOptions] = React.useState<StyleOptions>(
     DEFAULT_STYLE_OPTIONS,
   );
+  const [delimiter, setDelimiterId] = useDelimiter();
   const [deepgramKey, setDeepgramKey] = useDeepgramKey();
   const [keyDialogOpen, setKeyDialogOpen] = React.useState(false);
   const [exportDialogOpen, setExportDialogOpen] = React.useState(false);
@@ -84,10 +95,27 @@ export function StudioPage() {
     };
   }, [file]);
 
+  // Rejoin the transcript when the delimiter changes, but only if the current
+  // script is still the canonical form of the previous delimiter (i.e. the user
+  // hasn't started editing). Preserves edits across delimiter switches.
+  const prevDelimiterRef = React.useRef(delimiter);
+  React.useEffect(() => {
+    const prev = prevDelimiterRef.current;
+    prevDelimiterRef.current = delimiter;
+    if (prev.id === delimiter.id) return;
+    if (!captions || captions.length === 0) return;
+    const prevCanonical = joinCaptions(captions, prev, breaks);
+    if (script === prevCanonical) {
+      setScript(joinCaptions(captions, delimiter, breaks));
+    }
+  }, [delimiter, captions, breaks, script]);
+
   const handleFileChange = (next: File | null) => {
     setFile(next);
     setVideoMeta(null);
     setCaptions(null);
+    setBreaks([]);
+    setScript("");
     setStatus("idle");
   };
 
@@ -104,43 +132,79 @@ export function StudioPage() {
   const canGenerate = Boolean(file && videoMeta) && status !== "running";
   const hasCaptions = Boolean(captions && captions.length > 0);
 
-  const generate = React.useCallback(async () => {
-    if (!file) return;
-    if (!deepgramKey) {
-      setKeyDialogOpen(true);
-      return;
-    }
-    const useScript = script.trim().length > 0;
-    setStatus("running");
-    const form = new FormData();
-    form.append("file", file);
-    if (useScript) form.append("script", script);
-
-    const endpoint = useScript ? "/api/align" : "/api/transcribe";
-    try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        body: form,
-        headers: { [DEEPGRAM_KEY_HEADER]: deepgramKey },
-      });
-      const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.error ?? "Unexpected error");
+  const runAlignment = React.useCallback(
+    async ({
+      useScript,
+      reAlign,
+    }: {
+      useScript: boolean;
+      reAlign: boolean;
+    }) => {
+      if (!file) return;
+      if (!deepgramKey) {
+        setKeyDialogOpen(true);
+        return;
       }
-      setCaptions(json.captions);
-      setStatus("ready");
-      toast.success(
-        useScript
-          ? `Aligned ${json.wordCount} words to your script`
-          : `Captions generated`,
-      );
-    } catch (err) {
-      setStatus("error");
-      const message =
-        err instanceof Error ? err.message : "Something went wrong.";
-      toast.error("Couldn't generate captions", { description: message });
-    }
-  }, [file, script, deepgramKey]);
+      const trimmed = script.trim();
+      const endpoint = useScript ? "/api/align" : "/api/transcribe";
+      setStatus("running");
+
+      const form = new FormData();
+      form.append("file", file);
+      if (useScript) {
+        form.append("script", stripForAlignment(trimmed, delimiter));
+      }
+
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          body: form,
+          headers: { [DEEPGRAM_KEY_HEADER]: deepgramKey },
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          throw new Error(json.error ?? "Unexpected error");
+        }
+        const next: Caption[] = json.captions;
+        const nextBreaks =
+          useScript && delimiter.hardBreak
+            ? deriveBreaks(trimmed, delimiter)
+            : [];
+        setCaptions(next);
+        setGenerationMode(useScript ? "align" : "transcribe");
+        setScript(joinCaptions(next, delimiter, nextBreaks));
+        setBreaks(nextBreaks);
+        setStatus("ready");
+        const count: number = json.wordCount ?? next.length;
+        toast.success(
+          reAlign
+            ? `Re-aligned ${count} words`
+            : useScript
+              ? `Aligned ${count} words to your script`
+              : `Captions generated`,
+        );
+      } catch (err) {
+        setStatus("error");
+        const message =
+          err instanceof Error ? err.message : "Something went wrong.";
+        toast.error(
+          reAlign ? "Couldn't re-align" : "Couldn't generate captions",
+          { description: message },
+        );
+      }
+    },
+    [file, script, deepgramKey, delimiter],
+  );
+
+  const generate = React.useCallback(() => {
+    const useScript = script.trim().length > 0;
+    void runAlignment({ useScript, reAlign: false });
+  }, [runAlignment, script]);
+
+  const reAlign = React.useCallback(() => {
+    if (script.trim().length === 0) return;
+    void runAlignment({ useScript: true, reAlign: true });
+  }, [runAlignment, script]);
 
   const baseName = file ? file.name.replace(/\.[^.]+$/, "") : "captions";
 
@@ -209,7 +273,7 @@ export function StudioPage() {
           "md:[grid-template-rows:auto_minmax(0,1fr)]",
           "md:[grid-template-areas:'source_preview''style_preview']",
           "md:gap-5 md:px-5 md:pb-5",
-          "lg:[grid-template-columns:320px_minmax(0,1fr)_340px]",
+          "lg:[grid-template-columns:340px_minmax(0,1fr)_340px]",
           "lg:[grid-template-rows:minmax(0,1fr)]",
           "lg:[grid-template-areas:'source_preview_style']",
         )}
@@ -236,42 +300,60 @@ export function StudioPage() {
           <ScriptInput
             script={script}
             onScriptChange={setScript}
+            captions={captions}
+            breaks={breaks}
+            delimiter={delimiter}
+            onDelimiterChange={setDelimiterId}
+            onReAlign={reAlign}
+            isAligning={status === "running" && hasCaptions}
+            generationMode={generationMode}
             disabled={status === "running"}
           />
 
-          <Button
-            onClick={generate}
-            disabled={!canGenerate}
-            size="lg"
-            className={cn(
-              "w-full mt-1",
-              canGenerate && !hasCaptions && "accent-pulse",
-            )}
-          >
-            {status === "running" ? (
-              <>
-                <span className="h-3 w-3 rounded-full border-2 border-[color:var(--accent-deep)]/20 border-t-[color:var(--accent-deep)] spin-slow" />
-                Generating…
-              </>
-            ) : hasCaptions ? (
-              <>
-                <RotateCcw className="h-4 w-4" />
-                Run again
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4" />
-                Generate captions
-              </>
-            )}
-          </Button>
-
-          {hasCaptions ? (
-            <CaptionSummary
-              captions={captions!}
-              mode={script.trim().length > 0 ? "Aligned" : "Transcribed"}
-            />
-          ) : null}
+          {!hasCaptions ? (
+            <Button
+              onClick={generate}
+              disabled={!canGenerate}
+              size="lg"
+              className={cn(
+                "w-full mt-1",
+                canGenerate && "accent-pulse",
+              )}
+            >
+              {status === "running" ? (
+                <>
+                  <span className="h-3 w-3 rounded-full border-2 border-[color:var(--accent-deep)]/20 border-t-[color:var(--accent-deep)] spin-slow" />
+                  Generating…
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4" />
+                  Generate captions
+                </>
+              )}
+            </Button>
+          ) : (
+            <Button
+              onClick={generate}
+              disabled={!canGenerate}
+              variant="secondary"
+              size="sm"
+              className="w-full"
+              title="Regenerate from scratch (discards current captions)"
+            >
+              {status === "running" && !hasCaptions ? (
+                <>
+                  <span className="h-3 w-3 rounded-full border-2 border-[color:var(--accent-deep)]/20 border-t-[color:var(--accent-deep)] spin-slow" />
+                  Generating…
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Start over
+                </>
+              )}
+            </Button>
+          )}
         </aside>
 
         <section
@@ -380,6 +462,7 @@ export function StudioPage() {
               durationMs={totalDurationSec * 1000}
               fps={FPS}
               wordsPerPage={styleOptions.wordsPerPage}
+              forcedBreaks={breaks.length > 0 ? breaks : null}
             />
           )}
         </aside>
@@ -496,55 +579,3 @@ const Header: React.FC<{
     </header>
   );
 };
-
-const CaptionSummary: React.FC<{
-  captions: Caption[];
-  mode: string;
-}> = ({ captions, mode }) => {
-  const totalMs = captions[captions.length - 1]?.endMs ?? 0;
-  const totalSec = (totalMs / 1000).toFixed(1);
-  return (
-    <div
-      className="rounded-xl p-3 fade-rise"
-      style={{
-        background: "var(--surface-2)",
-        border: "1px solid var(--border)",
-      }}
-    >
-      <div className="flex items-center justify-between">
-        <SectionLabel>Transcript</SectionLabel>
-        <span
-          className="text-[0.625rem] uppercase tracking-[0.16em] font-semibold px-2 py-0.5 rounded-full"
-          style={{
-            color: "var(--accent-ink)",
-            background: "var(--accent-soft)",
-            border: "1px solid var(--accent-edge)",
-          }}
-        >
-          {mode}
-        </span>
-      </div>
-      <div className="mt-2.5 grid grid-cols-2 gap-2">
-        <Stat label="Words" value={captions.length.toString()} />
-        <Stat label="Span" value={`${totalSec}s`} />
-      </div>
-    </div>
-  );
-};
-
-const Stat: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-  <div
-    className="rounded-md px-3 py-2"
-    style={{
-      background: "var(--surface-1)",
-      border: "1px solid var(--border)",
-    }}
-  >
-    <div className="ital-label text-[0.7rem] normal-case tracking-normal text-[color:var(--muted)]">
-      {label}
-    </div>
-    <div className="tnum-serif text-[1.0625rem] mt-0.5 text-[color:var(--fg)]">
-      {value}
-    </div>
-  </div>
-);

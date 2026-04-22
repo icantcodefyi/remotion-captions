@@ -10,6 +10,45 @@ export type CaptionPage = {
 };
 
 /**
+ * Build pages from explicit post-word break indices. A break at index `k`
+ * means: end a page after caption[k]. The final page runs to the last caption.
+ * Returns empty when no captions are provided; falls back to a single page
+ * when no breaks are given.
+ */
+export function buildPagesFromBreaks(
+  captions: Caption[],
+  breakIndices: number[],
+): CaptionPage[] {
+  if (captions.length === 0) return [];
+  const boundaries = Array.from(
+    new Set(breakIndices.filter((i) => i >= 0 && i < captions.length - 1)),
+  ).sort((a, b) => a - b);
+  const pages: CaptionPage[] = [];
+  let start = 0;
+  const tailMs = (captions[captions.length - 1]?.endMs ?? 0) + 500;
+  for (let b = 0; b <= boundaries.length; b++) {
+    const end = b < boundaries.length ? boundaries[b] : captions.length - 1;
+    const slice = captions.slice(start, end + 1);
+    if (slice.length === 0) {
+      start = end + 1;
+      continue;
+    }
+    const startMs = slice[0].startMs;
+    const pageEndMs = slice[slice.length - 1].endMs;
+    const nextStart = end + 1 < captions.length ? captions[end + 1].startMs : tailMs;
+    pages.push({
+      text: slice.map((c) => c.text).join(" "),
+      startMs,
+      endMs: Math.min(nextStart, pageEndMs + 300),
+      startIndex: start,
+      endIndex: end,
+    });
+    start = end + 1;
+  }
+  return pages;
+}
+
+/**
  * Group word-level captions into on-screen pages using the same combine
  * heuristic as the Remotion renderer. Each page's `endMs` matches the
  * visible window — `min(nextPage.startMs, startMs + max(durationMs, combineMs))`.

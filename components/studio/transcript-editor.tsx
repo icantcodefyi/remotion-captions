@@ -18,7 +18,12 @@ import { cn } from "@/lib/cn";
 import { SectionLabel } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { formatTimestamp } from "@/lib/caption-edits";
-import { buildPages, redistributePage, type CaptionPage } from "@/lib/caption-pages";
+import {
+  buildPages,
+  buildPagesFromBreaks,
+  redistributePage,
+  type CaptionPage,
+} from "@/lib/caption-pages";
 import { extractPeaks, type WaveformPeaks } from "@/lib/waveform";
 import { TranscriptWaveform } from "./transcript-waveform";
 
@@ -30,6 +35,8 @@ type Props = {
   durationMs: number;
   fps: number;
   wordsPerPage: number;
+  /** Explicit page boundaries derived from a hard-break delimiter in the script. */
+  forcedBreaks?: number[] | null;
 };
 
 const UNDO_LIMIT = 50;
@@ -43,6 +50,7 @@ export const TranscriptEditor: FC<Props> = ({
   durationMs,
   fps,
   wordsPerPage,
+  forcedBreaks,
 }) => {
   const [peaksFor, setPeaksFor] = useState<File | null>(null);
   const [peaks, setPeaks] = useState<WaveformPeaks | null>(null);
@@ -59,8 +67,11 @@ export const TranscriptEditor: FC<Props> = ({
   }, [captions]);
 
   const pages = useMemo<CaptionPage[]>(
-    () => buildPages(captions, wordsPerPage),
-    [captions, wordsPerPage],
+    () =>
+      forcedBreaks && forcedBreaks.length > 0
+        ? buildPagesFromBreaks(captions, forcedBreaks)
+        : buildPages(captions, wordsPerPage),
+    [captions, wordsPerPage, forcedBreaks],
   );
 
   const activePageIndex = useMemo(() => {
