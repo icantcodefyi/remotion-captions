@@ -27,15 +27,17 @@ export const LoadingPreview: FC<Props> = ({ mode }) => {
       aria-live="polite"
     >
       <div className="max-w-[28rem] flex flex-col items-center">
-        <img
-          src="/cat-loader.gif"
-          alt=""
-          aria-hidden
-          width={200}
-          height={150}
-          className="mb-3 h-auto w-[200px] select-none"
-          draggable={false}
-        />
+        <div className="mb-3 rounded-2xl bg-white p-2 shadow-sm ring-1 ring-black/5">
+          <img
+            src="/cat-loader.gif"
+            alt=""
+            aria-hidden
+            width={200}
+            height={150}
+            className="block h-auto w-[200px] select-none rounded-xl"
+            draggable={false}
+          />
+        </div>
         <div className="text-[0.9375rem] font-semibold text-[color:var(--fg)]">
           {message}
         </div>

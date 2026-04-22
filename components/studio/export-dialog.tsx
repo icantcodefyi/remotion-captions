@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC, useEffect, useMemo, useRef, useState } from "react";
+import { type FC, useEffect, useRef, useState } from "react";
 import {
   Download,
   FileCode2,
@@ -61,10 +61,16 @@ export const ExportDialog: FC<Props> = ({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  const supported = useMemo(() => getSupportedExportFormats(), []);
-  const [format, setFormat] = useState<ExportFormat>(
-    supported.includes("mp4") ? "mp4" : supported[0] ?? "webm",
-  );
+  const [supported, setSupported] = useState<ExportFormat[]>([]);
+  const [format, setFormat] = useState<ExportFormat>("mp4");
+
+  useEffect(() => {
+    const next = getSupportedExportFormats();
+    setSupported(next);
+    setFormat((current) =>
+      next.includes(current) ? current : next.includes("mp4") ? "mp4" : next[0] ?? "webm",
+    );
+  }, []);
   const [quality, setQuality] = useState<ExportQuality>("high");
   const [isExporting, setIsExporting] = useState(false);
   const [progress, setProgress] = useState(0);

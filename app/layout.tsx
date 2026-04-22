@@ -6,9 +6,20 @@ import {
   Spectral,
   JetBrains_Mono,
 } from "next/font/google";
+import Script from "next/script";
 import { Toaster } from "sonner";
 import "./globals.css";
 import { absoluteUrl, siteConfig } from "@/lib/site";
+
+const themeInitScript = `(function(){
+  try {
+    var stored = localStorage.getItem('meowcap-theme');
+    var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.dataset.theme = theme;
+  } catch (e) {
+    document.documentElement.dataset.theme = 'light';
+  }
+})();`;
 
 const display = Bricolage_Grotesque({
   variable: "--font-display",
@@ -98,21 +109,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function(){
-                try {
-                  var stored = localStorage.getItem('meowcap-theme');
-                  var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-                  document.documentElement.dataset.theme = theme;
-                } catch (e) {
-                  document.documentElement.dataset.theme = 'light';
-                }
-              })();
-            `,
-          }}
-        />
+        <Script id="theme-init" strategy="beforeInteractive">
+          {themeInitScript}
+        </Script>
       </head>
       <body>
         <div className="paper-grain" aria-hidden />

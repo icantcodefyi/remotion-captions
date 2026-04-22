@@ -32,15 +32,6 @@ export const ScriptInput: FC<Props> = ({
           <span className="text-[0.7rem] text-[color:var(--muted)] ital-label">
             matched to your video
           </span>
-          <Link
-            href={getBlogHref(
-              "/blog/animated-captions-for-short-form-video",
-              "script_alignment_hint",
-            )}
-            className="text-[0.7rem] font-semibold text-[color:var(--accent-ink)]"
-          >
-            Workflow guide
-          </Link>
         </div>
       </div>
       <Textarea
