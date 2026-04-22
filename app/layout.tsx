@@ -6,7 +6,6 @@ import {
   Spectral,
   JetBrains_Mono,
 } from "next/font/google";
-import Script from "next/script";
 import { Toaster } from "sonner";
 import "./globals.css";
 import { absoluteUrl, siteConfig } from "@/lib/site";
@@ -109,9 +108,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <Script id="theme-init" strategy="beforeInteractive">
-          {themeInitScript}
-        </Script>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
         <div className="paper-grain" aria-hidden />
