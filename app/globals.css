@@ -351,6 +351,21 @@ html[data-theme="dark"] .logo-invert {
   animation-delay: calc(var(--i, 0) * 70ms);
 }
 
+@keyframes banner-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(16px, -8px, 0) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.banner-enter {
+  animation: banner-enter 380ms var(--ease-out-expo) both;
+}
+
 @keyframes spin-slow {
   to {
     transform: rotate(360deg);
