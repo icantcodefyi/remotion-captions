@@ -37,6 +37,9 @@ export function getSiteUrl() {
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : undefined,
     process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
+    process.env.RAILWAY_PUBLIC_DOMAIN
+      ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+      : undefined,
     "http://localhost:3000",
   ];
 
