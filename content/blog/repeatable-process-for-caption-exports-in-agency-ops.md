@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/client-approval-workflow-for-video-captions"
   - "/blog/manage-caption-presets-across-brands"
   - "/blog/podcast-clips-to-social-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 An agency lead, producer, or client services editor usually run into the same issue with repeatable process for caption exports in agency ops: teams handling repeatable process for caption exports in agency ops often create rework when multiple reviewers touch caption wording, styling, and approvals without one clear system. What works best for repeatable process for caption exports in agency ops inside repeatable caption operations for agencies and teams managing multiple brands at once. is a workflow that starts with timing, keeps the wording editable, and makes repeatable process for caption exports in agency ops reusable in the finished subtitle layer.

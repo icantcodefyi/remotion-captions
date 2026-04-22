@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/youtube-shorts-caption-workflow"
   - "/blog/script-alignment-for-video-captions"
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 A creator, editor, or in-house social lead usually run into the same issue with launch video subtitles for creator led brands: teams handling launch video subtitles for creator led brands often lose time when caption timing, copy cleanup, and export happen in separate tools. What works best for launch video subtitles for creator led brands inside caption systems for creators, editors, and social teams shipping short-form video fast. is a workflow that starts with timing, keeps the wording editable, and makes launch video subtitles for creator led brands reusable in the finished subtitle layer.

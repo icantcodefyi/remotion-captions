@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/caption-workflow-for-interview-clips"
   - "/blog/caption-workflow-for-podcast-trailers"
   - "/blog/how-to-add-captions-to-instagram-reels"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 If you are a podcast producer or social editor repackaging episodes for Reels, raw conversational audio creates cluttered subtitles unless the text is edited and paced for quick viewing. For how to turn podcast clips into instagram reels, the cleaner path is to keep timing, approved wording, and style choices connected so the caption pass supports the edit instead of slowing it down.

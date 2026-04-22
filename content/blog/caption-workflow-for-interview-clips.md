@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/edit-podcast-transcripts-for-social-clips"
   - "/blog/caption-workflow-for-podcast-trailers"
   - "/blog/how-to-make-video-captions-easier-to-read"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 An editor, producer, or marketer packaging interview clips usually run into the same issue with caption workflow for interview clips: long answers become difficult to follow when captions mirror every spoken turn without editorial shaping. What works best for guest interviews, customer conversations, and founder Q&A moments cut into shorter assets is a workflow that starts with timing, keeps the wording editable, and makes caption workflow for interview clips reusable in the finished subtitle layer.

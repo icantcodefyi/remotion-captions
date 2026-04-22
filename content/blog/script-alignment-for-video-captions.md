@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/youtube-shorts-caption-workflow"
   - "/blog/tiktok-captions-workflow"
   - "/blog/podcast-clips-to-social-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 An editor or producer cleaning up subtitles before publish usually run into the same issue with script alignment for video captions: manual transcript edits often break timing or create a second version of the words that no longer matches the audio rhythm. What works best for marketing clips, demos, and interviews where the approved copy reads cleaner than the raw take is a workflow that starts with timing, keeps the wording editable, and makes script alignment for video captions reusable in the finished subtitle layer.

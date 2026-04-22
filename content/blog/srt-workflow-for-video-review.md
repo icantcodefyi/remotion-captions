@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/transcripts-vs-subtitles-for-marketing-videos"
   - "/blog/subtitle-handoff-for-accessibility-review"
   - "/blog/script-alignment-for-video-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 If you are an editor, producer, or reviewer passing subtitle files through a video workflow, subtitle exports create confusion when the team does not know whether the file is for review, reuse, or final delivery. For srt workflow for video review, the cleaner path is to keep timing, approved wording, and style choices connected so the caption pass supports the edit instead of slowing it down.

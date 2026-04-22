@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/client-approval-workflow-for-video-captions"
   - "/blog/manage-caption-presets-across-brands"
   - "/blog/animated-captions-for-short-form-video"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 If you are an agency lead, producer, or client services editor, teams handling how agencies handle cross functional social reviews for agency producers for reusable operating procedures often create rework when multiple reviewers touch caption wording, styling, and approvals without one clear system. For how agencies handle cross functional social reviews for agency producers for reusable operating procedures, the cleaner path is to keep timing, approved wording, and style choices connected so the caption pass supports the edit instead of slowing it down.

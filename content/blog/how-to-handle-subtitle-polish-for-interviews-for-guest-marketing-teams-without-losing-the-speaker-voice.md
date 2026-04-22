@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/edit-podcast-transcripts-for-social-clips"
   - "/blog/caption-workflow-for-interview-clips"
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 For a podcast producer, social editor, or repurposing lead, how to handle subtitle polish for interviews for guest marketing teams without losing the speaker voice often looks simple until teams handling how to handle subtitle polish for interviews for guest marketing teams without losing the speaker voice often lose momentum when long-form source material has to be reshaped for short-form viewing under deadline. A repeatable repurposing workflow for how to handle subtitle polish for interviews for guest marketing teams without losing the speaker voice gets easier when the transcript, caption copy, and export handoff stay inside one working loop.

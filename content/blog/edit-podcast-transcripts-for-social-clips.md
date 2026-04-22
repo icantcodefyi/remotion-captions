@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/caption-workflow-for-interview-clips"
   - "/blog/caption-workflow-for-podcast-trailers"
   - "/blog/script-alignment-for-video-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 If you are a producer or editor preparing podcast transcripts for short-form clips, verbatim transcripts often carry filler, repeated starts, and loose phrasing that makes subtitle reading harder. For edit podcast transcripts for social clips, the cleaner path is to keep timing, approved wording, and style choices connected so the caption pass supports the edit instead of slowing it down.

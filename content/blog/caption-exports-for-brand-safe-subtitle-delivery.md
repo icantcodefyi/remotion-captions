@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/client-approval-workflow-for-video-captions"
   - "/blog/manage-caption-presets-across-brands"
   - "/blog/podcast-clips-to-social-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 For an agency lead, producer, or client services editor, caption exports for brand safe subtitle delivery often looks simple until teams handling caption exports for brand safe subtitle delivery often create rework when multiple reviewers touch caption wording, styling, and approvals without one clear system. A steadier review and production system for caption exports for brand safe subtitle delivery gets easier when the transcript, caption copy, and export handoff stay inside one working loop.

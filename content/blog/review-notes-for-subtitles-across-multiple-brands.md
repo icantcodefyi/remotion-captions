@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/client-approval-workflow-for-video-captions"
   - "/blog/manage-caption-presets-across-brands"
   - "/blog/podcast-clips-to-social-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 An agency lead, producer, or client services editor usually run into the same issue with review notes for subtitles across multiple brands: teams handling review notes for subtitles across multiple brands often create rework when multiple reviewers touch caption wording, styling, and approvals without one clear system. What works best for review notes for subtitles across multiple brands inside repeatable caption operations for agencies and teams managing multiple brands at once. is a workflow that starts with timing, keeps the wording editable, and makes review notes for subtitles across multiple brands reusable in the finished subtitle layer.

@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/youtube-shorts-caption-workflow"
   - "/blog/script-alignment-for-video-captions"
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 A creator, editor, or in-house social lead usually run into the same issue with caption batching for fast moving content teams: teams handling caption batching for fast moving content teams often lose time when caption timing, copy cleanup, and export happen in separate tools. What works best for caption batching for fast moving content teams inside caption systems for creators, editors, and social teams shipping short-form video fast. is a workflow that starts with timing, keeps the wording editable, and makes caption batching for fast moving content teams reusable in the finished subtitle layer.

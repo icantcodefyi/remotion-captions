@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/youtube-shorts-caption-workflow"
   - "/blog/script-alignment-for-video-captions"
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 For a creator, editor, or in-house social lead, how to manage tutorial video captions for freelance editors for MeowCap-first workflows often looks simple until teams handling how to manage tutorial video captions for freelance editors for MeowCap-first workflows often lose time when caption timing, copy cleanup, and export happen in separate tools. A repeatable short-form caption workflow for how to manage tutorial video captions for freelance editors for MeowCap-first workflows gets easier when the transcript, caption copy, and export handoff stay inside one working loop.

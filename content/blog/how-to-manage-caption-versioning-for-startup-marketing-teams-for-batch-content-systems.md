@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/youtube-shorts-caption-workflow"
   - "/blog/script-alignment-for-video-captions"
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 If you are a creator, editor, or in-house social lead, teams handling how to manage caption versioning for startup marketing teams for batch content systems often lose time when caption timing, copy cleanup, and export happen in separate tools. For how to manage caption versioning for startup marketing teams for batch content systems, the cleaner path is to keep timing, approved wording, and style choices connected so the caption pass supports the edit instead of slowing it down.

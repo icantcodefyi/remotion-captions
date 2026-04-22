@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/client-approval-workflow-for-video-captions"
   - "/blog/manage-caption-presets-across-brands"
   - "/blog/animated-captions-for-short-form-video"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 For an agency lead, producer, or client services editor, how agencies handle cross functional social reviews for multi-brand studios without creating revision loops often looks simple until teams handling how agencies handle cross functional social reviews for multi-brand studios without creating revision loops often create rework when multiple reviewers touch caption wording, styling, and approvals without one clear system. A steadier review and production system for how agencies handle cross functional social reviews for multi-brand studios without creating revision loops gets easier when the transcript, caption copy, and export handoff stay inside one working loop.

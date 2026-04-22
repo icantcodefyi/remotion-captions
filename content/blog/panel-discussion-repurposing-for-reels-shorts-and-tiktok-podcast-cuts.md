@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/edit-podcast-transcripts-for-social-clips"
   - "/blog/caption-workflow-for-interview-clips"
   - "/blog/brand-consistent-caption-styles"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 A podcast producer, social editor, or repurposing lead usually run into the same issue with panel discussion repurposing for reels shorts and tiktok podcast cuts: teams handling panel discussion repurposing for reels shorts and tiktok podcast cuts often lose momentum when long-form source material has to be reshaped for short-form viewing under deadline. What works best for panel discussion repurposing for reels shorts and tiktok podcast cuts inside clip workflows for podcasts and interviews moving into shorts, reels, and tiktok. is a workflow that starts with timing, keeps the wording editable, and makes panel discussion repurposing for reels shorts and tiktok podcast cuts reusable in the finished subtitle layer.

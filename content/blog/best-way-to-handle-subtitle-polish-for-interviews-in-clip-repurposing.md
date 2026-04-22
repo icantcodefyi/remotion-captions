@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/edit-podcast-transcripts-for-social-clips"
   - "/blog/caption-workflow-for-interview-clips"
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 A podcast producer, social editor, or repurposing lead usually run into the same issue with best way to handle subtitle polish for interviews in clip repurposing: teams handling best way to handle subtitle polish for interviews in clip repurposing often lose momentum when long-form source material has to be reshaped for short-form viewing under deadline. What works best for best way to handle subtitle polish for interviews in clip repurposing inside clip workflows for podcasts and interviews moving into shorts, reels, and tiktok. is a workflow that starts with timing, keeps the wording editable, and makes best way to handle subtitle polish for interviews in clip repurposing reusable in the finished subtitle layer.

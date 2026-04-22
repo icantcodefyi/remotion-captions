@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/client-approval-workflow-for-video-captions"
   - "/blog/manage-caption-presets-across-brands"
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 An agency lead, producer, or client services editor usually run into the same issue with how to standardize franchise brand subtitles in agency caption systems: teams handling how to standardize franchise brand subtitles in agency caption systems often create rework when multiple reviewers touch caption wording, styling, and approvals without one clear system. What works best for how to standardize franchise brand subtitles in agency caption systems inside repeatable caption operations for agencies and teams managing multiple brands at once. is a workflow that starts with timing, keeps the wording editable, and makes how to standardize franchise brand subtitles in agency caption systems reusable in the finished subtitle layer.

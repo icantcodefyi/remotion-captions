@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/edit-podcast-transcripts-for-social-clips"
   - "/blog/caption-workflow-for-interview-clips"
   - "/blog/brand-consistent-caption-styles"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 For a podcast producer, social editor, or repurposing lead, guest teaser captions for reels shorts and tiktok podcast cuts often looks simple until teams handling guest teaser captions for reels shorts and tiktok podcast cuts often lose momentum when long-form source material has to be reshaped for short-form viewing under deadline. A repeatable repurposing workflow for guest teaser captions for reels shorts and tiktok podcast cuts gets easier when the transcript, caption copy, and export handoff stay inside one working loop.

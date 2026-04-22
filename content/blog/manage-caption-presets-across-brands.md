@@ -18,7 +18,7 @@ internalLinks:
   - "/blog/caption-style-guide-for-social-media-teams"
   - "/blog/client-approval-workflow-for-video-captions"
   - "/blog/caption-qa-workflow-for-agencies"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 If you are an agency operator or internal creative lead managing multiple brand voices, preset libraries become chaotic when there is no logic for which style belongs to which brand context. For manage caption presets across brands, the cleaner path is to keep timing, approved wording, and style choices connected so the caption pass supports the edit instead of slowing it down.

@@ -18,7 +18,7 @@ internalLinks:
   - "/blog/caption-style-guide-for-social-media-teams"
   - "/blog/manage-caption-presets-across-brands"
   - "/blog/caption-qa-workflow-for-agencies"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 If you are an agency team or in-house producer managing caption approvals, caption revisions expand when clients are not sure whether they are approving copy, timing, or the final styled delivery. For client approval workflow for video captions, the cleaner path is to keep timing, approved wording, and style choices connected so the caption pass supports the edit instead of slowing it down.

@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/script-alignment-for-video-captions"
   - "/blog/tiktok-captions-workflow"
   - "/blog/brand-consistent-caption-styles"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 A creator, editor, or social lead shipping Instagram Reels usually run into the same issue with how to add captions to instagram reels: caption work often gets redone after hook changes, copy edits, or format tweaks. What works best for short talking-head Reels, product demos, and quick founder updates is a workflow that starts with timing, keeps the wording editable, and makes how to add captions to instagram reels reusable in the finished subtitle layer.

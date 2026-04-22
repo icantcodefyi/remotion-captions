@@ -12,11 +12,7 @@ import {
   type BlogSection,
 } from "./posts-schema";
 
-const POSTS_DIRECTORY = path.join(
-  /*turbopackIgnore: true*/ process.cwd(),
-  "content",
-  "blog",
-);
+const POSTS_DIRECTORY = path.join(process.cwd(), "content", "blog");
 
 const clusters = clusterCollectionSchema.parse(clustersSource).clusters;
 const clusterMap = new Map(clusters.map((cluster) => [cluster.slug, cluster]));
@@ -221,14 +217,14 @@ function getHref(slug: string) {
 }
 
 function listPostFiles() {
-  return readdirSync(/*turbopackIgnore: true*/ POSTS_DIRECTORY)
+  return readdirSync(POSTS_DIRECTORY)
     .filter((file) => file.endsWith(".md"))
     .sort();
 }
 
 function readPostSource(slug: string) {
-  const filePath = path.join(/*turbopackIgnore: true*/ POSTS_DIRECTORY, `${slug}.md`);
-  const raw = readFileSync(/*turbopackIgnore: true*/ filePath, "utf8");
+  const filePath = path.join(POSTS_DIRECTORY, `${slug}.md`);
+  const raw = readFileSync(filePath, "utf8");
   return { filePath, raw };
 }
 

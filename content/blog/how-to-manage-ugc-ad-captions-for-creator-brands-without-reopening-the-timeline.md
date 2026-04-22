@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/youtube-shorts-caption-workflow"
   - "/blog/script-alignment-for-video-captions"
   - "/blog/brand-consistent-caption-styles"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 If you are a creator, editor, or in-house social lead, teams handling how to manage ugc ad captions for creator brands without reopening the timeline often lose time when caption timing, copy cleanup, and export happen in separate tools. For how to manage ugc ad captions for creator brands without reopening the timeline, the cleaner path is to keep timing, approved wording, and style choices connected so the caption pass supports the edit instead of slowing it down.

@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/script-alignment-for-video-captions"
   - "/blog/tiktok-captions-workflow"
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 If you are an editor or social producer packaging YouTube Shorts, short-form teams waste time when subtitle styling starts before the wording and pacing are settled. For youtube shorts caption workflow, the cleaner path is to keep timing, approved wording, and style choices connected so the caption pass supports the edit instead of slowing it down.

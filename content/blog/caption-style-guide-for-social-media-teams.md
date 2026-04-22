@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/manage-caption-presets-across-brands"
   - "/blog/caption-qa-workflow-for-agencies"
   - "/blog/animated-captions-for-short-form-video"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 For a social lead, agency operator, or editor documenting caption standards, caption style guide for social media teams often looks simple until caption consistency breaks when style choices live in taste instead of a system the whole team can apply. A style guide that helps editors make the same first-pass decisions without slowing down production gets easier when the transcript, caption copy, and export handoff stay inside one working loop.

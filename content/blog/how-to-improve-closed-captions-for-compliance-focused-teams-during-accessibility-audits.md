@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/transcripts-vs-subtitles-for-marketing-videos"
   - "/blog/srt-workflow-for-video-review"
   - "/blog/brand-consistent-caption-styles"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 For a video producer, marketer, or accessibility reviewer, how to improve closed captions for compliance-focused teams during accessibility audits often looks simple until teams responsible for how to improve closed captions for compliance-focused teams during accessibility audits often struggle when readability, transcript review, and delivery requirements get treated as the same step. A clearer caption and transcript delivery workflow for how to improve closed captions for compliance-focused teams during accessibility audits gets easier when the transcript, caption copy, and export handoff stay inside one working loop.

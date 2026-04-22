@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/transcripts-vs-subtitles-for-marketing-videos"
   - "/blog/srt-workflow-for-video-review"
   - "/blog/podcast-clips-to-social-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 For a video producer, marketer, or accessibility reviewer, legal review of subtitles for training and education videos often looks simple until teams responsible for legal review of subtitles for training and education videos often struggle when readability, transcript review, and delivery requirements get treated as the same step. A clearer caption and transcript delivery workflow for legal review of subtitles for training and education videos gets easier when the transcript, caption copy, and export handoff stay inside one working loop.

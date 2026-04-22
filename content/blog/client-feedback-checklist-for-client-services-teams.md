@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/client-approval-workflow-for-video-captions"
   - "/blog/manage-caption-presets-across-brands"
   - "/blog/animated-captions-for-short-form-video"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 For an agency lead, producer, or client services editor, client feedback checklist for client services teams often looks simple until teams handling client feedback checklist for client services teams often create rework when multiple reviewers touch caption wording, styling, and approvals without one clear system. A steadier review and production system for client feedback checklist for client services teams gets easier when the transcript, caption copy, and export handoff stay inside one working loop.

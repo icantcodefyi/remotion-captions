@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/edit-podcast-transcripts-for-social-clips"
   - "/blog/caption-workflow-for-interview-clips"
   - "/blog/brand-consistent-caption-styles"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 A podcast producer, social editor, or repurposing lead usually run into the same issue with how to handle episode highlight pacing for guest marketing teams when long answers need tightening: teams handling how to handle episode highlight pacing for guest marketing teams when long answers need tightening often lose momentum when long-form source material has to be reshaped for short-form viewing under deadline. What works best for how to handle episode highlight pacing for guest marketing teams when long answers need tightening inside clip workflows for podcasts and interviews moving into shorts, reels, and tiktok. is a workflow that starts with timing, keeps the wording editable, and makes how to handle episode highlight pacing for guest marketing teams when long answers need tightening reusable in the finished subtitle layer.

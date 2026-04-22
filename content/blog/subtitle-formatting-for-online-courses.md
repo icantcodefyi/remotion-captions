@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/transcripts-vs-subtitles-for-marketing-videos"
   - "/blog/srt-workflow-for-video-review"
   - "/blog/brand-consistent-caption-styles"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 If you are a video producer, marketer, or accessibility reviewer, teams responsible for subtitle formatting for online courses often struggle when readability, transcript review, and delivery requirements get treated as the same step. For subtitle formatting for online courses, the cleaner path is to keep timing, approved wording, and style choices connected so the caption pass supports the edit instead of slowing it down.

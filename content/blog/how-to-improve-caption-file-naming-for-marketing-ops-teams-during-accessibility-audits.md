@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/transcripts-vs-subtitles-for-marketing-videos"
   - "/blog/srt-workflow-for-video-review"
   - "/blog/animated-captions-for-short-form-video"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 A video producer, marketer, or accessibility reviewer usually run into the same issue with how to improve caption file naming for marketing ops teams during accessibility audits: teams responsible for how to improve caption file naming for marketing ops teams during accessibility audits often struggle when readability, transcript review, and delivery requirements get treated as the same step. What works best for how to improve caption file naming for marketing ops teams during accessibility audits inside accessible video text systems for teams balancing clarity, compliance, and distribution. is a workflow that starts with timing, keeps the wording editable, and makes how to improve caption file naming for marketing ops teams during accessibility audits reusable in the finished subtitle layer.

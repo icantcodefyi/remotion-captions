@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/youtube-shorts-caption-workflow"
   - "/blog/script-alignment-for-video-captions"
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 For a creator, editor, or in-house social lead, transcript cleanup without slowing down the edit often looks simple until teams handling transcript cleanup without slowing down the edit often lose time when caption timing, copy cleanup, and export happen in separate tools. A repeatable short-form caption workflow for transcript cleanup without slowing down the edit gets easier when the transcript, caption copy, and export handoff stay inside one working loop.

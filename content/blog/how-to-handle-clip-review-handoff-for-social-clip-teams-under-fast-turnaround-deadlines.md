@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/edit-podcast-transcripts-for-social-clips"
   - "/blog/caption-workflow-for-interview-clips"
   - "/blog/animated-captions-for-short-form-video"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 For a podcast producer, social editor, or repurposing lead, how to handle clip review handoff for social clip teams under fast turnaround deadlines often looks simple until teams handling how to handle clip review handoff for social clip teams under fast turnaround deadlines often lose momentum when long-form source material has to be reshaped for short-form viewing under deadline. A repeatable repurposing workflow for how to handle clip review handoff for social clip teams under fast turnaround deadlines gets easier when the transcript, caption copy, and export handoff stay inside one working loop.

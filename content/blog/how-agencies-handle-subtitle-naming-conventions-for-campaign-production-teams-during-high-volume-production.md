@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/client-approval-workflow-for-video-captions"
   - "/blog/manage-caption-presets-across-brands"
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 If you are an agency lead, producer, or client services editor, teams handling how agencies handle subtitle naming conventions for campaign production teams during high-volume production often create rework when multiple reviewers touch caption wording, styling, and approvals without one clear system. For how agencies handle subtitle naming conventions for campaign production teams during high-volume production, the cleaner path is to keep timing, approved wording, and style choices connected so the caption pass supports the edit instead of slowing it down.

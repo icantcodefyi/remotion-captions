@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/youtube-shorts-caption-workflow"
   - "/blog/script-alignment-for-video-captions"
   - "/blog/brand-consistent-caption-styles"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 A creator, editor, or in-house social lead usually run into the same issue with best way to manage founder video captions in vertical video: teams handling best way to manage founder video captions in vertical video often lose time when caption timing, copy cleanup, and export happen in separate tools. What works best for best way to manage founder video captions in vertical video inside caption systems for creators, editors, and social teams shipping short-form video fast. is a workflow that starts with timing, keeps the wording editable, and makes best way to manage founder video captions in vertical video reusable in the finished subtitle layer.

@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/edit-podcast-transcripts-for-social-clips"
   - "/blog/caption-workflow-for-interview-clips"
   - "/blog/brand-consistent-caption-styles"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 If you are a podcast producer, social editor, or repurposing lead, teams handling how to handle webinar cutdown captions for interview-heavy shows with cleaner transcript edits often lose momentum when long-form source material has to be reshaped for short-form viewing under deadline. For how to handle webinar cutdown captions for interview-heavy shows with cleaner transcript edits, the cleaner path is to keep timing, approved wording, and style choices connected so the caption pass supports the edit instead of slowing it down.

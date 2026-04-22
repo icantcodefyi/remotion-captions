@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/youtube-shorts-caption-workflow"
   - "/blog/script-alignment-for-video-captions"
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 For a creator, editor, or in-house social lead, caption export workflow for freelance editors often looks simple until teams handling caption export workflow for freelance editors often lose time when caption timing, copy cleanup, and export happen in separate tools. A repeatable short-form caption workflow for caption export workflow for freelance editors gets easier when the transcript, caption copy, and export handoff stay inside one working loop.

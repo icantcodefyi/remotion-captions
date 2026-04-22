@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/client-approval-workflow-for-video-captions"
   - "/blog/manage-caption-presets-across-brands"
   - "/blog/podcast-clips-to-social-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 An agency lead, producer, or client services editor usually run into the same issue with how agencies handle caption presets for ecommerce agencies for reusable operating procedures: teams handling how agencies handle caption presets for ecommerce agencies for reusable operating procedures often create rework when multiple reviewers touch caption wording, styling, and approvals without one clear system. What works best for how agencies handle caption presets for ecommerce agencies for reusable operating procedures inside repeatable caption operations for agencies and teams managing multiple brands at once. is a workflow that starts with timing, keeps the wording editable, and makes how agencies handle caption presets for ecommerce agencies for reusable operating procedures reusable in the finished subtitle layer.

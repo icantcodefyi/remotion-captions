@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/youtube-shorts-caption-workflow"
   - "/blog/script-alignment-for-video-captions"
   - "/blog/brand-consistent-caption-styles"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 A creator, editor, or in-house social lead usually run into the same issue with how to manage subtitle exports for creator brands during daily content production: teams handling how to manage subtitle exports for creator brands during daily content production often lose time when caption timing, copy cleanup, and export happen in separate tools. What works best for how to manage subtitle exports for creator brands during daily content production inside caption systems for creators, editors, and social teams shipping short-form video fast. is a workflow that starts with timing, keeps the wording editable, and makes how to manage subtitle exports for creator brands during daily content production reusable in the finished subtitle layer.

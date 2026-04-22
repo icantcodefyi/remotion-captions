@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/edit-podcast-transcripts-for-social-clips"
   - "/blog/caption-workflow-for-interview-clips"
   - "/blog/animated-captions-for-short-form-video"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 A podcast producer, social editor, or repurposing lead usually run into the same issue with caption workflow for guest teaser videos: teams handling caption workflow for guest teaser videos often lose momentum when long-form source material has to be reshaped for short-form viewing under deadline. What works best for caption workflow for guest teaser videos inside clip workflows for podcasts and interviews moving into shorts, reels, and tiktok. is a workflow that starts with timing, keeps the wording editable, and makes caption workflow for guest teaser videos reusable in the finished subtitle layer.

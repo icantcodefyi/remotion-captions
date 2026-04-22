@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/client-approval-workflow-for-video-captions"
   - "/blog/manage-caption-presets-across-brands"
   - "/blog/animated-captions-for-short-form-video"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 An agency lead, producer, or client services editor usually run into the same issue with caption presets for social retainers and campaigns: teams handling caption presets for social retainers and campaigns often create rework when multiple reviewers touch caption wording, styling, and approvals without one clear system. What works best for caption presets for social retainers and campaigns inside repeatable caption operations for agencies and teams managing multiple brands at once. is a workflow that starts with timing, keeps the wording editable, and makes caption presets for social retainers and campaigns reusable in the finished subtitle layer.

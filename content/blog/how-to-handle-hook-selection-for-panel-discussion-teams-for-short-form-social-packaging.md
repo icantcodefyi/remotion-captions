@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/edit-podcast-transcripts-for-social-clips"
   - "/blog/caption-workflow-for-interview-clips"
   - "/blog/animated-captions-for-short-form-video"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 If you are a podcast producer, social editor, or repurposing lead, teams handling how to handle hook selection for panel discussion teams for short-form social packaging often lose momentum when long-form source material has to be reshaped for short-form viewing under deadline. For how to handle hook selection for panel discussion teams for short-form social packaging, the cleaner path is to keep timing, approved wording, and style choices connected so the caption pass supports the edit instead of slowing it down.

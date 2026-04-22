@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/client-approval-workflow-for-video-captions"
   - "/blog/manage-caption-presets-across-brands"
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 For an agency lead, producer, or client services editor, how agencies handle subtitle naming conventions for client services teams during high-volume production often looks simple until teams handling how agencies handle subtitle naming conventions for client services teams during high-volume production often create rework when multiple reviewers touch caption wording, styling, and approvals without one clear system. A steadier review and production system for how agencies handle subtitle naming conventions for client services teams during high-volume production gets easier when the transcript, caption copy, and export handoff stay inside one working loop.

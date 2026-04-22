@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/youtube-shorts-caption-workflow"
   - "/blog/script-alignment-for-video-captions"
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 A creator, editor, or in-house social lead usually run into the same issue with open captions checklist for social video teams: teams handling open captions checklist for social video teams often lose time when caption timing, copy cleanup, and export happen in separate tools. What works best for open captions checklist for social video teams inside caption systems for creators, editors, and social teams shipping short-form video fast. is a workflow that starts with timing, keeps the wording editable, and makes open captions checklist for social video teams reusable in the finished subtitle layer.

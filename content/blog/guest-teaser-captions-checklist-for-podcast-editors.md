@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/edit-podcast-transcripts-for-social-clips"
   - "/blog/caption-workflow-for-interview-clips"
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 A podcast producer, social editor, or repurposing lead usually run into the same issue with guest teaser captions checklist for podcast editors: teams handling guest teaser captions checklist for podcast editors often lose momentum when long-form source material has to be reshaped for short-form viewing under deadline. What works best for guest teaser captions checklist for podcast editors inside clip workflows for podcasts and interviews moving into shorts, reels, and tiktok. is a workflow that starts with timing, keeps the wording editable, and makes guest teaser captions checklist for podcast editors reusable in the finished subtitle layer.

@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/edit-podcast-transcripts-for-social-clips"
   - "/blog/caption-workflow-for-interview-clips"
   - "/blog/brand-consistent-caption-styles"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 For a podcast producer, social editor, or repurposing lead, how to handle long answer editing for interview-heavy shows for short-form social packaging often looks simple until teams handling how to handle long answer editing for interview-heavy shows for short-form social packaging often lose momentum when long-form source material has to be reshaped for short-form viewing under deadline. A repeatable repurposing workflow for how to handle long answer editing for interview-heavy shows for short-form social packaging gets easier when the transcript, caption copy, and export handoff stay inside one working loop.

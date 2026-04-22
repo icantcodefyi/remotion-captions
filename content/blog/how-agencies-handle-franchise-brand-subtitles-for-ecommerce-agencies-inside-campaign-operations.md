@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/client-approval-workflow-for-video-captions"
   - "/blog/manage-caption-presets-across-brands"
   - "/blog/podcast-clips-to-social-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 If you are an agency lead, producer, or client services editor, teams handling how agencies handle franchise brand subtitles for ecommerce agencies inside campaign operations often create rework when multiple reviewers touch caption wording, styling, and approvals without one clear system. For how agencies handle franchise brand subtitles for ecommerce agencies inside campaign operations, the cleaner path is to keep timing, approved wording, and style choices connected so the caption pass supports the edit instead of slowing it down.

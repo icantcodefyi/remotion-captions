@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/youtube-shorts-caption-workflow"
   - "/blog/script-alignment-for-video-captions"
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 A creator, editor, or in-house social lead usually run into the same issue with how to manage caption timing for creator brands with reusable subtitle handoffs: teams handling how to manage caption timing for creator brands with reusable subtitle handoffs often lose time when caption timing, copy cleanup, and export happen in separate tools. What works best for how to manage caption timing for creator brands with reusable subtitle handoffs inside caption systems for creators, editors, and social teams shipping short-form video fast. is a workflow that starts with timing, keeps the wording editable, and makes how to manage caption timing for creator brands with reusable subtitle handoffs reusable in the finished subtitle layer.

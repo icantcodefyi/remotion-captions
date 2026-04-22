@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/transcripts-vs-subtitles-for-marketing-videos"
   - "/blog/srt-workflow-for-video-review"
   - "/blog/animated-captions-for-short-form-video"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 If you are a video producer, marketer, or accessibility reviewer, teams responsible for repeatable process for caption compliance review in accessible video often struggle when readability, transcript review, and delivery requirements get treated as the same step. For repeatable process for caption compliance review in accessible video, the cleaner path is to keep timing, approved wording, and style choices connected so the caption pass supports the edit instead of slowing it down.

@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/youtube-shorts-caption-workflow"
   - "/blog/script-alignment-for-video-captions"
   - "/blog/brand-consistent-caption-styles"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 A creator, editor, or in-house social lead usually run into the same issue with caption presets in daily posting workflows: teams handling caption presets in daily posting workflows often lose time when caption timing, copy cleanup, and export happen in separate tools. What works best for caption presets in daily posting workflows inside caption systems for creators, editors, and social teams shipping short-form video fast. is a workflow that starts with timing, keeps the wording editable, and makes caption presets in daily posting workflows reusable in the finished subtitle layer.

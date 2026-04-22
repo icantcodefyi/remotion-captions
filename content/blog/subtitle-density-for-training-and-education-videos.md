@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/transcripts-vs-subtitles-for-marketing-videos"
   - "/blog/srt-workflow-for-video-review"
   - "/blog/brand-consistent-caption-styles"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 A video producer, marketer, or accessibility reviewer usually run into the same issue with subtitle density for training and education videos: teams responsible for subtitle density for training and education videos often struggle when readability, transcript review, and delivery requirements get treated as the same step. What works best for subtitle density for training and education videos inside accessible video text systems for teams balancing clarity, compliance, and distribution. is a workflow that starts with timing, keeps the wording editable, and makes subtitle density for training and education videos reusable in the finished subtitle layer.

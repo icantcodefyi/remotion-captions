@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/client-approval-workflow-for-video-captions"
   - "/blog/manage-caption-presets-across-brands"
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 An agency lead, producer, or client services editor usually run into the same issue with how agencies handle caption sop creation for ecommerce agencies with better version control: teams handling how agencies handle caption sop creation for ecommerce agencies with better version control often create rework when multiple reviewers touch caption wording, styling, and approvals without one clear system. What works best for how agencies handle caption sop creation for ecommerce agencies with better version control inside repeatable caption operations for agencies and teams managing multiple brands at once. is a workflow that starts with timing, keeps the wording editable, and makes how agencies handle caption sop creation for ecommerce agencies with better version control reusable in the finished subtitle layer.

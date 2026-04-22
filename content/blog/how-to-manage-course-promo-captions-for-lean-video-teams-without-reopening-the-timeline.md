@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/youtube-shorts-caption-workflow"
   - "/blog/script-alignment-for-video-captions"
   - "/blog/podcast-clips-to-social-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 For a creator, editor, or in-house social lead, how to manage course promo captions for lean video teams without reopening the timeline often looks simple until teams handling how to manage course promo captions for lean video teams without reopening the timeline often lose time when caption timing, copy cleanup, and export happen in separate tools. A repeatable short-form caption workflow for how to manage course promo captions for lean video teams without reopening the timeline gets easier when the transcript, caption copy, and export handoff stay inside one working loop.

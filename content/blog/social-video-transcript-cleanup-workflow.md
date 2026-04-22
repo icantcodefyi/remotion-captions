@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/youtube-shorts-caption-workflow"
   - "/blog/script-alignment-for-video-captions"
   - "/blog/brand-consistent-caption-styles"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 For a creator, editor, or in-house social lead, social video transcript cleanup workflow often looks simple until teams handling social video transcript cleanup workflow often lose time when caption timing, copy cleanup, and export happen in separate tools. A repeatable short-form caption workflow for social video transcript cleanup workflow gets easier when the transcript, caption copy, and export handoff stay inside one working loop.

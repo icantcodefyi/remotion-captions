@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/client-approval-workflow-for-video-captions"
   - "/blog/manage-caption-presets-across-brands"
   - "/blog/animated-captions-for-short-form-video"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 An agency lead, producer, or client services editor usually run into the same issue with subtitle handoffs across multiple brands: teams handling subtitle handoffs across multiple brands often create rework when multiple reviewers touch caption wording, styling, and approvals without one clear system. What works best for subtitle handoffs across multiple brands inside repeatable caption operations for agencies and teams managing multiple brands at once. is a workflow that starts with timing, keeps the wording editable, and makes subtitle handoffs across multiple brands reusable in the finished subtitle layer.

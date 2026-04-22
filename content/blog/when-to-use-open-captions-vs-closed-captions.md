@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/transcripts-vs-subtitles-for-marketing-videos"
   - "/blog/srt-workflow-for-video-review"
   - "/blog/podcast-clips-to-social-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 A video producer, marketer, or accessibility reviewer usually run into the same issue with when to use open captions vs closed captions: teams responsible for when to use open captions vs closed captions often struggle when readability, transcript review, and delivery requirements get treated as the same step. What works best for when to use open captions vs closed captions inside accessible video text systems for teams balancing clarity, compliance, and distribution. is a workflow that starts with timing, keeps the wording editable, and makes when to use open captions vs closed captions reusable in the finished subtitle layer.

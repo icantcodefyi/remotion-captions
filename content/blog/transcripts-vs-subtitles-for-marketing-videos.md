@@ -18,7 +18,7 @@ internalLinks:
   - "/blog/how-to-make-video-captions-easier-to-read"
   - "/blog/srt-workflow-for-video-review"
   - "/blog/subtitle-handoff-for-accessibility-review"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 For a marketing or video team deciding what text output to send downstream, transcripts vs subtitles for marketing videos often looks simple until teams lose time when the wrong text artifact gets sent to reviewers or editors. A clearer system for choosing the right output at each step of production gets easier when the transcript, caption copy, and export handoff stay inside one working loop.

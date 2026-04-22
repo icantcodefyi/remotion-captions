@@ -19,7 +19,7 @@ internalLinks:
   - "/blog/youtube-shorts-caption-workflow"
   - "/blog/script-alignment-for-video-captions"
   - "/blog/podcast-clips-to-social-captions"
-status: "review"
+status: "published"
 author: "meowcap"
 ---
 A creator, editor, or in-house social lead usually run into the same issue with how to manage ugc ad captions for daily posting teams without reopening the timeline: teams handling how to manage ugc ad captions for daily posting teams without reopening the timeline often lose time when caption timing, copy cleanup, and export happen in separate tools. What works best for how to manage ugc ad captions for daily posting teams without reopening the timeline inside caption systems for creators, editors, and social teams shipping short-form video fast. is a workflow that starts with timing, keeps the wording editable, and makes how to manage ugc ad captions for daily posting teams without reopening the timeline reusable in the finished subtitle layer.
