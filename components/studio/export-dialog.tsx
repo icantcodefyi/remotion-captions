@@ -1,6 +1,12 @@
 "use client";
 
-import { type FC, useEffect, useRef, useState } from "react";
+import {
+  type FC,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   Download,
   FileCode2,
@@ -19,16 +25,20 @@ import {
   exportCaptionedVideo,
   getSupportedExportFormats,
   type ExportFormat,
+  type ExportProgress,
   type ExportQuality,
 } from "@/lib/video-export";
-import type { StyleOptions } from "@/lib/types";
+import type { CaptionStyleId, StyleOptions } from "@/lib/types";
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   file: File | null;
   captions: Caption[];
+  styleId: CaptionStyleId;
   styleOptions: StyleOptions;
+  videoDimensions: { width: number; height: number } | null;
+  videoDurationSec: number;
   baseName: string;
   onDownloadSrt: () => void;
   onDownloadJson: () => void;
@@ -42,16 +52,50 @@ const FORMAT_LABEL: Record<ExportFormat, string> = {
 };
 
 const FORMAT_HINT: Record<ExportFormat, string> = {
-  mp4: "Universal — Instagram, TikTok, iMessage",
-  webm: "Smaller file, great for the web",
+  mp4: "Fastest local export, universal compatibility",
+  webm: "Smaller file, but slower to encode than MP4",
 };
+
+const DEFAULT_FORMATS: ExportFormat[] = ["mp4", "webm"];
+let cachedSupportedFormats: ExportFormat[] = DEFAULT_FORMATS;
+let supportedFormatsResolved = false;
+
+const subscribeFormats = (onStoreChange: () => void) => {
+  if (typeof window !== "undefined" && !supportedFormatsResolved) {
+    supportedFormatsResolved = true;
+    const next = getSupportedExportFormats();
+    if (!sameFormats(cachedSupportedFormats, next)) {
+      cachedSupportedFormats = next;
+      onStoreChange();
+    }
+  }
+  return () => undefined;
+};
+
+const getSupportedFormatsSnapshot = () => cachedSupportedFormats;
+const getSupportedFormatsServerSnapshot = () => DEFAULT_FORMATS;
+
+function useSupportedFormats() {
+  return useSyncExternalStore(
+    subscribeFormats,
+    getSupportedFormatsSnapshot,
+    getSupportedFormatsServerSnapshot,
+  );
+}
+
+function sameFormats(a: ExportFormat[], b: ExportFormat[]) {
+  return a.length === b.length && a.every((value, index) => value === b[index]);
+}
 
 export const ExportDialog: FC<Props> = ({
   open,
   onOpenChange,
   file,
   captions,
+  styleId,
   styleOptions,
+  videoDimensions,
+  videoDurationSec,
   baseName,
   onDownloadSrt,
   onDownloadJson,
@@ -61,22 +105,25 @@ export const ExportDialog: FC<Props> = ({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  const [supported, setSupported] = useState<ExportFormat[]>([]);
+  const supported = useSupportedFormats();
   const [format, setFormat] = useState<ExportFormat>("mp4");
-
-  useEffect(() => {
-    const next = getSupportedExportFormats();
-    setSupported(next);
-    setFormat((current) =>
-      next.includes(current) ? current : next.includes("mp4") ? "mp4" : next[0] ?? "webm",
-    );
-  }, []);
   const [quality, setQuality] = useState<ExportQuality>("high");
   const [isExporting, setIsExporting] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [exportProgress, setExportProgress] = useState<ExportProgress | null>(
+    null,
+  );
 
   const hasCaptions = captions.length > 0;
-  const canExportVideo = Boolean(file) && supported.length > 0;
+  const canExportVideo =
+    Boolean(file) &&
+    supported.length > 0 &&
+    Boolean(videoDimensions) &&
+    videoDurationSec > 0;
+  const selectedFormat = supported.includes(format)
+    ? format
+    : supported.includes("mp4")
+      ? "mp4"
+      : supported[0] ?? "webm";
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -93,6 +140,7 @@ export const ExportDialog: FC<Props> = ({
     if (!dialog) return;
     const onClose = () => {
       if (isExporting) abortRef.current?.abort();
+      setExportProgress(null);
       onOpenChange(false);
     };
     dialog.addEventListener("close", onClose);
@@ -100,29 +148,38 @@ export const ExportDialog: FC<Props> = ({
   }, [onOpenChange, isExporting]);
 
   const handleExportVideo = async () => {
-    if (!file || !canExportVideo) return;
+    if (!file || !canExportVideo || !videoDimensions) return;
     const controller = new AbortController();
     abortRef.current = controller;
     setIsExporting(true);
-    setProgress(0);
+    setExportProgress({
+      phase: "preparing",
+      progress: 0.02,
+      label: "Preparing export…",
+      renderedFrames: 0,
+      encodedFrames: 0,
+      totalFrames: Math.max(1, Math.round(videoDurationSec * 30)),
+    });
     try {
       const blob = await exportCaptionedVideo({
         file,
         captions,
+        styleId,
         styleOptions,
-        format,
+        format: selectedFormat,
         quality,
+        width: videoDimensions.width,
+        height: videoDimensions.height,
+        durationSec: videoDurationSec,
         signal: controller.signal,
-        onProgress: (p) => setProgress(p),
+        onProgress: setExportProgress,
       });
-      const filename = `${baseName}.${format === "mp4" ? "mp4" : "webm"}`;
+      const filename = `${baseName}.${selectedFormat === "mp4" ? "mp4" : "webm"}`;
       triggerDownload(blob, filename);
       onVideoSaved?.(filename);
-      setProgress(1);
       setTimeout(() => {
         onOpenChange(false);
-        setProgress(0);
-      }, 500);
+      }, 400);
     } catch (err) {
       if ((err as DOMException)?.name !== "AbortError") {
         const msg =
@@ -208,17 +265,17 @@ export const ExportDialog: FC<Props> = ({
                 Export
               </h2>
               <p className="text-[0.75rem] text-[color:var(--muted)] mt-1.5">
-                <span className="ital-label">Rendered in your browser.</span>{" "}
-                Nothing uploaded.
+                <span className="ital-label">Rendered on the server.</span>{" "}
+                Pixel-perfect with your preview.
               </p>
             </div>
           </div>
         </div>
 
         <div className="px-6 pb-5 flex flex-col gap-5">
-          <FieldRow label="Format" hint={FORMAT_HINT[format]}>
+          <FieldRow label="Format" hint={FORMAT_HINT[selectedFormat]}>
             <Segmented
-              value={format}
+              value={selectedFormat}
               onChange={(v) => !isExporting && setFormat(v)}
               ariaLabel="Export format"
               size="sm"
@@ -232,14 +289,7 @@ export const ExportDialog: FC<Props> = ({
 
           <FieldRow
             label="Quality"
-            hint={
-              <>
-                <span className="tnum-serif">
-                  {(EXPORT_QUALITY_BITRATE[quality] / 1_000_000).toFixed(0)}
-                </span>{" "}
-                Mbps video bitrate
-              </>
-            }
+            hint={getQualityHint(quality)}
           >
             <Segmented
               value={quality}
@@ -257,7 +307,10 @@ export const ExportDialog: FC<Props> = ({
           </FieldRow>
 
           {isExporting ? (
-            <ProgressBlock progress={progress} onCancel={handleCancelExport} />
+            <RenderingBlock
+              onCancel={handleCancelExport}
+              progress={exportProgress}
+            />
           ) : (
             <Button
               variant="primary"
@@ -278,8 +331,7 @@ export const ExportDialog: FC<Props> = ({
           ) : null}
           {!canExportVideo && file ? (
             <p className="text-[0.75rem] text-[color:var(--muted)] leading-relaxed -mt-2">
-              This browser can&apos;t record video. Try Chrome or Safari, or
-              download the caption files below.
+              Still reading the video. Give it a second.
             </p>
           ) : null}
         </div>
@@ -342,20 +394,19 @@ const FieldRow: FC<{
   </div>
 );
 
-const ProgressBlock: FC<{ progress: number; onCancel: () => void }> = ({
-  progress,
-  onCancel,
-}) => {
-  const pct = Math.round(progress * 100);
+const RenderingBlock: FC<{
+  onCancel: () => void;
+  progress: ExportProgress | null;
+}> = ({ onCancel, progress }) => {
+  const percent = Math.round((progress?.progress ?? 0) * 100);
+  const barWidth = `${Math.max(percent, 4)}%`;
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-[0.8125rem] text-[color:var(--fg)]">
           <Loader2 className="h-3.5 w-3.5 spin-slow text-[color:var(--accent-ink)]" />
-          <span>Rendering</span>
-          <span className="tnum-serif text-[0.9375rem] text-[color:var(--fg)]">
-            {pct}%
-          </span>
+          <span>{progress?.label ?? "Rendering on server…"}</span>
         </div>
         <Button variant="ghost" size="sm" onClick={onCancel}>
           Cancel
@@ -367,22 +418,30 @@ const ProgressBlock: FC<{ progress: number; onCancel: () => void }> = ({
           background: "var(--surface-2)",
           border: "1px solid var(--border)",
         }}
-        aria-valuenow={pct}
+        role="progressbar"
         aria-valuemin={0}
         aria-valuemax={100}
-        role="progressbar"
+        aria-valuenow={percent}
       >
         <div
-          className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-200 ease-out"
+          className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-300 ease-out"
           style={{
-            width: `${pct}%`,
+            width: barWidth,
             background: "var(--accent)",
             boxShadow: "0 0 14px -3px var(--accent-glow)",
           }}
         />
       </div>
-      <p className="ital-label text-[0.7rem] text-[color:var(--muted)] leading-relaxed">
-        Recording plays the video once — roughly the video&apos;s length.
+      <div className="flex items-baseline justify-between gap-3 text-[0.7rem] text-[color:var(--muted)] leading-relaxed">
+        <p className="ital-label">
+          {progress?.phase === "muxing"
+            ? "Final encode pass in progress."
+            : "Uploading and rendering with live progress."}
+        </p>
+        <span className="tnum-serif">{percent}%</span>
+      </div>
+      <p className="text-[0.72rem] text-[color:var(--muted)] leading-relaxed">
+        {getProgressDetails(progress)}
       </p>
     </div>
   );
@@ -444,4 +503,49 @@ function triggerDownload(blob: Blob, filename: string) {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 400);
+}
+
+function getQualityHint(quality: ExportQuality) {
+  const bitrate = (
+    EXPORT_QUALITY_BITRATE[quality] / 1_000_000
+  ).toFixed(0);
+
+  if (quality === "low") {
+    return (
+      <>
+        <span className="tnum-serif">{bitrate}</span> Mbps · 75% resolution for
+        faster exports
+      </>
+    );
+  }
+
+  return (
+    <>
+      <span className="tnum-serif">{bitrate}</span> Mbps video bitrate
+    </>
+  );
+}
+
+function getProgressDetails(progress: ExportProgress | null) {
+  if (!progress) {
+    return "Preparing export…";
+  }
+
+  if (progress.totalFrames <= 0) {
+    return progress.label;
+  }
+
+  if (progress.phase === "rendering") {
+    return `${Math.min(progress.renderedFrames, progress.totalFrames)} of ${progress.totalFrames} frames rendered`;
+  }
+
+  if (progress.phase === "muxing") {
+    return `${Math.min(progress.encodedFrames, progress.totalFrames)} of ${progress.totalFrames} frames encoded`;
+  }
+
+  if (progress.phase === "done") {
+    return "Export ready";
+  }
+
+  return progress.label;
 }

@@ -24,6 +24,12 @@ export type StyleOptions = {
   shadow: boolean;
 };
 
+export type CaptionOverlayProps = {
+  captions: Caption[];
+  styleId: CaptionStyleId;
+  styleOptions: StyleOptions;
+};
+
 export const DEFAULT_STYLE_OPTIONS: StyleOptions = {
   position: { x: 0.5, y: 0.85 },
   fontScale: 1,
@@ -155,7 +161,4 @@ export type StudioJob = {
 
 export type CaptionedVideoProps = {
   videoSrc: string;
-  captions: Caption[];
-  styleId: CaptionStyleId;
-  styleOptions: StyleOptions;
-};
+} & CaptionOverlayProps;

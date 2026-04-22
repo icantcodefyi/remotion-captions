@@ -251,7 +251,14 @@ export function StudioPage() {
         onOpenChange={setExportDialogOpen}
         file={file}
         captions={captions ?? []}
+        styleId={styleId}
         styleOptions={styleOptions}
+        videoDimensions={
+          videoMeta
+            ? { width: videoMeta.width, height: videoMeta.height }
+            : null
+        }
+        videoDurationSec={videoMeta?.durationSec ?? 0}
         baseName={baseName}
         onDownloadSrt={handleDownloadSrt}
         onDownloadJson={handleDownloadJson}

@@ -2,7 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
-  serverExternalPackages: ["@deepgram/sdk"],
+  serverExternalPackages: [
+    "@deepgram/sdk",
+    "@remotion/bundler",
+    "@remotion/renderer",
+  ],
   typedRoutes: false,
   async headers() {
     return [
