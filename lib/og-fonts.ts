@@ -1,34 +1,9 @@
-const cache = new Map<string, Promise<ArrayBuffer>>();
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 
-export function loadGoogleFont(
-  family: string,
-  weight: number,
-  italic = false,
-): Promise<ArrayBuffer> {
-  const key = `${family}:${weight}:${italic ? "i" : "n"}`;
-  const cached = cache.get(key);
-  if (cached) return cached;
-  const promise = fetchGoogleFont(family, weight, italic);
-  cache.set(key, promise);
-  return promise;
-}
+const FONT_DIR = path.join(process.cwd(), "lib", "og-fonts-data");
 
-async function fetchGoogleFont(
-  family: string,
-  weight: number,
-  italic: boolean,
-): Promise<ArrayBuffer> {
-  const spec = italic ? `ital,wght@1,${weight}` : `wght@${weight}`;
-  const url = `https://fonts.googleapis.com/css2?family=${family}:${spec}&display=swap`;
-  const css = await (await fetch(url)).text();
-  const match = css.match(
-    /src:\s*url\((.+?)\)\s*format\('(?:opentype|truetype)'\)/,
-  );
-  if (!match) throw new Error(`Failed to parse CSS for ${family}`);
-  const res = await fetch(match[1]);
-  if (!res.ok) throw new Error(`Failed to fetch font for ${family}`);
-  return res.arrayBuffer();
-}
+let cached: Promise<OgFont[]> | null = null;
 
 export type OgFont = {
   name: "Display" | "Body" | "Italic";
@@ -37,17 +12,29 @@ export type OgFont = {
   style: "normal" | "italic";
 };
 
-export async function getOgFonts(): Promise<OgFont[]> {
-  const [display, body, italic] = await Promise.all([
-    loadGoogleFont("Bricolage+Grotesque", 700),
-    loadGoogleFont("Host+Grotesk", 500),
-    loadGoogleFont("Spectral", 500, true),
-  ]);
-  return [
-    { name: "Display", data: display, weight: 700, style: "normal" },
-    { name: "Body", data: body, weight: 500, style: "normal" },
-    { name: "Italic", data: italic, weight: 500, style: "italic" },
-  ];
+async function readFont(file: string): Promise<ArrayBuffer> {
+  const buf = await readFile(path.join(FONT_DIR, file));
+  return buf.buffer.slice(
+    buf.byteOffset,
+    buf.byteOffset + buf.byteLength,
+  ) as ArrayBuffer;
+}
+
+export function getOgFonts(): Promise<OgFont[]> {
+  if (cached) return cached;
+  cached = (async () => {
+    const [display, body, italic] = await Promise.all([
+      readFont("bricolage-grotesque-700.ttf"),
+      readFont("host-grotesk-500.ttf"),
+      readFont("spectral-500-italic.ttf"),
+    ]);
+    return [
+      { name: "Display", data: display, weight: 700, style: "normal" },
+      { name: "Body", data: body, weight: 500, style: "normal" },
+      { name: "Italic", data: italic, weight: 500, style: "italic" },
+    ];
+  })();
+  return cached;
 }
 
 export const OG_PALETTE = {
