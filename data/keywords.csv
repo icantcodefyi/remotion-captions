@@ -1,0 +1,5 @@
+query,slug,volume,difficulty,intent,cluster,pillar_slug,notes,status
+"animated captions for short-form video","animated-captions-for-short-form-video",250,24,informational,creator-workflow,animated-captions-for-short-form-video,"Existing pillar post covering the core creator workflow.",published
+"transcript vs subtitles vs closed captions","transcript-vs-subtitles-vs-closed-captions",110,18,informational,accessibility,transcript-vs-subtitles-vs-closed-captions,"Existing accessibility pillar post.",published
+"brand consistent captions","brand-consistent-caption-styles",70,21,informational,agency-ops,brand-consistent-caption-styles,"Existing agency operations pillar post.",published
+"podcast clip captions","podcast-clips-to-social-captions",90,19,informational,podcast-repurposing,podcast-clips-to-social-captions,"Existing podcast repurposing pillar post.",published

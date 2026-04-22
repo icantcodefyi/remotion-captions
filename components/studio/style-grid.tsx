@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
-import { Check } from "lucide-react";
+import { useMemo, useState, type CSSProperties, type FC } from "react";
+import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { CAPTION_STYLES, type CaptionStyleId } from "@/lib/types";
 
@@ -11,15 +11,30 @@ type Props = {
 };
 
 const PREVIEW_TEXT = "Make it pop.";
+const COLLAPSED_COUNT = 4;
 
-export const StyleGrid: React.FC<Props> = ({ value, onChange }) => {
+export const StyleGrid: FC<Props> = ({ value, onChange }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  const visibleStyles = useMemo(() => {
+    if (expanded) return CAPTION_STYLES;
+    const head = CAPTION_STYLES.slice(0, COLLAPSED_COUNT);
+    const selectedInHead = head.some((s) => s.id === value);
+    if (selectedInHead) return head;
+    const selected = CAPTION_STYLES.find((s) => s.id === value);
+    return selected ? [...head.slice(0, COLLAPSED_COUNT - 1), selected] : head;
+  }, [expanded, value]);
+
+  const hiddenCount = CAPTION_STYLES.length - COLLAPSED_COUNT;
+
   return (
-    <div
-      className="grid gap-2.5 [grid-template-columns:repeat(auto-fit,minmax(130px,1fr))]"
-      role="radiogroup"
-      aria-label="Caption style"
-    >
-      {CAPTION_STYLES.map((style, i) => {
+    <div className="flex flex-col gap-2.5">
+      <div
+        className="grid gap-2.5 [grid-template-columns:repeat(auto-fit,minmax(130px,1fr))]"
+        role="radiogroup"
+        aria-label="Caption style"
+      >
+        {visibleStyles.map((style, i) => {
         const selected = value === style.id;
         return (
           <button
@@ -81,15 +96,43 @@ export const StyleGrid: React.FC<Props> = ({ value, onChange }) => {
           </button>
         );
       })}
+      </div>
+      {hiddenCount > 0 ? (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          className={cn(
+            "group inline-flex items-center justify-center gap-1.5 self-center",
+            "h-7 px-3 rounded-full text-[0.7rem] font-medium",
+            "text-[color:var(--muted)] bg-[var(--surface-2)]",
+            "border border-[color:var(--border)]",
+            "transition-[background,color,border-color,transform] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            "[@media(hover:hover)]:hover:text-[color:var(--fg)]",
+            "[@media(hover:hover)]:hover:border-[color:var(--border-strong)]",
+            "[@media(hover:hover)]:hover:bg-[var(--surface-1)]",
+          )}
+        >
+          <span className="ital-label normal-case tracking-normal">
+            {expanded ? "Show less" : `Show ${hiddenCount} more`}
+          </span>
+          <ChevronDown
+            className={cn(
+              "h-3 w-3 transition-transform duration-200",
+              expanded && "rotate-180",
+            )}
+          />
+        </button>
+      ) : null}
     </div>
   );
 };
 
-const StylePreviewChip: React.FC<{
+const StylePreviewChip: FC<{
   styleId: CaptionStyleId;
   accent: string;
 }> = ({ styleId, accent }) => {
-  const base: React.CSSProperties = {
+  const base: CSSProperties = {
     display: "inline-block",
     fontWeight: 900,
     fontSize: 14,
@@ -258,6 +301,93 @@ const StylePreviewChip: React.FC<{
           >
             {PREVIEW_TEXT}
           </div>
+        </div>
+      );
+    case "comic":
+      return (
+        <div
+          style={{
+            fontFamily: "var(--font-body), sans-serif",
+            fontWeight: 900,
+            fontSize: 14,
+            textTransform: "uppercase",
+            letterSpacing: "-0.01em",
+            display: "flex",
+            gap: 6,
+          }}
+        >
+          {words.map((w, i) => (
+            <span
+              key={i}
+              style={{
+                color: i === 1 ? "#0b0b0f" : "#fff",
+                background: i === 1 ? accent : "transparent",
+                border: i === 1 ? "2px solid #0b0b0f" : "none",
+                padding: i === 1 ? "2px 6px" : "0",
+                borderRadius: 3,
+                transform:
+                  i === 0
+                    ? "rotate(-2deg)"
+                    : i === 1
+                      ? "rotate(1deg)"
+                      : "rotate(-1deg)",
+                display: "inline-block",
+                WebkitTextStroke: i === 1 ? "0" : "3px #0b0b0f",
+                paintOrder: "stroke fill",
+                boxShadow: i === 1 ? "2px 2px 0 #0b0b0f" : undefined,
+              }}
+            >
+              {w.replace(/\.$/, "")}
+            </span>
+          ))}
+        </div>
+      );
+    case "glitch":
+      return (
+        <div
+          style={{
+            position: "relative",
+            fontFamily: "Orbitron, sans-serif",
+            fontSize: 13,
+            fontWeight: 900,
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            color: "#fff",
+          }}
+        >
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              inset: 0,
+              color: "#3af3ff",
+              transform: "translate(-2px, 0)",
+              mixBlendMode: "screen",
+            }}
+          >
+            {PREVIEW_TEXT}
+          </span>
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              inset: 0,
+              color: "#ff3af3",
+              transform: "translate(2px, 0)",
+              mixBlendMode: "screen",
+            }}
+          >
+            {PREVIEW_TEXT}
+          </span>
+          <span
+            style={{
+              position: "relative",
+              WebkitTextStroke: "0.75px #0b0b0f",
+              paintOrder: "stroke fill",
+            }}
+          >
+            {PREVIEW_TEXT}
+          </span>
         </div>
       );
   }

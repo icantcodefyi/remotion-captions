@@ -1,4 +1,4 @@
-import * as React from "react";
+import { type FC } from "react";
 
 type Props = {
   className?: string;
@@ -9,7 +9,7 @@ type Props = {
  * Filled cat silhouette. currentColor drives the fill so it inherits
  * from its container, which lets us recolor in dark mode for free.
  */
-export const CatMark: React.FC<Props> = ({
+export const CatMark: FC<Props> = ({
   className,
   cutoutColor = "var(--accent-soft)",
 }) => (

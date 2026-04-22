@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { type ButtonHTMLAttributes, type Ref } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/cn";
 
@@ -42,7 +42,6 @@ const buttonVariants = cva(
         ].join(" "),
       },
       size: {
-        /* Touch-target padding kicks in on coarse pointers */
         sm: "h-8 px-3 text-[0.75rem] rounded-md [@media(pointer:coarse)]:h-10",
         md: "h-10 px-4 text-[0.8125rem] rounded-lg [@media(pointer:coarse)]:h-11",
         lg: "h-12 px-5 text-[0.9375rem] rounded-xl",
@@ -57,16 +56,21 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {}
+  extends ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  ref?: Ref<HTMLButtonElement>;
+}
 
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, ...props }, ref) => (
-    <button
-      ref={ref}
-      className={cn(buttonVariants({ variant, size }), className)}
-      {...props}
-    />
-  ),
+export const Button = ({
+  ref,
+  className,
+  variant,
+  size,
+  ...props
+}: ButtonProps) => (
+  <button
+    ref={ref}
+    className={cn(buttonVariants({ variant, size }), className)}
+    {...props}
+  />
 );
-Button.displayName = "Button";

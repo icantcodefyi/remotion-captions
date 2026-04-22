@@ -1,15 +1,15 @@
 "use client";
 
-import * as React from "react";
+import { type FC, useSyncExternalStore } from "react";
 import { Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 type Theme = "light" | "dark";
 
-export const ThemeToggle: React.FC<{ className?: string }> = ({
+export const ThemeToggle: FC<{ className?: string }> = ({
   className,
 }) => {
-  const theme = React.useSyncExternalStore(
+  const theme = useSyncExternalStore(
     (onStoreChange) => {
       window.addEventListener("meowcap-theme-change", onStoreChange);
       return () =>

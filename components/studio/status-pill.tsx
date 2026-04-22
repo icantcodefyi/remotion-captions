@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { type FC } from "react";
 import { cn } from "@/lib/cn";
 
 type Status = "idle" | "running" | "ready" | "error";
@@ -28,7 +28,7 @@ const DOT_CLASSES: Record<Status, string> = {
   error: "bg-[var(--danger)]",
 };
 
-export const StatusPill: React.FC<Props> = ({ status, label }) => (
+export const StatusPill: FC<Props> = ({ status, label }) => (
   <div
     className={cn(
       "inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full",

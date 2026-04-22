@@ -10,7 +10,9 @@ export type CaptionStyleId =
   | "minimal"
   | "neon"
   | "typewriter"
-  | "broadcast";
+  | "broadcast"
+  | "comic"
+  | "glitch";
 
 export type CaptionPosition = { x: number; y: number };
 
@@ -76,6 +78,15 @@ export const CAPTION_STYLES: CaptionStyleMeta[] = [
       "linear-gradient(135deg,#090909 0%,#12233a 60%,#1a3d6b 100%)",
   },
   {
+    id: "comic",
+    name: "Comic",
+    tagline: "Ink outline, playful tilt",
+    defaultWordsPerPage: 2,
+    defaultAccent: "#FFC940",
+    previewBackground:
+      "repeating-linear-gradient(45deg,#ffe37a 0 18px,#ffd54a 18px 36px)",
+  },
+  {
     id: "karaoke",
     name: "Karaoke",
     tagline: "Classic word fill",
@@ -101,6 +112,15 @@ export const CAPTION_STYLES: CaptionStyleMeta[] = [
     defaultAccent: "#00FFD1",
     previewBackground:
       "linear-gradient(135deg,#0a0014 0%,#2b004d 60%,#5c0094 100%)",
+  },
+  {
+    id: "glitch",
+    name: "Glitch",
+    tagline: "RGB split, scanlines",
+    defaultWordsPerPage: 3,
+    defaultAccent: "#00FFD1",
+    previewBackground:
+      "linear-gradient(135deg,#0a0010 0%,#1a0824 60%,#270f38 100%)",
   },
   {
     id: "typewriter",
@@ -138,4 +158,6 @@ export type CaptionedVideoProps = {
   captions: Caption[];
   styleId: CaptionStyleId;
   styleOptions: StyleOptions;
+  /** Page index to skip rendering (used when inline-editing that page). */
+  hiddenPageIndex?: number | null;
 };

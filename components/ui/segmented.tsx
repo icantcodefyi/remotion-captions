@@ -1,11 +1,11 @@
 "use client";
 
-import * as React from "react";
+import { type KeyboardEvent, type ReactNode, useRef } from "react";
 import { cn } from "@/lib/cn";
 
 type Option<T extends string> = {
   value: T;
-  label: React.ReactNode;
+  label: ReactNode;
 };
 
 type SegmentedProps<T extends string> = {
@@ -25,10 +25,10 @@ export function Segmented<T extends string>({
   className,
   ariaLabel,
 }: SegmentedProps<T>) {
-  const refs = React.useRef<Array<HTMLButtonElement | null>>([]);
+  const refs = useRef<Array<HTMLButtonElement | null>>([]);
   const selectedIndex = options.findIndex((o) => o.value === value);
 
-  const onKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, i: number) => {
+  const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
     let next = i;
     if (e.key === "ArrowRight") next = (i + 1) % options.length;
     else if (e.key === "ArrowLeft")
@@ -46,7 +46,7 @@ export function Segmented<T extends string>({
       role="radiogroup"
       aria-label={ariaLabel}
       className={cn(
-        "inline-flex items-center p-1 rounded-lg",
+        "inline-flex items-center p-1 rounded",
         "bg-[var(--surface-2)] border border-[color:var(--border)]",
         className,
       )}

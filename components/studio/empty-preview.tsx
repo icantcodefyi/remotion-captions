@@ -1,10 +1,10 @@
 "use client";
 
-import * as React from "react";
+import { type FC } from "react";
 import Image from "next/image";
 import { ArrowDownLeft } from "lucide-react";
 
-export const EmptyPreview: React.FC = () => (
+export const EmptyPreview: FC = () => (
   <div className="flex-1 flex items-center justify-center text-center px-8 fade-rise">
     <div className="max-w-[28rem]">
       <div className="relative inline-flex mb-6">

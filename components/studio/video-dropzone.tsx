@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { type FC, useRef, useState } from "react";
 import Image from "next/image";
 import { Film, X } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -19,13 +19,13 @@ const formatSize = (bytes: number): string => {
   return `${mb.toFixed(1)} MB`;
 };
 
-export const VideoDropzone: React.FC<Props> = ({
+export const VideoDropzone: FC<Props> = ({
   file,
   onFileChange,
   disabled,
 }) => {
-  const [dragOver, setDragOver] = React.useState(false);
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFiles = (files: FileList | null | undefined) => {
     if (!files || files.length === 0) return;
@@ -81,7 +81,7 @@ export const VideoDropzone: React.FC<Props> = ({
           )}
           onClick={() => onFileChange(null)}
           disabled={disabled}
-          aria-label="Remove source"
+          aria-label="Remove video"
         >
           <X className="h-4 w-4" />
         </button>

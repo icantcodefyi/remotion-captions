@@ -1,13 +1,13 @@
 "use client";
 
-import * as React from "react";
+import { type FC } from "react";
 import { ChevronRight, KeyRound } from "lucide-react";
 
 type Props = {
   onClick: () => void;
 };
 
-export const ApiKeyBanner: React.FC<Props> = ({ onClick }) => {
+export const ApiKeyBanner: FC<Props> = ({ onClick }) => {
   return (
     <button
       type="button"
@@ -38,7 +38,7 @@ export const ApiKeyBanner: React.FC<Props> = ({ onClick }) => {
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-[0.8125rem] font-semibold text-[color:var(--fg)] leading-snug">
-          Connect Deepgram to start captioning
+          Add your Deepgram key to get started
         </div>
         <div className="text-[0.75rem] text-[color:var(--fg-weak)] mt-1 leading-relaxed">
           <span className="ital-label">Your key stays in this browser.</span>{" "}

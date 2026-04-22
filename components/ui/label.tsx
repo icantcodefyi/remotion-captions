@@ -1,11 +1,11 @@
 "use client";
 
-import * as React from "react";
+import { type FC, type HTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
-type Props = React.HTMLAttributes<HTMLDivElement>;
+type Props = HTMLAttributes<HTMLDivElement>;
 
-export const SectionLabel: React.FC<Props> = ({
+export const SectionLabel: FC<Props> = ({
   className,
   children,
   ...props

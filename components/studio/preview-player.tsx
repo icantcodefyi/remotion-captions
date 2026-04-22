@@ -1,11 +1,12 @@
 "use client";
 
-import * as React from "react";
-import { Player } from "@remotion/player";
+import { type Ref } from "react";
+import { Player, type PlayerRef } from "@remotion/player";
 import { CaptionedVideo } from "@/remotion/CaptionedVideo";
 import type { CaptionedVideoProps } from "@/lib/types";
 
 type Props = {
+  ref?: Ref<PlayerRef>;
   durationInFrames: number;
   fps: number;
   compositionWidth: number;
@@ -13,15 +14,17 @@ type Props = {
   inputProps: CaptionedVideoProps;
 };
 
-export const PreviewPlayer: React.FC<Props> = ({
+export const PreviewPlayer = ({
+  ref,
   durationInFrames,
   fps,
   compositionWidth,
   compositionHeight,
   inputProps,
-}) => {
+}: Props) => {
   return (
     <Player
+      ref={ref}
       component={CaptionedVideo}
       inputProps={inputProps}
       durationInFrames={durationInFrames}
@@ -30,7 +33,7 @@ export const PreviewPlayer: React.FC<Props> = ({
       compositionHeight={compositionHeight}
       controls
       loop
-      clickToPlay
+      clickToPlay={false}
       acknowledgeRemotionLicense
       style={{
         width: "100%",

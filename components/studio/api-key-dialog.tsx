@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { type FC, useEffect, useRef, useState } from "react";
 import { Check, Eye, EyeOff, KeyRound, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
@@ -12,17 +12,17 @@ type Props = {
   onSave: (key: string | null) => void;
 };
 
-export const ApiKeyDialog: React.FC<Props> = ({
+export const ApiKeyDialog: FC<Props> = ({
   open,
   onOpenChange,
   currentKey,
   onSave,
 }) => {
-  const dialogRef = React.useRef<HTMLDialogElement>(null);
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  const [visible, setVisible] = React.useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [visible, setVisible] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     if (open && !dialog.open) {
@@ -33,7 +33,7 @@ export const ApiKeyDialog: React.FC<Props> = ({
     }
   }, [open]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     const onClose = () => onOpenChange(false);
@@ -112,7 +112,7 @@ export const ApiKeyDialog: React.FC<Props> = ({
                 id="api-key-dialog-title"
                 className="display text-[1.0625rem] font-semibold tracking-tight text-[color:var(--fg)]"
               >
-                Add your API key
+                Add your Deepgram key
               </h2>
               <p className="text-[0.75rem] text-[color:var(--muted)] mt-0.5">
                 <span className="ital-label">Stored locally.</span> Never

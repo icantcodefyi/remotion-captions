@@ -1,11 +1,13 @@
 "use client";
 
-import * as React from "react";
+import Link from "next/link";
+import { type FC } from "react";
 import { Move } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { SectionLabel } from "@/components/ui/label";
 import { cn } from "@/lib/cn";
+import { getBlogHref } from "@/lib/site";
 import { POSITION_PRESETS, type StyleOptions } from "@/lib/types";
 
 const COLOR_PRESETS = [
@@ -25,7 +27,7 @@ type Props = {
   onChange: (next: StyleOptions) => void;
 };
 
-export const StyleControls: React.FC<Props> = ({ value, onChange }) => {
+export const StyleControls: FC<Props> = ({ value, onChange }) => {
   const set = <K extends keyof StyleOptions>(key: K, v: StyleOptions[K]) =>
     onChange({ ...value, [key]: v });
 
@@ -48,7 +50,7 @@ export const StyleControls: React.FC<Props> = ({ value, onChange }) => {
         <div
           role="radiogroup"
           aria-label="Caption position"
-          className="inline-flex items-center p-1 rounded-lg bg-[var(--surface-2)] border border-[color:var(--border)] w-full"
+          className="inline-flex items-center p-1 rounded bg-[var(--surface-2)] border border-[color:var(--border)] w-full"
         >
           {POSITION_PRESETS.map((preset) => {
             const selected = activePresetId === preset.id;
@@ -107,7 +109,7 @@ export const StyleControls: React.FC<Props> = ({ value, onChange }) => {
       <div className="flex flex-col gap-2.5">
         <SectionLabel>Accent color</SectionLabel>
         <div
-          className="flex flex-wrap gap-2"
+          className="flex flex-wrap gap-2 p-1"
           role="radiogroup"
           aria-label="Accent color"
         >
@@ -170,6 +172,16 @@ export const StyleControls: React.FC<Props> = ({ value, onChange }) => {
         checked={value.shadow}
         onCheckedChange={(v) => set("shadow", v)}
       />
+
+      <Link
+        href={getBlogHref(
+          "/blog/brand-consistent-caption-styles",
+          "style_controls_guide",
+        )}
+        className="text-[0.78rem] font-semibold text-[color:var(--accent-ink)]"
+      >
+        Learn how teams keep caption styles consistent
+      </Link>
     </div>
   );
 };

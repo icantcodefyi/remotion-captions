@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { type FC, useId } from "react";
 import { cn } from "@/lib/cn";
 
 type Props = {
@@ -11,14 +11,14 @@ type Props = {
   className?: string;
 };
 
-export const Switch: React.FC<Props> = ({
+export const Switch: FC<Props> = ({
   checked,
   onCheckedChange,
   label,
   description,
   className,
 }) => {
-  const id = React.useId();
+  const id = useId();
   const descId = description ? `${id}-desc` : undefined;
   return (
     <div

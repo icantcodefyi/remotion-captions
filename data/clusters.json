@@ -1,0 +1,64 @@
+{
+  "clusters": [
+    {
+      "slug": "creator-workflow",
+      "title": "Creator Workflow",
+      "description": "Workflows for creators and social teams that need fast, readable captions without slowing down the edit loop.",
+      "shortDescription": "Caption systems for creators, editors, and social teams shipping short-form video fast.",
+      "pillarSlug": "animated-captions-for-short-form-video",
+      "audience": "Creators and in-house social teams",
+      "sitemapId": "creator-workflow",
+      "targetArchivePageSize": 24,
+      "siblingLinkCount": {
+        "min": 2,
+        "max": 3
+      },
+      "crossClusterPillarLimit": 1
+    },
+    {
+      "slug": "accessibility",
+      "title": "Accessibility",
+      "description": "Practical guidance on transcripts, subtitles, caption formats, and accessible video delivery for mixed audiences.",
+      "shortDescription": "Accessible video text systems for teams balancing clarity, compliance, and distribution.",
+      "pillarSlug": "transcript-vs-subtitles-vs-closed-captions",
+      "audience": "Video teams, marketers, and accessibility-minded publishers",
+      "sitemapId": "accessibility",
+      "targetArchivePageSize": 24,
+      "siblingLinkCount": {
+        "min": 1,
+        "max": 3
+      },
+      "crossClusterPillarLimit": 1
+    },
+    {
+      "slug": "agency-ops",
+      "title": "Agency Ops",
+      "description": "Brand-safe caption systems for agencies, client services teams, and multi-account social production environments.",
+      "shortDescription": "Repeatable caption operations for agencies and teams managing multiple brands at once.",
+      "pillarSlug": "brand-consistent-caption-styles",
+      "audience": "Agencies, freelancers, and client services teams",
+      "sitemapId": "agency-ops",
+      "targetArchivePageSize": 24,
+      "siblingLinkCount": {
+        "min": 1,
+        "max": 3
+      },
+      "crossClusterPillarLimit": 1
+    },
+    {
+      "slug": "podcast-repurposing",
+      "title": "Podcast Repurposing",
+      "description": "Systems for turning long-form interviews and podcasts into captioned clips for discovery channels.",
+      "shortDescription": "Clip workflows for podcasts and interviews moving into Shorts, Reels, and TikTok.",
+      "pillarSlug": "podcast-clips-to-social-captions",
+      "audience": "Podcast producers and repurposing teams",
+      "sitemapId": "podcast-repurposing",
+      "targetArchivePageSize": 24,
+      "siblingLinkCount": {
+        "min": 1,
+        "max": 3
+      },
+      "crossClusterPillarLimit": 1
+    }
+  ]
+}

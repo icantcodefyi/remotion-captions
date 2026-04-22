@@ -1,6 +1,6 @@
 "use client";
 
-import type React from "react";
+import { type FC } from "react";
 import type { CaptionStyleId } from "@/lib/types";
 import { TikTokStyle } from "./tiktok";
 import { HormoziStyle } from "./hormozi";
@@ -10,9 +10,11 @@ import { MinimalStyle } from "./minimal";
 import { NeonStyle } from "./neon";
 import { TypewriterStyle } from "./typewriter";
 import { BroadcastStyle } from "./broadcast";
+import { ComicStyle } from "./comic";
+import { GlitchStyle } from "./glitch";
 import type { CaptionStyleProps } from "./types";
 
-export const STYLE_REGISTRY: Record<CaptionStyleId, React.FC<CaptionStyleProps>> =
+export const STYLE_REGISTRY: Record<CaptionStyleId, FC<CaptionStyleProps>> =
   {
     tiktok: TikTokStyle,
     hormozi: HormoziStyle,
@@ -22,4 +24,6 @@ export const STYLE_REGISTRY: Record<CaptionStyleId, React.FC<CaptionStyleProps>>
     neon: NeonStyle,
     typewriter: TypewriterStyle,
     broadcast: BroadcastStyle,
+    comic: ComicStyle,
+    glitch: GlitchStyle,
   };

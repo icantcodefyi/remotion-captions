@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import { type FC } from "react";
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { FONTS } from "../fonts";
 import { captionFrameStyle, type CaptionStyleProps } from "./types";
@@ -14,7 +14,7 @@ const BEAST_PALETTE = [
   "#FF914D",
 ];
 
-export const BeastStyle: React.FC<CaptionStyleProps> = ({ page, options, pageIndex }) => {
+export const BeastStyle: FC<CaptionStyleProps> = ({ page, options, pageIndex }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const currentTimeMs = (frame / fps) * 1000;

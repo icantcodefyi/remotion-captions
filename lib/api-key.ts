@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "caption-studio.deepgram-key";
 const EVENT = "caption-studio:deepgram-key-change";
@@ -38,13 +38,13 @@ function subscribe(callback: () => void) {
 }
 
 export function useDeepgramKey(): [string | null, (k: string | null) => void] {
-  const key = React.useSyncExternalStore(
+  const key = useSyncExternalStore(
     subscribe,
     getDeepgramKey,
     () => null,
   );
 
-  const update = React.useCallback((next: string | null) => {
+  const update = useCallback((next: string | null) => {
     setDeepgramKey(next);
   }, []);
 

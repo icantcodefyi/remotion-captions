@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { type FC, useId } from "react";
 import { cn } from "@/lib/cn";
 
 type SliderProps = {
@@ -15,7 +15,7 @@ type SliderProps = {
   ariaLabel?: string;
 };
 
-export const Slider: React.FC<SliderProps> = ({
+export const Slider: FC<SliderProps> = ({
   value,
   min,
   max,
@@ -27,7 +27,7 @@ export const Slider: React.FC<SliderProps> = ({
   ariaLabel,
 }) => {
   const pct = ((value - min) / (max - min)) * 100;
-  const id = React.useId();
+  const id = useId();
   return (
     <div className={cn("w-full", className)}>
       {label ? (

@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { type FC, type PointerEvent, useCallback, useRef, useState } from "react";
 import { Move } from "lucide-react";
 import type { CaptionPosition } from "@/lib/types";
 import { POSITION_CLAMP } from "@/lib/types";
@@ -10,48 +10,68 @@ type Props = {
   onChange: (next: CaptionPosition) => void;
 };
 
+/** Offset of the handle from the caption's centre, as a fraction of preview height. */
+const HANDLE_OFFSET = 0.14;
+
 const clamp = (v: number, min: number, max: number) =>
   Math.min(Math.max(v, min), max);
 
-export const CaptionPositionOverlay: React.FC<Props> = ({
-  position,
-  onChange,
-}) => {
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const [dragging, setDragging] = React.useState(false);
+/** Handle sits below the caption normally; flips above when the caption is near the bottom. */
+const handleOffsetFor = (y: number) =>
+  y > 1 - HANDLE_OFFSET - 0.05 ? -HANDLE_OFFSET : HANDLE_OFFSET;
 
-  const updateFromPointer = React.useCallback(
+export const CaptionPositionOverlay: FC<Props> = ({ position, onChange }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const dragStartRef = useRef<{
+    clientX: number;
+    clientY: number;
+    posX: number;
+    posY: number;
+  } | null>(null);
+  const [dragging, setDragging] = useState(false);
+
+  const handleOffset = handleOffsetFor(position.y);
+  const handleY = position.y + handleOffset;
+
+  const applyDelta = useCallback(
     (clientX: number, clientY: number) => {
+      const start = dragStartRef.current;
       const el = containerRef.current;
-      if (!el) return;
+      if (!start || !el) return;
       const rect = el.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) return;
-      const rawX = (clientX - rect.left) / rect.width;
-      const rawY = (clientY - rect.top) / rect.height;
+      const dx = (clientX - start.clientX) / rect.width;
+      const dy = (clientY - start.clientY) / rect.height;
       onChange({
-        x: clamp(rawX, POSITION_CLAMP.minX, POSITION_CLAMP.maxX),
-        y: clamp(rawY, POSITION_CLAMP.minY, POSITION_CLAMP.maxY),
+        x: clamp(start.posX + dx, POSITION_CLAMP.minX, POSITION_CLAMP.maxX),
+        y: clamp(start.posY + dy, POSITION_CLAMP.minY, POSITION_CLAMP.maxY),
       });
     },
     [onChange],
   );
 
-  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    dragStartRef.current = {
+      clientX: e.clientX,
+      clientY: e.clientY,
+      posX: position.x,
+      posY: position.y,
+    };
     setDragging(true);
-    updateFromPointer(e.clientX, e.clientY);
   };
 
-  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!dragging) return;
+  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (!dragStartRef.current) return;
     e.preventDefault();
-    updateFromPointer(e.clientX, e.clientY);
+    applyDelta(e.clientX, e.clientY);
   };
 
-  const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!dragging) return;
+  const endDrag = (e: PointerEvent<HTMLDivElement>) => {
+    if (!dragStartRef.current) return;
+    dragStartRef.current = null;
     setDragging(false);
     try {
       (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
@@ -122,7 +142,7 @@ export const CaptionPositionOverlay: React.FC<Props> = ({
         className="absolute flex items-center gap-1 select-none"
         style={{
           left: `${position.x * 100}%`,
-          top: `${position.y * 100}%`,
+          top: `${clamp(handleY, 0.02, 0.98) * 100}%`,
           transform: "translate(-50%, -50%)",
           pointerEvents: "auto",
           touchAction: "none",
@@ -144,7 +164,9 @@ export const CaptionPositionOverlay: React.FC<Props> = ({
           fontSize: 11,
           fontWeight: 600,
           letterSpacing: 0.2,
-          transition: dragging ? "none" : "background 160ms, color 160ms, box-shadow 160ms",
+          transition: dragging
+            ? "none"
+            : "top 220ms cubic-bezier(0.22,1,0.36,1), background 160ms, color 160ms, box-shadow 160ms",
           outline: "none",
         }}
       >

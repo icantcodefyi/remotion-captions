@@ -1,0 +1,27 @@
+{
+  "title": "Transcript sample 1",
+  "source": "Canonical MeowCap fixture for blog examples",
+  "speaker": "Host",
+  "transcript": [
+    {
+      "startMs": 0,
+      "endMs": 980,
+      "text": "Here is the short clip we want to repurpose."
+    },
+    {
+      "startMs": 980,
+      "endMs": 1860,
+      "text": "The first pass came from transcription."
+    },
+    {
+      "startMs": 1860,
+      "endMs": 3100,
+      "text": "Then we aligned the approved script so every caption read the way the team wrote it."
+    },
+    {
+      "startMs": 3100,
+      "endMs": 4300,
+      "text": "After that we picked a style, nudged the caption position, and exported an SRT for the final edit."
+    }
+  ]
+}

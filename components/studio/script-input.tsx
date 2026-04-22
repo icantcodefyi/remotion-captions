@@ -1,8 +1,10 @@
 "use client";
 
-import * as React from "react";
+import Link from "next/link";
+import { type FC, useId } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { SectionLabel } from "@/components/ui/label";
+import { getBlogHref } from "@/lib/site";
 
 type Props = {
   script: string;
@@ -10,12 +12,12 @@ type Props = {
   disabled?: boolean;
 };
 
-export const ScriptInput: React.FC<Props> = ({
+export const ScriptInput: FC<Props> = ({
   script,
   onScriptChange,
   disabled,
 }) => {
-  const id = React.useId();
+  const id = useId();
   const hintId = `${id}-hint`;
   return (
     <div className="flex flex-col gap-2.5">
@@ -26,9 +28,20 @@ export const ScriptInput: React.FC<Props> = ({
             optional
           </span>
         </SectionLabel>
-        <span className="text-[0.7rem] text-[color:var(--muted)] ital-label">
-          aligned to audio timing
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-[0.7rem] text-[color:var(--muted)] ital-label">
+            matched to your video
+          </span>
+          <Link
+            href={getBlogHref(
+              "/blog/animated-captions-for-short-form-video",
+              "script_alignment_hint",
+            )}
+            className="text-[0.7rem] font-semibold text-[color:var(--accent-ink)]"
+          >
+            Workflow guide
+          </Link>
+        </div>
       </div>
       <Textarea
         id={id}

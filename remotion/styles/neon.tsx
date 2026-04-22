@@ -1,11 +1,11 @@
 "use client";
 
-import React from "react";
+import { type FC } from "react";
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { FONTS } from "../fonts";
 import { captionFrameStyle, type CaptionStyleProps } from "./types";
 
-export const NeonStyle: React.FC<CaptionStyleProps> = ({ page, options }) => {
+export const NeonStyle: FC<CaptionStyleProps> = ({ page, options }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const currentTimeMs = (frame / fps) * 1000;
