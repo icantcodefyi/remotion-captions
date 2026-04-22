@@ -4,7 +4,11 @@ import { type FC } from "react";
 import Image from "next/image";
 import { ArrowDownLeft } from "lucide-react";
 
-export const EmptyPreview: FC = () => (
+type Props = {
+  mode?: "empty" | "needs-source";
+};
+
+export const EmptyPreview: FC<Props> = ({ mode = "empty" }) => (
   <div className="flex-1 flex items-center justify-center text-center px-8 fade-rise">
     <div className="max-w-[28rem]">
       <div className="relative inline-flex mb-6">
@@ -34,15 +38,18 @@ export const EmptyPreview: FC = () => (
       </div>
 
       <h2 className="display text-[1.75rem] font-medium text-balance text-[color:var(--fg)] leading-[1.1]">
-        Drop a clip.
+        {mode === "needs-source" ? "Add the matching clip." : "Drop a clip."}
         <span className="block ital-label font-normal text-[color:var(--muted)] text-[1.25rem] mt-1">
-          We&apos;ll do the rest.
+          {mode === "needs-source"
+            ? "Your subtitles are ready."
+            : "We'll do the rest."}
         </span>
       </h2>
 
       <p className="text-[0.875rem] text-[color:var(--fg-weak)] mt-4 leading-relaxed text-pretty mx-auto max-w-[28ch]">
-        Upload on the left. We&apos;ll transcribe with word-level timing, then
-        hand you eight styles to try on.
+        {mode === "needs-source"
+          ? "Import worked. Drop the source video or audio on the left to preview timing, style it, and re-align edits if needed."
+          : "Upload on the left. We'll transcribe with word-level timing, then hand you eight styles to try on."}
       </p>
 
       <div className="mt-6 inline-flex items-center gap-1.5 text-[0.7rem] text-[color:var(--muted)] ital-label">

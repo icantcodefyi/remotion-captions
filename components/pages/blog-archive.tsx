@@ -126,7 +126,7 @@ export function BlogArchive({ posts }: Props) {
                 <button
                   key={opt.value}
                   onClick={() => setSort(opt.value)}
-                  className={`px-3 py-2 rounded-md text-[0.78rem] uppercase tracking-[0.12em] whitespace-nowrap transition-colors ${
+                  className={`px-3 py-2 rounded-[12px] text-[0.78rem] uppercase tracking-[0.12em] whitespace-nowrap transition-colors ${
                     active
                       ? "bg-[color:var(--surface-1)] text-[color:var(--fg)] shadow-[var(--shadow-soft)]"
                       : "text-[color:var(--muted)] hover:text-[color:var(--fg)]"

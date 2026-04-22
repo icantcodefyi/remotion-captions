@@ -33,7 +33,6 @@ export const PreviewPlayer = ({
       compositionHeight={compositionHeight}
       controls
       loop
-      clickToPlay={false}
       acknowledgeRemotionLicense
       style={{
         width: "100%",

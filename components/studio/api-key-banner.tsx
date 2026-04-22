@@ -23,7 +23,7 @@ export const ApiKeyBanner: FC<Props> = ({ onClick }) => {
       ].join(" ")}
     >
       <div
-        className="h-8 w-8 shrink-0 rounded-md flex items-center justify-center"
+        className="h-8 w-8 shrink-0 rounded flex items-center justify-center"
         style={{
           background: "var(--surface-1)",
           border:

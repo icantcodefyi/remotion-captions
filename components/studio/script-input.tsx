@@ -24,7 +24,8 @@ type Props = {
   onDelimiterChange: (id: DelimiterId) => void;
   onReAlign: () => void;
   isAligning: boolean;
-  generationMode: "align" | "transcribe";
+  generationMode: "align" | "transcribe" | "import";
+  hasSourceMedia: boolean;
   disabled?: boolean;
 };
 
@@ -41,6 +42,7 @@ export const ScriptInput: FC<Props> = ({
   onReAlign,
   isAligning,
   generationMode,
+  hasSourceMedia,
   disabled,
 }) => {
   const id = useId();
@@ -54,7 +56,7 @@ export const ScriptInput: FC<Props> = ({
     [captions, delimiter, breaks, hasCaptions],
   );
   const isDirty = hasCaptions && normalize(script) !== normalize(canonical);
-  const canReAlign = isDirty && !isAligning && !disabled;
+  const canReAlign = hasSourceMedia && isDirty && !isAligning && !disabled;
 
   useEffect(() => {
     const el = taRef.current;
@@ -112,7 +114,11 @@ export const ScriptInput: FC<Props> = ({
           {totalSec}s
           <span className="not-italic mx-1 opacity-60">·</span>
           <span className="ital-label not-italic normal-case tracking-normal text-[color:var(--muted-soft)]">
-            {generationMode === "align" ? "aligned" : "auto"}
+            {generationMode === "align"
+              ? "aligned"
+              : generationMode === "import"
+                ? "imported"
+                : "auto"}
           </span>
         </span>
       </div>
@@ -141,9 +147,11 @@ export const ScriptInput: FC<Props> = ({
           onClick={onReAlign}
           disabled={!canReAlign}
           title={
-            isDirty
-              ? "Re-align captions to the edited transcript"
-              : "No changes to align"
+            !hasSourceMedia
+              ? "Add a source clip to re-align timing"
+              : isDirty
+                ? "Re-align captions to the edited transcript"
+                : "No changes to align"
           }
           aria-label="Re-align captions"
           className={cn(
@@ -182,7 +190,9 @@ export const ScriptInput: FC<Props> = ({
         id={hintId}
         className="text-[0.7rem] text-[color:var(--muted)] leading-relaxed"
       >
-        {isDirty ? (
+        {!hasSourceMedia ? (
+          <>Add a source clip to re-align transcript edits back to audio timing.</>
+        ) : isDirty ? (
           <>
             Unsaved edits.{" "}
             <span className="text-[color:var(--accent-ink)]">Re-align</span> to

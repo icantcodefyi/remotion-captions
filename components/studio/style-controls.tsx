@@ -50,7 +50,7 @@ export const StyleControls: FC<Props> = ({ value, onChange }) => {
         <div
           role="radiogroup"
           aria-label="Caption position"
-          className="inline-flex items-center p-1 rounded bg-[var(--surface-2)] border border-[color:var(--border)] w-full"
+          className="inline-flex items-center p-1 rounded-lg bg-[var(--surface-2)] border border-[color:var(--border)] w-full"
         >
           {POSITION_PRESETS.map((preset) => {
             const selected = activePresetId === preset.id;
@@ -62,7 +62,7 @@ export const StyleControls: FC<Props> = ({ value, onChange }) => {
                 aria-checked={selected}
                 onClick={() => set("position", preset.value)}
                 className={cn(
-                  "relative flex-1 rounded-md font-medium h-7 px-3 text-[0.75rem]",
+                  "relative flex-1 rounded-[12px] font-medium h-7 px-3 text-[0.75rem]",
                   "transition-[background,color,box-shadow] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
                   "[@media(pointer:coarse)]:h-9",
                   selected

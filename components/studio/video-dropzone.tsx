@@ -47,7 +47,7 @@ export const VideoDropzone: FC<Props> = ({
         aria-label="Selected source"
       >
         <div
-          className="h-10 w-10 shrink-0 rounded-md flex items-center justify-center"
+          className="h-10 w-10 shrink-0 rounded flex items-center justify-center"
           style={{
             background: "var(--accent-soft)",
             border:
@@ -72,7 +72,7 @@ export const VideoDropzone: FC<Props> = ({
         <button
           type="button"
           className={cn(
-            "h-9 w-9 rounded-md flex items-center justify-center",
+            "h-9 w-9 rounded flex items-center justify-center",
             "text-[color:var(--muted)]",
             "transition-colors duration-200",
             "[@media(hover:hover)]:hover:text-[color:var(--danger)]",

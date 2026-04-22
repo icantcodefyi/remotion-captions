@@ -162,3 +162,84 @@ export type StudioJob = {
 export type CaptionedVideoProps = {
   videoSrc: string;
 } & CaptionOverlayProps;
+
+// --- Aspect ratio presets ---------------------------------------------------
+// Social canvases. Dimensions match the output resolution used when rendering.
+// `safeTop` / `safeBottom` are normalized fractions of the canvas height that
+// platform UI (TikTok caption, share rail, IG sticker row, etc.) typically
+// covers. The caption position overlay uses them to draw guides and to
+// auto-nudge captions into a safe spot when the canvas changes.
+
+export type AspectPresetId = "source" | "9x16" | "1x1" | "16x9";
+
+export type AspectPreset = {
+  id: AspectPresetId;
+  label: string;
+  /** Short text for segmented control tick. */
+  tick: string;
+  /** Short descriptor shown under the picker. */
+  blurb: string;
+  /** Output dimensions. `null` for "source" (use the input video's size). */
+  dimensions: { width: number; height: number } | null;
+  /** Top-safe fraction (platform UI covers from top). */
+  safeTop: number;
+  /** Bottom-safe fraction (platform UI covers from bottom). */
+  safeBottom: number;
+};
+
+export const ASPECT_PRESETS: AspectPreset[] = [
+  {
+    id: "source",
+    label: "Source",
+    tick: "Source",
+    blurb: "Match the input video",
+    dimensions: null,
+    safeTop: 0.04,
+    safeBottom: 0.04,
+  },
+  {
+    id: "9x16",
+    label: "Vertical",
+    tick: "9:16",
+    blurb: "TikTok, Reels, Shorts",
+    dimensions: { width: 1080, height: 1920 },
+    safeTop: 0.1,
+    safeBottom: 0.18,
+  },
+  {
+    id: "1x1",
+    label: "Square",
+    tick: "1:1",
+    blurb: "Feed posts",
+    dimensions: { width: 1080, height: 1080 },
+    safeTop: 0.06,
+    safeBottom: 0.06,
+  },
+  {
+    id: "16x9",
+    label: "Wide",
+    tick: "16:9",
+    blurb: "YouTube, landing hero",
+    dimensions: { width: 1920, height: 1080 },
+    safeTop: 0.08,
+    safeBottom: 0.08,
+  },
+];
+
+export function getAspectPreset(id: AspectPresetId): AspectPreset {
+  return ASPECT_PRESETS.find((p) => p.id === id) ?? ASPECT_PRESETS[0];
+}
+
+// --- Brand kits -------------------------------------------------------------
+// Persisted locally (localStorage). A kit bundles the full look: style, words-
+// per-page, position, accent, shadow, font scale, and aspect. Applying a kit
+// leaves captions and the source video alone.
+
+export type BrandKit = {
+  id: string;
+  name: string;
+  createdAt: number;
+  styleId: CaptionStyleId;
+  styleOptions: StyleOptions;
+  aspectId: AspectPresetId;
+};

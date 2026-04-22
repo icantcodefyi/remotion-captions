@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { KeyRound, RotateCcw, Share, Sparkles } from "lucide-react";
+import { KeyRound, Languages, RotateCcw, Share, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import type { Caption } from "@remotion/captions";
 import type { PlayerRef } from "@remotion/player";
@@ -13,6 +13,7 @@ import { Segmented } from "@/components/ui/segmented";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/cn";
 import { VideoDropzone } from "@/components/studio/video-dropzone";
+import { SubtitleImport } from "@/components/studio/subtitle-import";
 import { ScriptInput } from "@/components/studio/script-input";
 import { StyleGrid } from "@/components/studio/style-grid";
 import { StyleControls } from "@/components/studio/style-controls";
@@ -24,28 +25,45 @@ import { EmptyPreview } from "@/components/studio/empty-preview";
 import { LoadingPreview } from "@/components/studio/loading-preview";
 import { TranscriptEditor } from "@/components/studio/transcript-editor";
 import { ExportDialog } from "@/components/studio/export-dialog";
+import { AspectControls } from "@/components/studio/aspect-controls";
+import { BrandKits, makeSignature } from "@/components/studio/brand-kits";
+import { TranslateDialog } from "@/components/studio/translate-dialog";
+import { SafeZoneOverlay } from "@/components/studio/safe-zone-overlay";
 import { getVideoMetaFromFile, type VideoMeta } from "@/lib/video-meta";
 import { downloadSrt, downloadJson } from "@/lib/export";
 import { useDeepgramKey, DEEPGRAM_KEY_HEADER } from "@/lib/api-key";
+import { useOpenAIKey } from "@/lib/llm-key";
+import { useBrandKits, newKitId } from "@/lib/brand-kits";
 import {
+  DELIMITERS,
   deriveBreaks,
   joinCaptions,
   stripForAlignment,
   useDelimiter,
 } from "@/lib/delimiter";
+import { importSubtitleTrack } from "@/lib/subtitle-import";
 import {
   CAPTION_STYLES,
   DEFAULT_STYLE_OPTIONS,
+  type AspectPresetId,
+  type BrandKit,
   type CaptionStyleId,
   type StyleOptions,
 } from "@/lib/types";
+import { getLanguage, type LanguageCode } from "@/lib/translate";
+import { getAspectPreset, reflowPosition, resolveCanvas } from "@/lib/aspect";
 import { getBlogHref } from "@/lib/site";
 
 const FPS = 30;
 
 type JobStatus = "idle" | "running" | "ready" | "error";
 type RightTab = "style" | "edit";
-type GenerationMode = "align" | "transcribe";
+type GenerationMode = "align" | "transcribe" | "import";
+type ImportedTrackMeta = {
+  fileName: string;
+  cueCount: number;
+  format: "srt" | "vtt" | "json";
+};
 
 export function StudioPage() {
   const [file, setFile] = React.useState<File | null>(null);
@@ -56,16 +74,32 @@ export function StudioPage() {
   const [status, setStatus] = React.useState<JobStatus>("idle");
   const [generationMode, setGenerationMode] =
     React.useState<GenerationMode>("transcribe");
+  const [importedTrack, setImportedTrack] =
+    React.useState<ImportedTrackMeta | null>(null);
   const [styleId, setStyleId] = React.useState<CaptionStyleId>("tiktok");
   const [styleOptions, setStyleOptions] = React.useState<StyleOptions>(
     DEFAULT_STYLE_OPTIONS,
   );
   const [delimiter, setDelimiterId] = useDelimiter();
   const [deepgramKey, setDeepgramKey] = useDeepgramKey();
+  const [openaiKey, setOpenaiKey] = useOpenAIKey();
   const [keyDialogOpen, setKeyDialogOpen] = React.useState(false);
   const [exportDialogOpen, setExportDialogOpen] = React.useState(false);
+  const [translateDialogOpen, setTranslateDialogOpen] = React.useState(false);
+  const [aspectId, setAspectId] = React.useState<AspectPresetId>("source");
   const [rightTab, setRightTab] = React.useState<RightTab>("style");
+  const { kits, save: saveKit, remove: removeKit } = useBrandKits();
   const playerRef = React.useRef<PlayerRef>(null);
+
+  const clearCaptions = React.useCallback(() => {
+    setCaptions(null);
+    setBreaks([]);
+    setScript("");
+    setStatus("idle");
+    setGenerationMode("transcribe");
+    setImportedTrack(null);
+    setRightTab("style");
+  }, []);
 
   const videoSrc = React.useMemo(
     () => (file ? URL.createObjectURL(file) : null),
@@ -113,10 +147,11 @@ export function StudioPage() {
   const handleFileChange = (next: File | null) => {
     setFile(next);
     setVideoMeta(null);
-    setCaptions(null);
-    setBreaks([]);
-    setScript("");
-    setStatus("idle");
+    if (!next) {
+      clearCaptions();
+      return;
+    }
+    setStatus(captions && captions.length > 0 ? "ready" : "idle");
   };
 
   const handleStyleChange = (id: CaptionStyleId) => {
@@ -129,8 +164,84 @@ export function StudioPage() {
     }));
   };
 
+  const handleAspectChange = React.useCallback(
+    (next: AspectPresetId) => {
+      if (next === aspectId) return;
+      setAspectId(next);
+      if (!videoMeta) return;
+      const preset = getAspectPreset(next);
+      setStyleOptions((prev) => ({
+        ...prev,
+        position: reflowPosition(prev.position, videoMeta, preset),
+      }));
+    },
+    [aspectId, videoMeta],
+  );
+
+  const handleApplyKit = React.useCallback(
+    (kit: BrandKit) => {
+      const aspectChanged = kit.aspectId !== aspectId;
+      const nextPosition =
+        aspectChanged && videoMeta
+          ? reflowPosition(
+              kit.styleOptions.position,
+              videoMeta,
+              getAspectPreset(kit.aspectId),
+            )
+          : kit.styleOptions.position;
+      setStyleId(kit.styleId);
+      setStyleOptions({ ...kit.styleOptions, position: nextPosition });
+      if (aspectChanged) setAspectId(kit.aspectId);
+      toast.success("Applied kit", { description: kit.name });
+    },
+    [aspectId, videoMeta],
+  );
+
+  const handleSaveKit = React.useCallback(
+    (name: string) => {
+      const kit: BrandKit = {
+        id: newKitId(),
+        name,
+        createdAt: Date.now(),
+        styleId,
+        styleOptions,
+        aspectId,
+      };
+      saveKit(kit);
+      toast.success("Saved kit", { description: name });
+    },
+    [styleId, styleOptions, aspectId, saveKit],
+  );
+
+  const handleTranslated = React.useCallback(
+    (nextCaptions: Caption[], language: LanguageCode) => {
+      setCaptions(nextCaptions);
+      setBreaks([]);
+      setScript(joinCaptions(nextCaptions, delimiter, []));
+      setStatus("ready");
+      setImportedTrack(null);
+      const lang = getLanguage(language);
+      toast.success(`Translated to ${lang.name}`, {
+        description: `${nextCaptions.length} words · timing preserved`,
+      });
+    },
+    [delimiter],
+  );
+
   const canGenerate = Boolean(file && videoMeta) && status !== "running";
   const hasCaptions = Boolean(captions && captions.length > 0);
+
+  const canvas = React.useMemo(() => {
+    const source = videoMeta
+      ? { width: videoMeta.width, height: videoMeta.height }
+      : { width: 1080, height: 1920 };
+    return resolveCanvas(aspectId, source);
+  }, [aspectId, videoMeta]);
+
+  const activeKitSignature = React.useMemo(
+    () => makeSignature({ styleId, styleOptions, aspectId }),
+    [styleId, styleOptions, aspectId],
+  );
 
   const runAlignment = React.useCallback(
     async ({
@@ -172,6 +283,7 @@ export function StudioPage() {
             : [];
         setCaptions(next);
         setGenerationMode(useScript ? "align" : "transcribe");
+        setImportedTrack(null);
         setScript(joinCaptions(next, delimiter, nextBreaks));
         setBreaks(nextBreaks);
         setStatus("ready");
@@ -205,6 +317,45 @@ export function StudioPage() {
     if (script.trim().length === 0) return;
     void runAlignment({ useScript: true, reAlign: true });
   }, [runAlignment, script]);
+
+  const handleImportSubtitles = React.useCallback(
+    async (subtitleFile: File) => {
+      try {
+        const input = await subtitleFile.text();
+        const imported = importSubtitleTrack(input, subtitleFile.name);
+        const nextDelimiter =
+          imported.breaks.length > 0 ? DELIMITERS.newline : delimiter;
+
+        if (imported.breaks.length > 0 && delimiter.id !== "newline") {
+          setDelimiterId("newline");
+        }
+
+        setCaptions(imported.captions);
+        setBreaks(imported.breaks);
+        setGenerationMode("import");
+        setImportedTrack({
+          fileName: subtitleFile.name,
+          cueCount: imported.cueCount,
+          format: imported.format,
+        });
+        setScript(
+          joinCaptions(imported.captions, nextDelimiter, imported.breaks),
+        );
+        setStatus("ready");
+        setRightTab("edit");
+
+        const unit = imported.format === "json" ? "captions" : "subtitle cues";
+        toast.success("Imported subtitles", {
+          description: `${imported.cueCount} ${unit} from ${subtitleFile.name}`,
+        });
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Something went wrong.";
+        toast.error("Couldn't import subtitles", { description: message });
+      }
+    },
+    [delimiter, setDelimiterId],
+  );
 
   const baseName = file ? file.name.replace(/\.[^.]+$/, "") : "captions";
 
@@ -253,11 +404,7 @@ export function StudioPage() {
         captions={captions ?? []}
         styleId={styleId}
         styleOptions={styleOptions}
-        videoDimensions={
-          videoMeta
-            ? { width: videoMeta.width, height: videoMeta.height }
-            : null
-        }
+        videoDimensions={videoMeta ? canvas : null}
         videoDurationSec={videoMeta?.durationSec ?? 0}
         baseName={baseName}
         onDownloadSrt={handleDownloadSrt}
@@ -268,6 +415,16 @@ export function StudioPage() {
         onError={(message) =>
           toast.error("Couldn't export", { description: message })
         }
+      />
+
+      <TranslateDialog
+        open={translateDialogOpen}
+        onOpenChange={setTranslateDialogOpen}
+        captions={captions}
+        wordsPerPage={styleOptions.wordsPerPage}
+        openaiKey={openaiKey}
+        onOpenaiKeyChange={setOpenaiKey}
+        onTranslated={handleTranslated}
       />
 
       <div
@@ -300,6 +457,14 @@ export function StudioPage() {
               onFileChange={handleFileChange}
               disabled={status === "running"}
             />
+            {!hasCaptions ? (
+              <SubtitleImport
+                onImport={handleImportSubtitles}
+                importedTrack={importedTrack}
+                onClear={clearCaptions}
+                disabled={status === "running"}
+              />
+            ) : null}
           </div>
 
           <Divider />
@@ -314,6 +479,7 @@ export function StudioPage() {
             onReAlign={reAlign}
             isAligning={status === "running" && hasCaptions}
             generationMode={generationMode}
+            hasSourceMedia={Boolean(file)}
             disabled={status === "running"}
           />
 
@@ -323,7 +489,7 @@ export function StudioPage() {
               disabled={!canGenerate}
               size="lg"
               className={cn(
-                "w-full mt-1",
+                "w-full mt-1 shrink-0",
                 canGenerate && "accent-pulse",
               )}
             >
@@ -340,26 +506,30 @@ export function StudioPage() {
               )}
             </Button>
           ) : (
-            <Button
-              onClick={generate}
-              disabled={!canGenerate}
-              variant="secondary"
-              size="sm"
-              className="w-full"
-              title="Regenerate from scratch (discards current captions)"
-            >
-              {status === "running" && !hasCaptions ? (
-                <>
-                  <span className="h-3 w-3 rounded-full border-2 border-[color:var(--accent-deep)]/20 border-t-[color:var(--accent-deep)] spin-slow" />
-                  Generating…
-                </>
-              ) : (
-                <>
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  Start over
-                </>
-              )}
-            </Button>
+            <div className="flex flex-col gap-1.5">
+              <Button
+                onClick={() => setTranslateDialogOpen(true)}
+                disabled={status === "running"}
+                variant="secondary"
+                size="sm"
+                className="w-full"
+                title="Translate captions while keeping timing intact"
+              >
+                <Languages className="h-3.5 w-3.5" />
+                Translate…
+              </Button>
+              <Button
+                onClick={clearCaptions}
+                disabled={status === "running"}
+                variant="ghost"
+                size="sm"
+                className="w-full"
+                title="Clear the current caption pass and start over"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                Start over
+              </Button>
+            </div>
           )}
         </aside>
 
@@ -373,7 +543,9 @@ export function StudioPage() {
                 mode={script.trim().length > 0 ? "align" : "transcribe"}
               />
             ) : !file || !videoMeta ? (
-              <EmptyPreview />
+              <EmptyPreview
+                mode={hasCaptions && generationMode === "import" ? "needs-source" : "empty"}
+              />
             ) : (
               <div
                 className="relative w-full h-full flex items-center justify-center"
@@ -382,7 +554,7 @@ export function StudioPage() {
                 <div
                   className="relative max-h-full max-w-full"
                   style={{
-                    aspectRatio: `${videoMeta.width} / ${videoMeta.height}`,
+                    aspectRatio: `${canvas.width} / ${canvas.height}`,
                     width: "auto",
                     height: "100%",
                   }}
@@ -391,8 +563,8 @@ export function StudioPage() {
                     ref={playerRef}
                     durationInFrames={durationInFrames}
                     fps={FPS}
-                    compositionWidth={videoMeta.width}
-                    compositionHeight={videoMeta.height}
+                    compositionWidth={canvas.width}
+                    compositionHeight={canvas.height}
                     inputProps={{
                       videoSrc: videoSrc!,
                       captions: captions ?? [],
@@ -400,6 +572,7 @@ export function StudioPage() {
                       styleOptions,
                     }}
                   />
+                  <SafeZoneOverlay aspectId={aspectId} />
                   <CaptionPositionOverlay
                     position={styleOptions.position}
                     onChange={(position) =>
@@ -447,7 +620,17 @@ export function StudioPage() {
           />
 
           {rightTab === "style" ? (
-            <div className="flex flex-col gap-6 min-h-0 overflow-y-auto">
+            <div className="flex flex-col gap-6 min-h-0 overflow-y-auto -mx-1 px-1">
+              <AspectControls
+                value={aspectId}
+                onChange={handleAspectChange}
+                sourceDimensions={
+                  videoMeta
+                    ? { width: videoMeta.width, height: videoMeta.height }
+                    : null
+                }
+              />
+              <Divider />
               <div className="flex flex-col gap-3">
                 <SectionLabel>Caption style</SectionLabel>
                 <StyleGrid value={styleId} onChange={handleStyleChange} />
@@ -459,6 +642,14 @@ export function StudioPage() {
                   onChange={setStyleOptions}
                 />
               </div>
+              <Divider />
+              <BrandKits
+                kits={kits}
+                activeSignature={activeKitSignature}
+                onApply={handleApplyKit}
+                onSave={handleSaveKit}
+                onDelete={removeKit}
+              />
             </div>
           ) : (
             <TranscriptEditor
