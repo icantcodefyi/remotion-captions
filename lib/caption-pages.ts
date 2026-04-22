@@ -111,11 +111,19 @@ export function redistributePage(
     ];
   }
 
+  // Match the producer convention (lib/deepgram.ts wordsToCaptions): every
+  // word except the very first of the stream carries a leading space.
+  // createTikTokStyleCaptions uses that leading space to detect page
+  // boundaries — without it, the renderer collapses everything into a single
+  // mega-page and all translated words show simultaneously.
+  const wordText = (globalIndex: number, word: string) =>
+    globalIndex === 0 ? word : ` ${word}`;
+
   if (newWords.length === count) {
     const next = captions.slice();
     for (let i = 0; i < newWords.length; i++) {
       const idx = page.startIndex + i;
-      next[idx] = { ...next[idx], text: newWords[i] };
+      next[idx] = { ...next[idx], text: wordText(idx, newWords[i]) };
     }
     return next;
   }
@@ -126,7 +134,7 @@ export function redistributePage(
     const startMs = Math.round(page.startMs + i * sliceMs);
     const endMs = Math.round(page.startMs + (i + 1) * sliceMs);
     return {
-      text,
+      text: wordText(page.startIndex + i, text),
       startMs,
       endMs,
       timestampMs: startMs,
