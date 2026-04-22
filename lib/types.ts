@@ -158,6 +158,4 @@ export type CaptionedVideoProps = {
   captions: Caption[];
   styleId: CaptionStyleId;
   styleOptions: StyleOptions;
-  /** Page index to skip rendering (used when inline-editing that page). */
-  hiddenPageIndex?: number | null;
 };

@@ -3,13 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Download,
-  FileCode2,
-  KeyRound,
-  RotateCcw,
-  Sparkles,
-} from "lucide-react";
+import { KeyRound, RotateCcw, Share, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import type { Caption } from "@remotion/captions";
 import type { PlayerRef } from "@remotion/player";
@@ -24,12 +18,12 @@ import { StyleGrid } from "@/components/studio/style-grid";
 import { StyleControls } from "@/components/studio/style-controls";
 import { PreviewPlayer } from "@/components/studio/preview-player";
 import { CaptionPositionOverlay } from "@/components/studio/position-overlay";
-import { CaptionInlineEditor } from "@/components/studio/caption-inline-editor";
 import { ApiKeyBanner } from "@/components/studio/api-key-banner";
 import { ApiKeyDialog } from "@/components/studio/api-key-dialog";
 import { EmptyPreview } from "@/components/studio/empty-preview";
 import { LoadingPreview } from "@/components/studio/loading-preview";
 import { TranscriptEditor } from "@/components/studio/transcript-editor";
+import { ExportDialog } from "@/components/studio/export-dialog";
 import { getVideoMetaFromFile, type VideoMeta } from "@/lib/video-meta";
 import { downloadSrt, downloadJson } from "@/lib/export";
 import { useDeepgramKey, DEEPGRAM_KEY_HEADER } from "@/lib/api-key";
@@ -58,10 +52,8 @@ export function StudioPage() {
   );
   const [deepgramKey, setDeepgramKey] = useDeepgramKey();
   const [keyDialogOpen, setKeyDialogOpen] = React.useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = React.useState(false);
   const [rightTab, setRightTab] = React.useState<RightTab>("style");
-  const [editingPageIndex, setEditingPageIndex] = React.useState<number | null>(
-    null,
-  );
   const playerRef = React.useRef<PlayerRef>(null);
 
   const videoSrc = React.useMemo(
@@ -173,11 +165,10 @@ export function StudioPage() {
   return (
     <main className="h-dvh w-dvw flex flex-col overflow-hidden">
       <Header
-        hasCaptions={hasCaptions}
+        canExport={Boolean(file)}
         hasKey={Boolean(deepgramKey)}
         onOpenKeyDialog={() => setKeyDialogOpen(true)}
-        onDownloadSrt={handleDownloadSrt}
-        onDownloadJson={handleDownloadJson}
+        onOpenExportDialog={() => setExportDialogOpen(true)}
       />
 
       <ApiKeyDialog
@@ -189,6 +180,23 @@ export function StudioPage() {
           if (k) toast.success("Key saved");
           else toast.message("Key removed");
         }}
+      />
+
+      <ExportDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        file={file}
+        captions={captions ?? []}
+        styleOptions={styleOptions}
+        baseName={baseName}
+        onDownloadSrt={handleDownloadSrt}
+        onDownloadJson={handleDownloadJson}
+        onVideoSaved={(filename) =>
+          toast.success("Saved", { description: filename })
+        }
+        onError={(message) =>
+          toast.error("Couldn't export", { description: message })
+        }
       />
 
       <div
@@ -301,23 +309,8 @@ export function StudioPage() {
                       captions: captions ?? [],
                       styleId,
                       styleOptions,
-                      hiddenPageIndex: editingPageIndex,
                     }}
                   />
-                  {hasCaptions ? (
-                    <CaptionInlineEditor
-                      captions={captions!}
-                      onCaptionsChange={setCaptions}
-                      playerRef={playerRef}
-                      fps={FPS}
-                      position={styleOptions.position}
-                      wordsPerPage={styleOptions.wordsPerPage}
-                      styleId={styleId}
-                      styleOptions={styleOptions}
-                      compositionWidth={videoMeta.width}
-                      onEditingPageChange={setEditingPageIndex}
-                    />
-                  ) : null}
                   <CaptionPositionOverlay
                     position={styleOptions.position}
                     onChange={(position) =>
@@ -425,18 +418,11 @@ const Divider: React.FC = () => (
 );
 
 const Header: React.FC<{
-  hasCaptions: boolean;
+  canExport: boolean;
   hasKey: boolean;
   onOpenKeyDialog: () => void;
-  onDownloadSrt: () => void;
-  onDownloadJson: () => void;
-}> = ({
-  hasCaptions,
-  hasKey,
-  onOpenKeyDialog,
-  onDownloadSrt,
-  onDownloadJson,
-}) => {
+  onOpenExportDialog: () => void;
+}> = ({ canExport, hasKey, onOpenKeyDialog, onOpenExportDialog }) => {
   return (
     <header className="flex items-center justify-between gap-3 px-4 md:px-5 py-4 fade-rise">
       <div className="flex items-center gap-3 min-w-0">
@@ -467,19 +453,20 @@ const Header: React.FC<{
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-0.5">
         <Link
           href={getBlogHref("/blog", "guides_header")}
-          className="hidden sm:inline-flex items-center justify-center gap-2 rounded-md h-8 px-3 text-[0.75rem] font-medium bg-[var(--surface-1)] text-[color:var(--fg)] border border-[color:var(--border)] shadow-[var(--shadow-soft)] hover:bg-[var(--surface-2)] hover:border-[color:var(--border-strong)] transition-[transform,background,border-color,color,box-shadow] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-[1px]"
+          className="hidden sm:inline-flex items-center justify-center rounded-md h-8 px-3 text-[0.75rem] font-medium bg-transparent text-[color:var(--fg-weak)] transition-colors duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] [@media(hover:hover)]:hover:bg-[var(--surface-2)] [@media(hover:hover)]:hover:text-[color:var(--fg)]"
         >
           Guides
         </Link>
         <ThemeToggle />
         <Button
-          variant={hasKey ? "ghost" : "secondary"}
+          variant="ghost"
           size="sm"
           onClick={onOpenKeyDialog}
           title={hasKey ? "API key connected" : "Add API key"}
+          aria-label={hasKey ? "API key connected" : "Add API key"}
         >
           <KeyRound
             className="h-[13px] w-[13px]"
@@ -491,23 +478,19 @@ const Header: React.FC<{
             {hasKey ? "Key" : "Add key"}
           </span>
         </Button>
+        <span
+          aria-hidden
+          className="hidden sm:block mx-2 h-5 w-px bg-[color:var(--border)]"
+        />
         <Button
-          variant="secondary"
+          variant="primary"
           size="sm"
-          onClick={onDownloadJson}
-          disabled={!hasCaptions}
+          onClick={onOpenExportDialog}
+          disabled={!canExport}
+          className="ml-0.5"
         >
-          <FileCode2 className="h-[13px] w-[13px]" />
-          <span className="hidden sm:inline">JSON</span>
-        </Button>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onDownloadSrt}
-          disabled={!hasCaptions}
-        >
-          <Download className="h-[13px] w-[13px]" />
-          <span className="hidden sm:inline">SRT</span>
+          <Share className="h-[13px] w-[13px]" />
+          <span className="hidden sm:inline">Export</span>
         </Button>
       </div>
     </header>

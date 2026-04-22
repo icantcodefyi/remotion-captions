@@ -12,7 +12,6 @@ export const CaptionedVideo: FC<CaptionedVideoProps> = ({
   captions,
   styleId,
   styleOptions,
-  hiddenPageIndex = null,
 }) => {
   const { fps, durationInFrames } = useVideoConfig();
   const StyleComponent = STYLE_REGISTRY[styleId];
@@ -39,7 +38,6 @@ export const CaptionedVideo: FC<CaptionedVideoProps> = ({
         style={{ width: "100%", height: "100%", objectFit: "contain" }}
       />
       {pages.map((page, index) => {
-        if (hiddenPageIndex === index) return null;
         const nextPage = pages[index + 1] ?? null;
         const startFrame = Math.max(0, Math.floor((page.startMs / 1000) * fps));
         const nextStartMs = nextPage ? nextPage.startMs : totalDurationMs;

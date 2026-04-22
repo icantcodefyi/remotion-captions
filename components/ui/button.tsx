@@ -19,7 +19,6 @@ const buttonVariants = cva(
           "border border-[color:var(--accent-edge)]",
           "shadow-[0_8px_22px_-12px_var(--accent-glow),inset_0_1px_0_oklch(100%_0_0/0.35)]",
           "font-semibold",
-          "[@media(hover:hover)]:hover:-translate-y-[1px]",
           "[@media(hover:hover)]:hover:brightness-[1.04]",
         ].join(" "),
         secondary: [
@@ -28,7 +27,6 @@ const buttonVariants = cva(
           "shadow-[var(--shadow-soft)]",
           "[@media(hover:hover)]:hover:bg-[var(--surface-2)]",
           "[@media(hover:hover)]:hover:border-[color:var(--border-strong)]",
-          "[@media(hover:hover)]:hover:-translate-y-[1px]",
         ].join(" "),
         ghost: [
           "bg-transparent text-[color:var(--fg-weak)]",

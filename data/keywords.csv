@@ -3,3 +3,15 @@ query,slug,volume,difficulty,intent,cluster,pillar_slug,notes,status
 "transcript vs subtitles vs closed captions","transcript-vs-subtitles-vs-closed-captions",110,18,informational,accessibility,transcript-vs-subtitles-vs-closed-captions,"Existing accessibility pillar post.",published
 "brand consistent captions","brand-consistent-caption-styles",70,21,informational,agency-ops,brand-consistent-caption-styles,"Existing agency operations pillar post.",published
 "podcast clip captions","podcast-clips-to-social-captions",90,19,informational,podcast-repurposing,podcast-clips-to-social-captions,"Existing podcast repurposing pillar post.",published
+"how to add captions to instagram reels","how-to-add-captions-to-instagram-reels",320,18,informational,creator-workflow,animated-captions-for-short-form-video,"Spoke post for Reels workflow.",review
+"youtube shorts caption workflow","youtube-shorts-caption-workflow",140,17,informational,creator-workflow,animated-captions-for-short-form-video,"Spoke post for Shorts workflow.",review
+"script alignment for video captions","script-alignment-for-video-captions",60,12,informational,creator-workflow,animated-captions-for-short-form-video,"Spoke post for transcript cleanup and timing alignment.",review
+"how to make video captions easier to read","how-to-make-video-captions-easier-to-read",170,14,informational,accessibility,transcript-vs-subtitles-vs-closed-captions,"Spoke post on caption readability.",review
+"transcripts vs subtitles for marketing videos","transcripts-vs-subtitles-for-marketing-videos",90,16,informational,accessibility,transcript-vs-subtitles-vs-closed-captions,"Spoke post on choosing the right text output.",review
+"srt workflow for video review","srt-workflow-for-video-review",50,11,informational,accessibility,transcript-vs-subtitles-vs-closed-captions,"Spoke post on subtitle handoffs and review.",review
+"caption style guide for social media teams","caption-style-guide-for-social-media-teams",130,19,informational,agency-ops,brand-consistent-caption-styles,"Spoke post on documenting caption systems.",review
+"client approval workflow for video captions","client-approval-workflow-for-video-captions",70,18,informational,agency-ops,brand-consistent-caption-styles,"Spoke post on review and approvals.",review
+"manage caption presets across brands","manage-caption-presets-across-brands",40,13,informational,agency-ops,brand-consistent-caption-styles,"Spoke post on multi-brand preset governance.",review
+"how to turn podcast clips into instagram reels","how-to-turn-podcast-clips-into-instagram-reels",110,16,informational,podcast-repurposing,podcast-clips-to-social-captions,"Spoke post on podcast-to-Reels workflows.",review
+"edit podcast transcripts for social clips","edit-podcast-transcripts-for-social-clips",80,15,informational,podcast-repurposing,podcast-clips-to-social-captions,"Spoke post on transcript cleanup for clip packaging.",review
+"caption workflow for interview clips","caption-workflow-for-interview-clips",60,14,informational,podcast-repurposing,podcast-clips-to-social-captions,"Spoke post on interview clip packaging.",review
