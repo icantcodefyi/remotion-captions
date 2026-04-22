@@ -14,14 +14,14 @@ type Props = {
   inputProps: CaptionedVideoProps;
 };
 
-export const PreviewPlayer = ({
+export function PreviewPlayer({
   ref,
   durationInFrames,
   fps,
   compositionWidth,
   compositionHeight,
   inputProps,
-}: Props) => {
+}: Props) {
   return (
     <Player
       ref={ref}
@@ -43,4 +43,4 @@ export const PreviewPlayer = ({
       }}
     />
   );
-};
+}

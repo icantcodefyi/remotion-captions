@@ -56,7 +56,7 @@ export function importSubtitleTrack(
   throw new Error("Unsupported file type. Import .srt, .vtt, or .json.");
 }
 
-function parseCaptionJson(input: string): Caption[] {
+function parseCaptionJson(input: string) {
   let parsed: unknown;
   try {
     parsed = JSON.parse(input);
@@ -96,7 +96,7 @@ function parseCaptionJson(input: string): Caption[] {
   });
 }
 
-function normalizeCaption(value: unknown, index: number): Caption {
+function normalizeCaption(value: unknown, index: number) {
   if (!isObject(value)) {
     throw new Error(`Caption ${index + 1} is not an object.`);
   }
@@ -137,7 +137,7 @@ function normalizeCaption(value: unknown, index: number): Caption {
   };
 }
 
-function parseVtt(input: string): SubtitleCue[] {
+function parseVtt(input: string) {
   const blocks = input.replace(/\r\n?/g, "\n").split(/\n{2,}/);
   const cues: SubtitleCue[] = [];
 
@@ -183,7 +183,7 @@ function parseVtt(input: string): SubtitleCue[] {
   return cues;
 }
 
-function parseTimestamp(raw: string): number {
+function parseTimestamp(raw: string) {
   const match = raw.trim().match(
     /^(?:(\d+):)?(\d{2}):(\d{2})([.,](\d{3}))?$/,
   );
@@ -199,10 +199,7 @@ function parseTimestamp(raw: string): number {
   return hours * 3_600_000 + minutes * 60_000 + seconds * 1_000 + millis;
 }
 
-function cuesToWordCaptions(cues: SubtitleCue[]): {
-  captions: Caption[];
-  breaks: number[];
-} {
+function cuesToWordCaptions(cues: SubtitleCue[]) {
   const captions: Caption[] = [];
   const breaks: number[] = [];
 
@@ -234,11 +231,11 @@ function cuesToWordCaptions(cues: SubtitleCue[]): {
   return { captions, breaks };
 }
 
-function tokenizeCue(text: string): string[] {
+function tokenizeCue(text: string) {
   return cleanCueText(text).split(/\s+/).filter(Boolean);
 }
 
-function cleanCueText(text: string): string {
+function cleanCueText(text: string) {
   return text
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/gi, " ")

@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC } from "react";
+import type { ComponentType } from "react";
 import type { CaptionStyleId } from "@/lib/types";
 import { TikTokStyle } from "./tiktok";
 import { HormoziStyle } from "./hormozi";
@@ -14,7 +14,10 @@ import { ComicStyle } from "./comic";
 import { GlitchStyle } from "./glitch";
 import type { CaptionStyleProps } from "./types";
 
-export const STYLE_REGISTRY: Record<CaptionStyleId, FC<CaptionStyleProps>> =
+export const STYLE_REGISTRY: Record<
+  CaptionStyleId,
+  ComponentType<CaptionStyleProps>
+> =
   {
     tiktok: TikTokStyle,
     hormozi: HormoziStyle,

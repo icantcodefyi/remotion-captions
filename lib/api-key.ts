@@ -5,7 +5,7 @@ import { useCallback, useSyncExternalStore } from "react";
 const STORAGE_KEY = "caption-studio.deepgram-key";
 const EVENT = "caption-studio:deepgram-key-change";
 
-export function getDeepgramKey(): string | null {
+export function getDeepgramKey() {
   if (typeof window === "undefined") return null;
   try {
     return window.localStorage.getItem(STORAGE_KEY);
@@ -37,7 +37,7 @@ function subscribe(callback: () => void) {
   };
 }
 
-export function useDeepgramKey(): [string | null, (k: string | null) => void] {
+export function useDeepgramKey() {
   const key = useSyncExternalStore(
     subscribe,
     getDeepgramKey,
@@ -48,7 +48,7 @@ export function useDeepgramKey(): [string | null, (k: string | null) => void] {
     setDeepgramKey(next);
   }, []);
 
-  return [key, update];
+  return [key, update] as const;
 }
 
 export const DEEPGRAM_KEY_HEADER = "x-deepgram-key";

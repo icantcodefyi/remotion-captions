@@ -1,13 +1,12 @@
 "use client";
 
-import { type FC } from "react";
 import { ChevronRight, KeyRound } from "lucide-react";
 
 type Props = {
   onClick: () => void;
 };
 
-export const ApiKeyBanner: FC<Props> = ({ onClick }) => {
+export function ApiKeyBanner({ onClick }: Props) {
   return (
     <button
       type="button"
@@ -51,4 +50,4 @@ export const ApiKeyBanner: FC<Props> = ({ onClick }) => {
       />
     </button>
   );
-};
+}

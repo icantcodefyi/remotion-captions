@@ -1,6 +1,5 @@
 "use client";
 
-import { type FC } from "react";
 import { cn } from "@/lib/cn";
 
 type Status = "idle" | "running" | "ready" | "error";
@@ -28,21 +27,23 @@ const DOT_CLASSES: Record<Status, string> = {
   error: "bg-[var(--danger)]",
 };
 
-export const StatusPill: FC<Props> = ({ status, label }) => (
-  <div
-    className={cn(
-      "inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full",
-      "text-[0.7rem] font-semibold tracking-tight",
-      "transition-colors duration-300",
-      STATUS_CLASSES[status],
-    )}
-    role="status"
-    aria-live="polite"
-  >
-    <span
-      aria-hidden
-      className={cn("h-1.5 w-1.5 rounded-full", DOT_CLASSES[status])}
-    />
-    {label}
-  </div>
-);
+export function StatusPill({ status, label }: Props) {
+  return (
+    <div
+      className={cn(
+        "inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full",
+        "text-[0.7rem] font-semibold tracking-tight",
+        "transition-colors duration-300",
+        STATUS_CLASSES[status],
+      )}
+      role="status"
+      aria-live="polite"
+    >
+      <span
+        aria-hidden
+        className={cn("h-1.5 w-1.5 rounded-full", DOT_CLASSES[status])}
+      />
+      {label}
+    </div>
+  );
+}

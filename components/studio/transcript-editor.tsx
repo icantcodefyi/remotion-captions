@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  type FC,
   type ReactNode,
   type RefObject,
   useCallback,
@@ -42,7 +41,7 @@ type Props = {
 const UNDO_LIMIT = 50;
 const AUTOSCROLL_COOLDOWN_MS = 1600;
 
-export const TranscriptEditor: FC<Props> = ({
+export function TranscriptEditor({
   captions,
   onCaptionsChange,
   file,
@@ -51,7 +50,7 @@ export const TranscriptEditor: FC<Props> = ({
   fps,
   wordsPerPage,
   forcedBreaks,
-}) => {
+}: Props) {
   const [peaksFor, setPeaksFor] = useState<File | null>(null);
   const [peaks, setPeaks] = useState<WaveformPeaks | null>(null);
   const [currentMs, setCurrentMs] = useState(0);
@@ -117,12 +116,12 @@ export const TranscriptEditor: FC<Props> = ({
   useEffect(() => {
     const player = playerRef.current;
     if (!player) return;
-    const onFrame = ({ detail }: { detail: { frame: number } }) => {
+    function onFrame({ detail }: { detail: { frame: number } }) {
       setCurrentMs((detail.frame / fps) * 1000);
-    };
-    const onSeek = ({ detail }: { detail: { frame: number } }) => {
+    }
+    function onSeek({ detail }: { detail: { frame: number } }) {
       setCurrentMs((detail.frame / fps) * 1000);
-    };
+    }
     player.addEventListener("frameupdate", onFrame);
     player.addEventListener("seeked", onSeek);
     return () => {
@@ -300,7 +299,7 @@ export const TranscriptEditor: FC<Props> = ({
       <KeyboardLegend />
     </div>
   );
-};
+}
 
 type PageRowProps = {
   page: CaptionPage;
@@ -314,7 +313,7 @@ type PageRowProps = {
   onDelete: (index: number) => void;
 };
 
-const PageRow: FC<PageRowProps> = ({
+function PageRow({
   page,
   index,
   isActive,
@@ -324,7 +323,7 @@ const PageRow: FC<PageRowProps> = ({
   onCommit,
   onCancelEdit,
   onDelete,
-}) => {
+}: PageRowProps) {
   const editableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -463,37 +462,48 @@ const PageRow: FC<PageRowProps> = ({
       </button>
     </div>
   );
+}
+
+function EmptyTranscript() {
+  return (
+    <div className="flex-1 min-h-0 flex items-center justify-center rounded-md border border-dashed border-[color:var(--border)] p-6">
+      <p className="ital-label text-[0.75rem] text-[color:var(--muted)] normal-case tracking-normal text-center">
+        run transcription first
+        <br />
+        edits will show up here
+      </p>
+    </div>
+  );
+}
+
+function KeyboardLegend() {
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1">
+      <Hint k="Click">edit line</Hint>
+      <Hint k="Enter">save</Hint>
+      <Hint k="Esc">cancel</Hint>
+    </div>
+  );
+}
+
+type HintProps = {
+  k: string;
+  children: ReactNode;
 };
 
-const EmptyTranscript: FC = () => (
-  <div className="flex-1 min-h-0 flex items-center justify-center rounded-md border border-dashed border-[color:var(--border)] p-6">
-    <p className="ital-label text-[0.75rem] text-[color:var(--muted)] normal-case tracking-normal text-center">
-      run transcription first
-      <br />
-      edits will show up here
-    </p>
-  </div>
-);
-
-const KeyboardLegend: FC = () => (
-  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1">
-    <Hint k="Click">edit line</Hint>
-    <Hint k="Enter">save</Hint>
-    <Hint k="Esc">cancel</Hint>
-  </div>
-);
-
-const Hint: FC<{ k: string; children: ReactNode }> = ({ k, children }) => (
-  <span className="inline-flex items-center gap-1.5 text-[0.65rem] text-[color:var(--muted)]">
-    <kbd
-      className={cn(
-        "tnum-serif inline-flex items-center px-1.5 py-[1px] rounded",
-        "border border-[color:var(--border)] bg-[var(--surface-1)]",
-        "text-[0.65rem] not-italic",
-      )}
-    >
-      {k}
-    </kbd>
-    <span className="ital-label normal-case tracking-normal">{children}</span>
-  </span>
-);
+function Hint({ k, children }: HintProps) {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-[0.65rem] text-[color:var(--muted)]">
+      <kbd
+        className={cn(
+          "tnum-serif inline-flex items-center px-1.5 py-[1px] rounded",
+          "border border-[color:var(--border)] bg-[var(--surface-1)]",
+          "text-[0.65rem] not-italic",
+        )}
+      >
+        {k}
+      </kbd>
+      <span className="ital-label normal-case tracking-normal">{children}</span>
+    </span>
+  );
+}

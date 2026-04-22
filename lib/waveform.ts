@@ -4,7 +4,9 @@ export type WaveformPeaks = {
   durationMs: number;
 };
 
-const abortError = () => new DOMException("Aborted", "AbortError");
+function abortError() {
+  return new DOMException("Aborted", "AbortError");
+}
 
 /**
  * Decode an audio or video file into a `targetBuckets`-length Float32Array of
@@ -15,7 +17,7 @@ export async function extractPeaks(
   file: File,
   targetBuckets: number,
   signal?: AbortSignal,
-): Promise<WaveformPeaks> {
+) {
   if (signal?.aborted) throw abortError();
   const arrayBuffer = await file.arrayBuffer();
   if (signal?.aborted) throw abortError();

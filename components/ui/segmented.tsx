@@ -28,7 +28,7 @@ export function Segmented<T extends string>({
   const refs = useRef<Array<HTMLButtonElement | null>>([]);
   const selectedIndex = options.findIndex((o) => o.value === value);
 
-  const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
+  function onKeyDown(e: KeyboardEvent<HTMLButtonElement>, i: number) {
     let next = i;
     if (e.key === "ArrowRight") next = (i + 1) % options.length;
     else if (e.key === "ArrowLeft")
@@ -39,7 +39,7 @@ export function Segmented<T extends string>({
     e.preventDefault();
     onChange(options[next].value);
     refs.current[next]?.focus();
-  };
+  }
 
   return (
     <div

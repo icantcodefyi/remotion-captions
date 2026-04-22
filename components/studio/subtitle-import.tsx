@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC, useRef } from "react";
+import { useRef } from "react";
 import { FileUp, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/studio/status-pill";
@@ -19,12 +19,12 @@ type Props = {
 
 const ACCEPTED = ".srt,.vtt,.json,application/json,text/vtt,text/plain";
 
-export const SubtitleImport: FC<Props> = ({
+export function SubtitleImport({
   onImport,
   importedTrack,
   onClear,
   disabled,
-}) => {
+}: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -130,4 +130,4 @@ export const SubtitleImport: FC<Props> = ({
       ) : null}
     </div>
   );
-};
+}

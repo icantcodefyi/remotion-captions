@@ -41,7 +41,7 @@ function parseScalarValue(value: string) {
   return trimmed;
 }
 
-function parseFrontmatter(raw: string): ParsedPost {
+function parseFrontmatter(raw: string) {
   const normalized = raw.replace(/\r\n/g, "\n");
   const closingFence = normalized.indexOf("\n---\n", 4);
 

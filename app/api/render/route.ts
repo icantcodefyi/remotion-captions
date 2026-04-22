@@ -59,13 +59,6 @@ type RenderJob = {
   cleanupTimer: ReturnType<typeof setTimeout> | null;
 };
 
-type RenderJobResponse = {
-  id: string;
-  state: RenderJobState;
-  progress: ExportProgress;
-  error: string | null;
-};
-
 const CODEC_BY_FORMAT: Record<RenderBody["format"], Codec> = {
   mp4: "h264",
   webm: "vp8",
@@ -102,7 +95,7 @@ const renderJobs =
   globalForRenderJobs.__captionRenderJobs ??
   (globalForRenderJobs.__captionRenderJobs = new Map<string, RenderJob>());
 
-export async function POST(req: NextRequest): Promise<NextResponse> {
+export async function POST(req: NextRequest) {
   const form = await req.formData();
   const file = form.get("file");
   const propsRaw = form.get("props");
@@ -166,7 +159,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   return NextResponse.json({ jobId });
 }
 
-export async function GET(req: NextRequest): Promise<NextResponse> {
+export async function GET(req: NextRequest) {
   const jobId = req.nextUrl.searchParams.get("jobId");
   const download = req.nextUrl.searchParams.get("download") === "1";
 
@@ -204,7 +197,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   });
 }
 
-export async function DELETE(req: NextRequest): Promise<NextResponse> {
+export async function DELETE(req: NextRequest) {
   const jobId = req.nextUrl.searchParams.get("jobId");
 
   if (!jobId) {
@@ -421,7 +414,7 @@ function getJob(jobId: string) {
   return renderJobs.get(jobId) ?? null;
 }
 
-function toResponse(job: RenderJob): RenderJobResponse {
+function toResponse(job: RenderJob) {
   return {
     id: job.id,
     state: job.state,
@@ -451,27 +444,27 @@ async function cleanupJob(jobId: string) {
   await rm(job.jobDir, { recursive: true, force: true }).catch(() => undefined);
 }
 
-function resolveExportQuality(raw: FormDataEntryValue | null): ExportQuality {
+function resolveExportQuality(raw: FormDataEntryValue | null) {
   if (raw === "high" || raw === "medium" || raw === "low") {
     return raw;
   }
   return "high";
 }
 
-function getRenderConcurrency(quality: ExportQuality): number {
+function getRenderConcurrency(quality: ExportQuality) {
   const cpuThreads = availableParallelism();
   const cpuShare =
     quality === "high" ? 0.6 : quality === "medium" ? 0.75 : 0.9;
   return Math.max(2, Math.floor(cpuThreads * cpuShare));
 }
 
-function getOffthreadVideoThreads(): number {
+function getOffthreadVideoThreads() {
   return Math.min(4, Math.max(2, Math.floor(availableParallelism() / 2)));
 }
 
 function stitchStageToPhase(
   stitchStage: "encoding" | "muxing" | undefined,
-): ExportRenderPhase {
+) {
   if (stitchStage === "muxing") {
     return "muxing";
   }
@@ -498,7 +491,7 @@ type AssetServer = {
   close: () => void;
 };
 
-async function startAssetServer(filePath: string): Promise<AssetServer> {
+async function startAssetServer(filePath: string) {
   const size = (await stat(filePath)).size;
   const basename = path.basename(filePath);
   const server: Server = createServer((req, res) => {
@@ -558,7 +551,7 @@ async function startAssetServer(filePath: string): Promise<AssetServer> {
   };
 }
 
-function mimeFromPath(p: string): string {
+function mimeFromPath(p: string) {
   const ext = path.extname(p).toLowerCase();
   if (ext === ".mp4" || ext === ".m4v") return "video/mp4";
   if (ext === ".webm") return "video/webm";
@@ -566,7 +559,7 @@ function mimeFromPath(p: string): string {
   return "application/octet-stream";
 }
 
-function guessExtension(name: string, type: string): string {
+function guessExtension(name: string, type: string) {
   const fromName = path.extname(name);
   if (fromName) return fromName;
   if (type.includes("mp4")) return ".mp4";

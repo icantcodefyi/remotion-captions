@@ -1,14 +1,14 @@
 "use client";
 
-import { type FC, useSyncExternalStore } from "react";
+import { useSyncExternalStore } from "react";
 import { Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 type Theme = "light" | "dark";
 
-export const ThemeToggle: FC<{ className?: string }> = ({
+export function ThemeToggle({
   className,
-}) => {
+}: { className?: string }) {
   const theme = useSyncExternalStore(
     (onStoreChange) => {
       window.addEventListener("meowcap-theme-change", onStoreChange);
@@ -19,14 +19,14 @@ export const ThemeToggle: FC<{ className?: string }> = ({
     () => "light",
   );
 
-  const toggle = () => {
+  function toggle() {
     const next: Theme = theme === "light" ? "dark" : "light";
     document.documentElement.dataset.theme = next;
     try {
       localStorage.setItem("meowcap-theme", next);
     } catch {}
     window.dispatchEvent(new Event("meowcap-theme-change"));
-  };
+  }
 
   return (
     <button
@@ -56,4 +56,4 @@ export const ThemeToggle: FC<{ className?: string }> = ({
       </span>
     </button>
   );
-};
+}

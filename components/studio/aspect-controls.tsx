@@ -1,6 +1,5 @@
 "use client";
 
-import { type FC } from "react";
 import { SectionLabel } from "@/components/ui/label";
 import { cn } from "@/lib/cn";
 import {
@@ -15,11 +14,11 @@ type Props = {
   sourceDimensions: { width: number; height: number } | null;
 };
 
-export const AspectControls: FC<Props> = ({
+export function AspectControls({
   value,
   onChange,
   sourceDimensions,
-}) => {
+}: Props) {
   const current = getAspectPreset(value);
   const output =
     current.dimensions ??
@@ -81,12 +80,17 @@ export const AspectControls: FC<Props> = ({
       </p>
     </div>
   );
+}
+
+type AspectGlyphProps = {
+  preset: AspectPresetId;
+  selected: boolean;
 };
 
-const AspectGlyph: FC<{ preset: AspectPresetId; selected: boolean }> = ({
+function AspectGlyph({
   preset,
   selected,
-}) => {
+}: AspectGlyphProps) {
   const stroke = selected ? "var(--accent-ink)" : "currentColor";
   const fill = selected
     ? "color-mix(in oklab, var(--accent) 18%, transparent)"
@@ -131,4 +135,4 @@ const AspectGlyph: FC<{ preset: AspectPresetId; selected: boolean }> = ({
       />
     </svg>
   );
-};
+}

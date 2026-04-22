@@ -47,6 +47,12 @@ export function getCoreSitemapEntries() {
       priority: 0.8,
     },
     {
+      url: absoluteUrl("/changelog"),
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
       url: absoluteUrl("/blog/all"),
       lastModified: now,
       changeFrequency: "weekly",

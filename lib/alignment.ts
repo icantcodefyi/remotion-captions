@@ -1,16 +1,6 @@
-import type { Caption } from "@remotion/captions";
 import type { DeepgramWord } from "./deepgram";
 
-type ScriptToken = {
-  /** Original token as user provided, e.g. "World!" */
-  original: string;
-  /** Normalized for matching, e.g. "world" */
-  normalized: string;
-  /** True if this token is purely punctuation/whitespace */
-  isPunct: boolean;
-};
-
-function tokenizeScript(script: string): ScriptToken[] {
+function tokenizeScript(script: string) {
   // Split on whitespace preserving punctuation attached to words; also split
   // isolated punctuation as its own token (we'll merge later).
   const raw = script
@@ -32,7 +22,7 @@ function tokenizeScript(script: string): ScriptToken[] {
   });
 }
 
-function normalizeTranscriptWord(w: DeepgramWord): string {
+function normalizeTranscriptWord(w: DeepgramWord) {
   return (w.word ?? "")
     .toLowerCase()
     .normalize("NFKD")
@@ -48,7 +38,7 @@ function normalizeTranscriptWord(w: DeepgramWord): string {
 export function alignScriptToWords(
   script: string,
   transcriptWords: DeepgramWord[],
-): Caption[] {
+) {
   const scriptTokens = tokenizeScript(script).filter((t) => !t.isPunct);
   const transcriptTokens = transcriptWords.map((w) => ({
     word: w,
@@ -145,7 +135,7 @@ export function alignScriptToWords(
   // Strategy: between two anchors A (at scriptIdx a) and B (at scriptIdx b), distribute
   // the (b - a) intermediate tokens linearly across (A.end -> B.start).
   const firstAnchorIdx = anchors.findIndex((a) => a !== null);
-  const lastAnchorIdx = (() => {
+  const lastAnchorIdx = (function findLastAnchorIdx() {
     for (let k = anchors.length - 1; k >= 0; k--) if (anchors[k]) return k;
     return -1;
   })();

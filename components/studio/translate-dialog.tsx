@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Eye, EyeOff, KeyRound, Languages, Loader2, X } from "lucide-react";
 import type { Caption } from "@remotion/captions";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ type Props = {
   onTranslated: (captions: Caption[], language: LanguageCode) => void;
 };
 
-export const TranslateDialog: FC<Props> = ({
+export function TranslateDialog({
   open,
   onOpenChange,
   captions,
@@ -26,7 +26,7 @@ export const TranslateDialog: FC<Props> = ({
   openaiKey,
   onOpenaiKeyChange,
   onTranslated,
-}) => {
+}: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [target, setTarget] = useState<LanguageCode>("es");
   const [running, setRunning] = useState(false);
@@ -49,7 +49,9 @@ export const TranslateDialog: FC<Props> = ({
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    const onClose = () => onOpenChange(false);
+    function onClose() {
+      onOpenChange(false);
+    }
     dialog.addEventListener("close", onClose);
     return () => dialog.removeEventListener("close", onClose);
   }, [onOpenChange]);
@@ -58,12 +60,12 @@ export const TranslateDialog: FC<Props> = ({
   const hasKey = keyDraft.trim().length > 0;
   const canRun = hasCaptions && hasKey && !running;
 
-  const close = () => {
+  function close() {
     if (running) return;
     onOpenChange(false);
-  };
+  }
 
-  const handleRun = async () => {
+  async function handleRun() {
     if (!captions) return;
     const trimmedKey = keyDraft.trim();
     if (!trimmedKey) return;
@@ -97,7 +99,7 @@ export const TranslateDialog: FC<Props> = ({
     } finally {
       setRunning(false);
     }
-  };
+  }
 
   return (
     <dialog
@@ -334,4 +336,4 @@ export const TranslateDialog: FC<Props> = ({
       </div>
     </dialog>
   );
-};
+}

@@ -7,7 +7,7 @@ const STORAGE_KEY = "caption-studio.brand-kits";
 const EVENT = "caption-studio:brand-kits-change";
 const MAX_KITS = 20;
 
-function read(): BrandKit[] {
+function read() {
   if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -47,7 +47,7 @@ function isBrandKit(v: unknown): v is BrandKit {
 let cachedSnapshot: BrandKit[] = [];
 let cachedKey = "";
 
-function getSnapshot(): BrandKit[] {
+function getSnapshot() {
   const raw =
     typeof window === "undefined"
       ? ""
@@ -68,7 +68,9 @@ function subscribe(callback: () => void) {
 }
 
 const EMPTY_KITS: BrandKit[] = [];
-const getServerSnapshot = () => EMPTY_KITS;
+function getServerSnapshot() {
+  return EMPTY_KITS;
+}
 
 export function useBrandKits() {
   const kits = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);

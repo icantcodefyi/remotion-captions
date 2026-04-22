@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC, useState } from "react";
+import { useState } from "react";
 import { BookmarkPlus, Trash2 } from "lucide-react";
 import { SectionLabel } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -16,33 +16,33 @@ type Props = {
   onDelete: (id: string) => void;
 };
 
-export const BrandKits: FC<Props> = ({
+export function BrandKits({
   kits,
   activeSignature,
   onApply,
   onSave,
   onDelete,
-}) => {
+}: Props) {
   const [saving, setSaving] = useState(false);
   const [draftName, setDraftName] = useState("");
 
-  const beginSave = () => {
+  function beginSave() {
     setSaving(true);
     setDraftName(suggestName(kits));
-  };
+  }
 
-  const commitSave = () => {
+  function commitSave() {
     const name = draftName.trim();
     if (!name) return;
     onSave(name);
     setSaving(false);
     setDraftName("");
-  };
+  }
 
-  const cancelSave = () => {
+  function cancelSave() {
     setSaving(false);
     setDraftName("");
-  };
+  }
 
   return (
     <div className="flex flex-col gap-2.5">
@@ -125,14 +125,16 @@ export const BrandKits: FC<Props> = ({
       )}
     </div>
   );
-};
+}
 
-const KitRow: FC<{
+type KitRowProps = {
   kit: BrandKit;
   active: boolean;
   onApply: () => void;
   onDelete: () => void;
-}> = ({ kit, active, onApply, onDelete }) => {
+};
+
+function KitRow({ kit, active, onApply, onDelete }: KitRowProps) {
   const styleMeta = CAPTION_STYLES.find((s) => s.id === kit.styleId);
   const aspect = getAspectPreset(kit.aspectId);
   return (
@@ -194,7 +196,7 @@ const KitRow: FC<{
       </button>
     </li>
   );
-};
+}
 
 export function makeSignature(kit: {
   styleId: string;
@@ -220,7 +222,7 @@ export function makeSignature(kit: {
   ].join("|");
 }
 
-function suggestName(kits: BrandKit[]): string {
+function suggestName(kits: BrandKit[]) {
   const base = "Untitled kit";
   const existing = new Set(kits.map((k) => k.name));
   if (!existing.has(base)) return base;

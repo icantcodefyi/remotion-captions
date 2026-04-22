@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { type FC } from "react";
 import { Move } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
@@ -27,9 +26,10 @@ type Props = {
   onChange: (next: StyleOptions) => void;
 };
 
-export const StyleControls: FC<Props> = ({ value, onChange }) => {
-  const set = <K extends keyof StyleOptions>(key: K, v: StyleOptions[K]) =>
+export function StyleControls({ value, onChange }: Props) {
+  function set<K extends keyof StyleOptions>(key: K, v: StyleOptions[K]) {
     onChange({ ...value, [key]: v });
+  }
 
   const activePresetId = POSITION_PRESETS.find(
     (p) =>
@@ -184,4 +184,4 @@ export const StyleControls: FC<Props> = ({ value, onChange }) => {
       </Link>
     </div>
   );
-};
+}

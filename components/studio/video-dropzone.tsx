@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { Film, X } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -13,28 +13,28 @@ type Props = {
 
 const ACCEPTED = "video/*,audio/*";
 
-const formatSize = (bytes: number): string => {
+function formatSize(bytes: number) {
   const mb = bytes / (1024 * 1024);
   if (mb < 1) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${mb.toFixed(1)} MB`;
-};
+}
 
-export const VideoDropzone: FC<Props> = ({
+export function VideoDropzone({
   file,
   onFileChange,
   disabled,
-}) => {
+}: Props) {
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleFiles = (files: FileList | null | undefined) => {
+  function handleFiles(files: FileList | null | undefined) {
     if (!files || files.length === 0) return;
     const f = files[0];
     if (!f.type.startsWith("video/") && !f.type.startsWith("audio/")) {
       return;
     }
     onFileChange(f);
-  };
+  }
 
   if (file) {
     const subtitle = file.type
@@ -156,4 +156,4 @@ export const VideoDropzone: FC<Props> = ({
       </div>
     </button>
   );
-};
+}

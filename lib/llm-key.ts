@@ -7,7 +7,7 @@ const EVENT = "caption-studio:openai-key-change";
 
 export const OPENAI_KEY_HEADER = "x-openai-key";
 
-export function getOpenAIKey(): string | null {
+export function getOpenAIKey() {
   if (typeof window === "undefined") return null;
   try {
     return window.localStorage.getItem(STORAGE_KEY);
@@ -39,10 +39,10 @@ function subscribe(callback: () => void) {
   };
 }
 
-export function useOpenAIKey(): [string | null, (k: string | null) => void] {
+export function useOpenAIKey() {
   const key = useSyncExternalStore(subscribe, getOpenAIKey, () => null);
   const update = useCallback((next: string | null) => {
     setOpenAIKey(next);
   }, []);
-  return [key, update];
+  return [key, update] as const;
 }

@@ -29,6 +29,7 @@ import { AspectControls } from "@/components/studio/aspect-controls";
 import { BrandKits, makeSignature } from "@/components/studio/brand-kits";
 import { TranslateDialog } from "@/components/studio/translate-dialog";
 import { SafeZoneOverlay } from "@/components/studio/safe-zone-overlay";
+import { WhatsNewBanner } from "@/components/studio/whats-new-banner";
 import { getVideoMetaFromFile, type VideoMeta } from "@/lib/video-meta";
 import { downloadSrt, downloadJson } from "@/lib/export";
 import { useDeepgramKey, DEEPGRAM_KEY_HEADER } from "@/lib/api-key";
@@ -53,6 +54,7 @@ import {
 import { getLanguage, type LanguageCode } from "@/lib/translate";
 import { getAspectPreset, reflowPosition, resolveCanvas } from "@/lib/aspect";
 import { getBlogHref } from "@/lib/site";
+import { changelogFeatureCount } from "@/lib/changelog";
 
 const FPS = 30;
 
@@ -64,7 +66,6 @@ type ImportedTrackMeta = {
   cueCount: number;
   format: "srt" | "vtt" | "json";
 };
-
 export function StudioPage() {
   const [file, setFile] = React.useState<File | null>(null);
   const [videoMeta, setVideoMeta] = React.useState<VideoMeta | null>(null);
@@ -385,6 +386,7 @@ export function StudioPage() {
         onOpenKeyDialog={() => setKeyDialogOpen(true)}
         onOpenExportDialog={() => setExportDialogOpen(true)}
       />
+      <WhatsNewBanner />
 
       <ApiKeyDialog
         open={keyDialogOpen}
@@ -740,6 +742,15 @@ const Header: React.FC<{
           className="hidden sm:inline-flex items-center justify-center rounded-md h-8 px-3 text-[0.75rem] font-medium bg-transparent text-[color:var(--fg-weak)] transition-colors duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] [@media(hover:hover)]:hover:bg-[var(--surface-2)] [@media(hover:hover)]:hover:text-[color:var(--fg)]"
         >
           Guides
+        </Link>
+        <Link
+          href="/changelog"
+          className="hidden md:inline-flex items-center justify-center gap-2 rounded-full h-8 px-3 border border-[color:var(--border)] bg-[var(--surface-1)] text-[0.75rem] font-medium text-[color:var(--fg-weak)] shadow-[var(--shadow-soft)] transition-[background,border-color,color] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] [@media(hover:hover)]:hover:bg-[var(--surface-2)] [@media(hover:hover)]:hover:border-[color:var(--border-strong)] [@media(hover:hover)]:hover:text-[color:var(--fg)]"
+        >
+          <span>What&apos;s new</span>
+          <span className="tnum-serif text-[0.7rem] text-[color:var(--accent-ink)]">
+            {String(changelogFeatureCount).padStart(2, "0")}
+          </span>
         </Link>
         <ThemeToggle />
         <Button

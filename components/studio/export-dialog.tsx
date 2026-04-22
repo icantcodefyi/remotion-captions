@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  type FC,
+  type ReactNode,
   useEffect,
   useRef,
   useState,
@@ -60,7 +60,7 @@ const DEFAULT_FORMATS: ExportFormat[] = ["mp4", "webm"];
 let cachedSupportedFormats: ExportFormat[] = DEFAULT_FORMATS;
 let supportedFormatsResolved = false;
 
-const subscribeFormats = (onStoreChange: () => void) => {
+function subscribeFormats(onStoreChange: () => void) {
   if (typeof window !== "undefined" && !supportedFormatsResolved) {
     supportedFormatsResolved = true;
     const next = getSupportedExportFormats();
@@ -70,10 +70,15 @@ const subscribeFormats = (onStoreChange: () => void) => {
     }
   }
   return () => undefined;
-};
+}
 
-const getSupportedFormatsSnapshot = () => cachedSupportedFormats;
-const getSupportedFormatsServerSnapshot = () => DEFAULT_FORMATS;
+function getSupportedFormatsSnapshot() {
+  return cachedSupportedFormats;
+}
+
+function getSupportedFormatsServerSnapshot() {
+  return DEFAULT_FORMATS;
+}
 
 function useSupportedFormats() {
   return useSyncExternalStore(
@@ -87,7 +92,7 @@ function sameFormats(a: ExportFormat[], b: ExportFormat[]) {
   return a.length === b.length && a.every((value, index) => value === b[index]);
 }
 
-export const ExportDialog: FC<Props> = ({
+export function ExportDialog({
   open,
   onOpenChange,
   file,
@@ -101,7 +106,7 @@ export const ExportDialog: FC<Props> = ({
   onDownloadJson,
   onVideoSaved,
   onError,
-}) => {
+}: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -138,16 +143,16 @@ export const ExportDialog: FC<Props> = ({
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    const onClose = () => {
+    function onClose() {
       if (isExporting) abortRef.current?.abort();
       setExportProgress(null);
       onOpenChange(false);
-    };
+    }
     dialog.addEventListener("close", onClose);
     return () => dialog.removeEventListener("close", onClose);
   }, [onOpenChange, isExporting]);
 
-  const handleExportVideo = async () => {
+  async function handleExportVideo() {
     if (!file || !canExportVideo || !videoDimensions) return;
     const controller = new AbortController();
     abortRef.current = controller;
@@ -190,16 +195,16 @@ export const ExportDialog: FC<Props> = ({
       setIsExporting(false);
       abortRef.current = null;
     }
-  };
+  }
 
-  const handleCancelExport = () => {
+  function handleCancelExport() {
     abortRef.current?.abort();
-  };
+  }
 
-  const close = () => {
+  function close() {
     if (isExporting) return;
     onOpenChange(false);
-  };
+  }
 
   return (
     <dialog
@@ -372,32 +377,38 @@ export const ExportDialog: FC<Props> = ({
       </div>
     </dialog>
   );
+}
+
+type FieldRowProps = {
+  label: string;
+  hint?: ReactNode;
+  children: ReactNode;
 };
 
-const FieldRow: FC<{
-  label: string;
-  hint?: React.ReactNode;
-  children: React.ReactNode;
-}> = ({ label, hint, children }) => (
-  <div className="flex flex-col gap-2">
-    <div className="flex items-baseline justify-between gap-3">
-      <div className="text-[0.6875rem] uppercase tracking-[0.14em] font-semibold text-[color:var(--muted)]">
-        {label}
-      </div>
-      {hint ? (
-        <div className="text-[0.7rem] text-[color:var(--muted)] leading-none">
-          {hint}
+function FieldRow({ label, hint, children }: FieldRowProps) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-baseline justify-between gap-3">
+        <div className="text-[0.6875rem] uppercase tracking-[0.14em] font-semibold text-[color:var(--muted)]">
+          {label}
         </div>
-      ) : null}
+        {hint ? (
+          <div className="text-[0.7rem] text-[color:var(--muted)] leading-none">
+            {hint}
+          </div>
+        ) : null}
+      </div>
+      {children}
     </div>
-    {children}
-  </div>
-);
+  );
+}
 
-const RenderingBlock: FC<{
+type RenderingBlockProps = {
   onCancel: () => void;
   progress: ExportProgress | null;
-}> = ({ onCancel, progress }) => {
+};
+
+function RenderingBlock({ onCancel, progress }: RenderingBlockProps) {
   const percent = Math.round((progress?.progress ?? 0) * 100);
   const barWidth = `${Math.max(percent, 4)}%`;
 
@@ -445,54 +456,58 @@ const RenderingBlock: FC<{
       </p>
     </div>
   );
-};
+}
 
-const FileRow: FC<{
-  icon: React.ReactNode;
+type FileRowProps = {
+  icon: ReactNode;
   name: string;
   hint: string;
   onClick: () => void;
   disabled: boolean;
-}> = ({ icon, name, hint, onClick, disabled }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    disabled={disabled}
-    className={cn(
-      "group flex items-center justify-between gap-3 h-11 px-3.5 rounded-lg",
-      "bg-[var(--surface-1)] border border-[color:var(--border)]",
-      "text-[color:var(--fg)] shadow-[var(--shadow-soft)]",
-      "transition-[transform,background,border-color,box-shadow] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
-      "[@media(hover:hover)]:hover:border-[color:var(--border-strong)]",
-      "[@media(hover:hover)]:hover:-translate-y-[1px]",
-      "disabled:opacity-45 disabled:pointer-events-none disabled:shadow-none",
-    )}
-  >
-    <span className="flex items-center gap-2.5 min-w-0">
-      <span
-        className="flex items-center justify-center h-7 w-7 rounded-md text-[color:var(--muted)]"
-        style={{ background: "var(--surface-2)" }}
-      >
-        {icon}
-      </span>
-      <span className="flex flex-col items-start gap-0.5 min-w-0">
-        <span className="tnum-serif text-[0.8125rem] leading-none text-[color:var(--fg)]">
-          {name}
-        </span>
-        <span className="ital-label text-[0.65rem] text-[color:var(--muted)] leading-none">
-          {hint}
-        </span>
-      </span>
-    </span>
-    <Download
+};
+
+function FileRow({ icon, name, hint, onClick, disabled }: FileRowProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
       className={cn(
-        "h-[13px] w-[13px] text-[color:var(--muted)]",
-        "transition-[transform,color] duration-200",
-        "group-hover:text-[color:var(--fg)] group-hover:translate-y-[1px]",
+        "group flex items-center justify-between gap-3 h-11 px-3.5 rounded-lg",
+        "bg-[var(--surface-1)] border border-[color:var(--border)]",
+        "text-[color:var(--fg)] shadow-[var(--shadow-soft)]",
+        "transition-[transform,background,border-color,box-shadow] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "[@media(hover:hover)]:hover:border-[color:var(--border-strong)]",
+        "[@media(hover:hover)]:hover:-translate-y-[1px]",
+        "disabled:opacity-45 disabled:pointer-events-none disabled:shadow-none",
       )}
-    />
-  </button>
-);
+    >
+      <span className="flex items-center gap-2.5 min-w-0">
+        <span
+          className="flex items-center justify-center h-7 w-7 rounded-md text-[color:var(--muted)]"
+          style={{ background: "var(--surface-2)" }}
+        >
+          {icon}
+        </span>
+        <span className="flex flex-col items-start gap-0.5 min-w-0">
+          <span className="tnum-serif text-[0.8125rem] leading-none text-[color:var(--fg)]">
+            {name}
+          </span>
+          <span className="ital-label text-[0.65rem] text-[color:var(--muted)] leading-none">
+            {hint}
+          </span>
+        </span>
+      </span>
+      <Download
+        className={cn(
+          "h-[13px] w-[13px] text-[color:var(--muted)]",
+          "transition-[transform,color] duration-200",
+          "group-hover:text-[color:var(--fg)] group-hover:translate-y-[1px]",
+        )}
+      />
+    </button>
+  );
+}
 
 function triggerDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);

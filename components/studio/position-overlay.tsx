@@ -1,6 +1,11 @@
 "use client";
 
-import { type FC, type PointerEvent, useCallback, useRef, useState } from "react";
+import {
+  type PointerEvent,
+  useCallback,
+  useRef,
+  useState,
+} from "react";
 import { Move } from "lucide-react";
 import type { CaptionPosition } from "@/lib/types";
 import { POSITION_CLAMP } from "@/lib/types";
@@ -13,14 +18,16 @@ type Props = {
 /** Offset of the handle from the caption's centre, as a fraction of preview height. */
 const HANDLE_OFFSET = 0.14;
 
-const clamp = (v: number, min: number, max: number) =>
-  Math.min(Math.max(v, min), max);
+function clamp(v: number, min: number, max: number) {
+  return Math.min(Math.max(v, min), max);
+}
 
 /** Handle sits below the caption normally; flips above when the caption is near the bottom. */
-const handleOffsetFor = (y: number) =>
-  y > 1 - HANDLE_OFFSET - 0.05 ? -HANDLE_OFFSET : HANDLE_OFFSET;
+function handleOffsetFor(y: number) {
+  return y > 1 - HANDLE_OFFSET - 0.05 ? -HANDLE_OFFSET : HANDLE_OFFSET;
+}
 
-export const CaptionPositionOverlay: FC<Props> = ({ position, onChange }) => {
+export function CaptionPositionOverlay({ position, onChange }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef<{
     clientX: number;
@@ -34,7 +41,7 @@ export const CaptionPositionOverlay: FC<Props> = ({ position, onChange }) => {
   const handleY = position.y + handleOffset;
 
   const applyDelta = useCallback(
-    (clientX: number, clientY: number) => {
+    function applyDelta(clientX: number, clientY: number) {
       const start = dragStartRef.current;
       const el = containerRef.current;
       if (!start || !el) return;
@@ -50,7 +57,7 @@ export const CaptionPositionOverlay: FC<Props> = ({ position, onChange }) => {
     [onChange],
   );
 
-  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
+  function onPointerDown(e: PointerEvent<HTMLDivElement>) {
     e.preventDefault();
     e.stopPropagation();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -61,15 +68,15 @@ export const CaptionPositionOverlay: FC<Props> = ({ position, onChange }) => {
       posY: position.y,
     };
     setDragging(true);
-  };
+  }
 
-  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
+  function onPointerMove(e: PointerEvent<HTMLDivElement>) {
     if (!dragStartRef.current) return;
     e.preventDefault();
     applyDelta(e.clientX, e.clientY);
-  };
+  }
 
-  const endDrag = (e: PointerEvent<HTMLDivElement>) => {
+  function endDrag(e: PointerEvent<HTMLDivElement>) {
     if (!dragStartRef.current) return;
     dragStartRef.current = null;
     setDragging(false);
@@ -78,7 +85,7 @@ export const CaptionPositionOverlay: FC<Props> = ({ position, onChange }) => {
     } catch {
       // ignore
     }
-  };
+  }
 
   return (
     <div
@@ -179,4 +186,4 @@ export const CaptionPositionOverlay: FC<Props> = ({ position, onChange }) => {
       </div>
     </div>
   );
-};
+}

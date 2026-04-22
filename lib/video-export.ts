@@ -49,8 +49,9 @@ export const EXPORT_FPS = 30;
 
 const RENDER_POLL_MS = 350;
 
-export function getSupportedExportFormats(): ExportFormat[] {
-  return ["mp4", "webm"];
+export function getSupportedExportFormats() {
+  const formats: ExportFormat[] = ["mp4", "webm"];
+  return formats;
 }
 
 type ExportArgs = {
@@ -79,7 +80,7 @@ export async function exportCaptionedVideo({
   durationSec,
   signal,
   onProgress,
-}: ExportArgs): Promise<Blob> {
+}: ExportArgs) {
   const fps = EXPORT_FPS;
   const durationInFrames = Math.max(1, Math.round(durationSec * fps));
 
@@ -123,13 +124,14 @@ export async function exportCaptionedVideo({
   if (!jobId) {
     throw new Error("Render job did not start");
   }
+  const renderJobId = jobId;
 
-  const cancelJob = () => {
-    void fetch(`/api/render?jobId=${encodeURIComponent(jobId)}`, {
+  function cancelJob() {
+    void fetch(`/api/render?jobId=${encodeURIComponent(renderJobId)}`, {
       method: "DELETE",
       keepalive: true,
     }).catch(() => undefined);
-  };
+  }
 
   signal?.addEventListener("abort", cancelJob, { once: true });
 
@@ -168,7 +170,7 @@ export async function exportCaptionedVideo({
 async function getRenderJob(
   jobId: string,
   signal?: AbortSignal,
-): Promise<RenderJobResponse> {
+) {
   const response = await fetch(`/api/render?jobId=${encodeURIComponent(jobId)}`, {
     method: "GET",
     signal,
@@ -186,7 +188,7 @@ async function getRenderJob(
 async function downloadRenderedVideo(
   jobId: string,
   signal?: AbortSignal,
-): Promise<Blob> {
+) {
   const response = await fetch(
     `/api/render?jobId=${encodeURIComponent(jobId)}&download=1`,
     {
@@ -204,7 +206,7 @@ async function downloadRenderedVideo(
   return await response.blob();
 }
 
-async function extractError(response: Response): Promise<string> {
+async function extractError(response: Response) {
   const contentType = response.headers.get("content-type") ?? "";
   try {
     if (contentType.includes("application/json")) {
@@ -225,11 +227,11 @@ function delay(ms: number, signal?: AbortSignal) {
       resolve();
     }, ms);
 
-    const onAbort = () => {
+    function onAbort() {
       window.clearTimeout(timeout);
       signal?.removeEventListener("abort", onAbort);
       reject(createAbortError());
-    };
+    }
 
     signal?.addEventListener("abort", onAbort, { once: true });
   });

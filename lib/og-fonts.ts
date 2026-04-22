@@ -12,7 +12,7 @@ export type OgFont = {
   style: "normal" | "italic";
 };
 
-async function readFont(file: string): Promise<ArrayBuffer> {
+async function readFont(file: string) {
   const buf = await readFile(path.join(FONT_DIR, file));
   return buf.buffer.slice(
     buf.byteOffset,
@@ -20,7 +20,7 @@ async function readFont(file: string): Promise<ArrayBuffer> {
   ) as ArrayBuffer;
 }
 
-export function getOgFonts(): Promise<OgFont[]> {
+export function getOgFonts() {
   if (cached) return cached;
   cached = (async () => {
     const [display, body, italic] = await Promise.all([

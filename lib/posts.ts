@@ -8,7 +8,6 @@ import {
   type BlogPost,
   type BlogPostFrontmatter,
   type BlogPostSummary,
-  type BlogSearchEntry,
   type BlogSection,
 } from "./posts-schema";
 
@@ -16,13 +15,6 @@ const POSTS_DIRECTORY = path.join(process.cwd(), "content", "blog");
 
 const clusters = clusterCollectionSchema.parse(clustersSource).clusters;
 const clusterMap = new Map(clusters.map((cluster) => [cluster.slug, cluster]));
-
-type ParsedMarkdown = {
-  intro: BlogContentBlock[];
-  sections: BlogSection[];
-  body: string;
-  wordCount: number;
-};
 
 function comparePostsByDate(a: { publishedTime: string }, b: { publishedTime: string }) {
   return (
@@ -144,21 +136,23 @@ function flushList(items: string[], target: BlogContentBlock[]) {
   items.length = 0;
 }
 
-function parseMarkdownBody(body: string): ParsedMarkdown {
+function parseMarkdownBody(body: string) {
   const intro: BlogContentBlock[] = [];
   const sections: BlogSection[] = [];
   let currentSection: BlogSection | null = null;
   const paragraphLines: string[] = [];
   const listItems: string[] = [];
 
-  const pushSubheading = (heading: string) => {
+  function pushSubheading(heading: string) {
     const target = currentSection?.blocks ?? intro;
     flushParagraph(paragraphLines, target);
     flushList(listItems, target);
     target.push({ type: "subheading", heading });
-  };
+  }
 
-  const getTarget = () => currentSection?.blocks ?? intro;
+  function getTarget() {
+    return currentSection?.blocks ?? intro;
+  }
 
   const lines = body.replace(/\r\n/g, "\n").split("\n");
 
@@ -228,7 +222,7 @@ function readPostSource(slug: string) {
   return { filePath, raw };
 }
 
-function parsePost(slug: string): BlogPost {
+function parsePost(slug: string) {
   const { filePath, raw } = readPostSource(slug);
   const { frontmatter, body } = parseFrontmatter(raw);
   const cluster = getCluster(frontmatter.cluster);
@@ -283,7 +277,7 @@ function getCachedPostSummaries() {
   return cachedSummaries;
 }
 
-function getCachedPost(slug: string): BlogPost | null {
+function getCachedPost(slug: string) {
   const existing = cachedPosts.get(slug);
   if (existing) {
     return existing;
@@ -448,7 +442,7 @@ export function getPostPageCount(pageSize: number) {
   return Math.max(1, Math.ceil(getPublishedPostSummaries().length / pageSize));
 }
 
-export function getSearchEntries(): BlogSearchEntry[] {
+export function getSearchEntries() {
   return getPublishedPostSummaries().map((post) => ({
     slug: post.slug,
     title: post.title,

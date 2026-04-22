@@ -1,4 +1,3 @@
-import { type FC } from "react";
 import { Composition } from "remotion";
 import { CaptionedVideo } from "./CaptionedVideo";
 import {
@@ -13,19 +12,21 @@ export type RenderInputProps = CaptionedVideoProps & {
   fps: number;
 };
 
-const RenderableCaptionedVideo: FC<RenderInputProps> = ({
+function RenderableCaptionedVideo({
   videoSrc,
   captions,
   styleId,
   styleOptions,
-}) => (
-  <CaptionedVideo
-    videoSrc={videoSrc}
-    captions={captions}
-    styleId={styleId}
-    styleOptions={styleOptions}
-  />
-);
+}: RenderInputProps) {
+  return (
+    <CaptionedVideo
+      videoSrc={videoSrc}
+      captions={captions}
+      styleId={styleId}
+      styleOptions={styleOptions}
+    />
+  );
+}
 
 const FALLBACK_PROPS: RenderInputProps = {
   videoSrc: "",
@@ -38,7 +39,7 @@ const FALLBACK_PROPS: RenderInputProps = {
   fps: 30,
 };
 
-export const RemotionRoot = () => {
+export function RemotionRoot() {
   return (
     <Composition
       id="captioned-video"
@@ -57,4 +58,4 @@ export const RemotionRoot = () => {
       })}
     />
   );
-};
+}

@@ -1,15 +1,14 @@
 "use client";
 
-import { type FC } from "react";
 import { AbsoluteFill, OffthreadVideo } from "remotion";
 import type { CaptionedVideoProps } from "@/lib/types";
 import "./fonts";
 import { CaptionOverlay } from "./CaptionOverlay";
 
-export const CaptionedVideo: FC<CaptionedVideoProps> = ({
+export function CaptionedVideo({
   videoSrc,
   ...overlayProps
-}) => {
+}: CaptionedVideoProps) {
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
       <OffthreadVideo
@@ -19,4 +18,4 @@ export const CaptionedVideo: FC<CaptionedVideoProps> = ({
       <CaptionOverlay {...overlayProps} />
     </AbsoluteFill>
   );
-};
+}

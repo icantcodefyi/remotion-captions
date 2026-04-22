@@ -3,7 +3,7 @@ import { bundle } from "@remotion/bundler";
 
 let cachedServeUrl: Promise<string> | null = null;
 
-export function getServeUrl(): Promise<string> {
+export function getServeUrl() {
   if (!cachedServeUrl) {
     const projectRoot = process.cwd();
     cachedServeUrl = bundle({

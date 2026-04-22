@@ -1,11 +1,16 @@
 "use client";
 
-import { type FC } from "react";
-import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import {
+  AbsoluteFill,
+  Easing,
+  interpolate,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
 import { FONTS } from "../fonts";
 import { captionFrameStyle, type CaptionStyleProps } from "./types";
 
-export const TypewriterStyle: FC<CaptionStyleProps> = ({ page, options }) => {
+export function TypewriterStyle({ page, options }: CaptionStyleProps) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const currentTimeMs = (frame / fps) * 1000;
@@ -43,38 +48,38 @@ export const TypewriterStyle: FC<CaptionStyleProps> = ({ page, options }) => {
   return (
     <AbsoluteFill>
       <div style={captionFrameStyle(options.position, 80)}>
-      <div
-        style={{
-          opacity: entrance,
-          maxWidth: 1400,
-          padding: "20px 28px",
-          background: "rgba(0,0,0,0.45)",
-          backdropFilter: "blur(10px)",
-          borderRadius: 10,
-          border: `1px solid ${options.accentColor}33`,
-          fontFamily: FONTS.jetbrains,
-          fontWeight: 500,
-          fontSize: baseSize,
-          lineHeight: 1.45,
-          color: "#e8e8ea",
-          whiteSpace: "pre-wrap",
-          textAlign: "left",
-          letterSpacing: "0.01em",
-        }}
-      >
-        {revealed}
-        <span
+        <div
           style={{
-            display: "inline-block",
-            width: "0.6ch",
-            height: "1em",
-            marginLeft: "2px",
-            verticalAlign: "middle",
-            background: showCursor ? options.accentColor : "transparent",
+            opacity: entrance,
+            maxWidth: 1400,
+            padding: "20px 28px",
+            background: "rgba(0,0,0,0.45)",
+            backdropFilter: "blur(10px)",
+            borderRadius: 10,
+            border: `${options.accentColor}33 solid 1px`,
+            fontFamily: FONTS.jetbrains,
+            fontWeight: 500,
+            fontSize: baseSize,
+            lineHeight: 1.45,
+            color: "#e8e8ea",
+            whiteSpace: "pre-wrap",
+            textAlign: "left",
+            letterSpacing: "0.01em",
           }}
-        />
-      </div>
+        >
+          {revealed}
+          <span
+            style={{
+              display: "inline-block",
+              width: "0.6ch",
+              height: "1em",
+              marginLeft: "2px",
+              verticalAlign: "middle",
+              background: showCursor ? options.accentColor : "transparent",
+            }}
+          />
+        </div>
       </div>
     </AbsoluteFill>
   );
-};
+}

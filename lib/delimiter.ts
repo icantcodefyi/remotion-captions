@@ -91,7 +91,7 @@ export function joinCaptions(
  * A "break index" means: after the caption at this index, force a new on-screen page.
  * Returns [] for soft delimiters or empty/single-segment scripts.
  */
-export function deriveBreaks(script: string, delimiter: Delimiter): number[] {
+export function deriveBreaks(script: string, delimiter: Delimiter) {
   if (!delimiter.hardBreak) return [];
   const segments = script
     .split(delimiter.splitRegex)
@@ -109,7 +109,7 @@ export function deriveBreaks(script: string, delimiter: Delimiter): number[] {
 }
 
 /** Strip hard-break markers before sending the script to the alignment endpoint. */
-export function stripForAlignment(script: string, delimiter: Delimiter): string {
+export function stripForAlignment(script: string, delimiter: Delimiter) {
   if (!delimiter.hardBreak) return script;
   return script.replace(delimiter.splitRegex, " ").replace(/\s+/g, " ").trim();
 }
@@ -121,7 +121,7 @@ function isDelimiterId(v: unknown): v is DelimiterId {
   return v === "comma" || v === "period" || v === "pipe" || v === "newline";
 }
 
-export function getDelimiterId(): DelimiterId {
+export function getDelimiterId() {
   if (typeof window === "undefined") return "comma";
   try {
     const v = window.localStorage.getItem(STORAGE_KEY);
@@ -150,12 +150,12 @@ function subscribe(callback: () => void) {
   };
 }
 
-export function useDelimiter(): [Delimiter, (id: DelimiterId) => void] {
+export function useDelimiter() {
   const id = useSyncExternalStore(
     subscribe,
     getDelimiterId,
     () => "comma" as DelimiterId,
   );
   const set = useCallback((next: DelimiterId) => setDelimiterId(next), []);
-  return [DELIMITERS[id], set];
+  return [DELIMITERS[id], set] as const;
 }

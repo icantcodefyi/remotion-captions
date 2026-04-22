@@ -1,6 +1,5 @@
 "use client";
 
-import { type FC } from "react";
 import {
   AbsoluteFill,
   Easing,
@@ -11,7 +10,7 @@ import {
 import { FONTS } from "../fonts";
 import { captionFrameStyle, type CaptionStyleProps } from "./types";
 
-export const GlitchStyle: FC<CaptionStyleProps> = ({ page, options }) => {
+export function GlitchStyle({ page, options }: CaptionStyleProps) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const currentTimeMs = (frame / fps) * 1000;
@@ -110,7 +109,7 @@ export const GlitchStyle: FC<CaptionStyleProps> = ({ page, options }) => {
       </div>
     </AbsoluteFill>
   );
-};
+}
 
 function renderTokens(
   page: CaptionStyleProps["page"],
@@ -133,7 +132,7 @@ function renderTokens(
   });
 }
 
-function pseudo(n: number): number {
+function pseudo(n: number) {
   const x = Math.sin(n * 91.37) * 10000;
   return x - Math.floor(x);
 }

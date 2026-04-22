@@ -226,7 +226,7 @@ export const ASPECT_PRESETS: AspectPreset[] = [
   },
 ];
 
-export function getAspectPreset(id: AspectPresetId): AspectPreset {
+export function getAspectPreset(id: AspectPresetId) {
   return ASPECT_PRESETS.find((p) => p.id === id) ?? ASPECT_PRESETS[0];
 }
 

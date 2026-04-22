@@ -2,14 +2,15 @@ import type { Caption } from "@remotion/captions";
 
 export const MIN_WORD_MS = 40;
 
-const clampTime = (value: number, min: number, max: number) =>
-  Math.min(Math.max(value, min), max);
+function clampTime(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
 
 export function updateText(
   captions: Caption[],
   index: number,
   nextText: string,
-): Caption[] {
+) {
   const trimmed = nextText.trim();
   if (!trimmed) return deleteWord(captions, index);
   const next = captions.slice();
@@ -21,7 +22,7 @@ export function retimeWord(
   captions: Caption[],
   index: number,
   patch: { startMs?: number; endMs?: number },
-): Caption[] {
+) {
   const current = captions[index];
   if (!current) return captions;
   const prevEnd = captions[index - 1]?.endMs ?? 0;
@@ -43,14 +44,14 @@ export function retimeWord(
   return copy;
 }
 
-export function deleteWord(captions: Caption[], index: number): Caption[] {
+export function deleteWord(captions: Caption[], index: number) {
   if (index < 0 || index >= captions.length) return captions;
   const copy = captions.slice();
   copy.splice(index, 1);
   return copy;
 }
 
-export function mergeWithNext(captions: Caption[], index: number): Caption[] {
+export function mergeWithNext(captions: Caption[], index: number) {
   const a = captions[index];
   const b = captions[index + 1];
   if (!a || !b) return captions;
@@ -74,7 +75,7 @@ export function splitWord(
   index: number,
   firstText: string,
   secondText: string,
-): Caption[] {
+) {
   const original = captions[index];
   if (!original) return captions;
   const first = firstText.trim();
@@ -107,7 +108,7 @@ export function splitWord(
 export function findActiveWordIndex(
   captions: Caption[],
   ms: number,
-): number {
+) {
   if (captions.length === 0) return -1;
   for (let i = 0; i < captions.length; i++) {
     const c = captions[i];
@@ -118,7 +119,7 @@ export function findActiveWordIndex(
 }
 
 /** Format milliseconds as M:SS.hh (editorial timestamp). */
-export function formatTimestamp(ms: number): string {
+export function formatTimestamp(ms: number) {
   const totalSec = Math.max(0, ms) / 1000;
   const minutes = Math.floor(totalSec / 60);
   const seconds = Math.floor(totalSec % 60);

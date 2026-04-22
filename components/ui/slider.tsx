@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC, useId } from "react";
+import { useId } from "react";
 import { cn } from "@/lib/cn";
 
 type SliderProps = {
@@ -15,7 +15,7 @@ type SliderProps = {
   ariaLabel?: string;
 };
 
-export const Slider: FC<SliderProps> = ({
+export function Slider({
   value,
   min,
   max,
@@ -25,7 +25,7 @@ export const Slider: FC<SliderProps> = ({
   format,
   className,
   ariaLabel,
-}) => {
+}: SliderProps) {
   const pct = ((value - min) / (max - min)) * 100;
   const id = useId();
   return (
@@ -92,4 +92,4 @@ export const Slider: FC<SliderProps> = ({
       </div>
     </div>
   );
-};
+}

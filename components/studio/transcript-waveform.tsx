@@ -1,6 +1,12 @@
 "use client";
 
-import { type FC, type PointerEvent, useCallback, useEffect, useRef, useState } from "react";
+import {
+  type PointerEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import type { Caption } from "@remotion/captions";
 import { cn } from "@/lib/cn";
 
@@ -17,7 +23,7 @@ type Props = {
 
 const HEIGHT = 56;
 
-export const TranscriptWaveform: FC<Props> = ({
+export function TranscriptWaveform({
   peaks,
   durationMs,
   captions,
@@ -26,7 +32,7 @@ export const TranscriptWaveform: FC<Props> = ({
   isLoading,
   onSeek,
   onWordSelect,
-}) => {
+}: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
@@ -71,8 +77,9 @@ export const TranscriptWaveform: FC<Props> = ({
 
     ctx.clearRect(0, 0, width, HEIGHT);
 
-    const msToX = (ms: number) =>
-      durationMs > 0 ? (ms / durationMs) * width : 0;
+    function msToX(ms: number) {
+      return durationMs > 0 ? (ms / durationMs) * width : 0;
+    }
 
     if (activeIndex >= 0 && captions[activeIndex]) {
       const w = captions[activeIndex];
@@ -158,7 +165,7 @@ export const TranscriptWaveform: FC<Props> = ({
     [durationMs],
   );
 
-  const findCaptionAt = (ms: number) => {
+  function findCaptionAt(ms: number) {
     for (let i = 0; i < captions.length; i++) {
       if (ms >= captions[i].startMs && ms < captions[i].endMs) return i;
     }
@@ -166,21 +173,21 @@ export const TranscriptWaveform: FC<Props> = ({
       if (ms < captions[i].startMs) return i;
     }
     return captions.length - 1;
-  };
+  }
 
-  const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
+  function handlePointerDown(e: PointerEvent<HTMLDivElement>) {
     if (e.button !== 0) return;
     (e.target as HTMLDivElement).setPointerCapture?.(e.pointerId);
     const ms = xToMs(e.clientX);
     onSeek(ms);
     const hit = findCaptionAt(ms);
     if (hit >= 0) onWordSelect(hit);
-  };
+  }
 
-  const handlePointerMove = (e: PointerEvent<HTMLDivElement>) => {
+  function handlePointerMove(e: PointerEvent<HTMLDivElement>) {
     if (e.buttons !== 1) return;
     onSeek(xToMs(e.clientX));
-  };
+  }
 
   return (
     <div
@@ -221,4 +228,4 @@ export const TranscriptWaveform: FC<Props> = ({
       ) : null}
     </div>
   );
-};
+}

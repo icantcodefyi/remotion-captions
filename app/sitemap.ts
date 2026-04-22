@@ -1,8 +1,7 @@
-import type { MetadataRoute } from "next";
 import { getAllClusters, getPublishedPostSummaries } from "@/lib/posts";
 import { absoluteUrl } from "@/lib/site";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default function sitemap() {
   const now = new Date();
   const posts = getPublishedPostSummaries();
   const clusters = getAllClusters();

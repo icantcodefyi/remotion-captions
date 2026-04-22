@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC } from "react";
+import Image from "next/image";
 
 type Mode = "transcribe" | "align";
 
@@ -18,7 +18,7 @@ const MESSAGES: Record<Mode, { message: string; detail: string }> = {
 
 type Props = { mode: Mode };
 
-export const LoadingPreview: FC<Props> = ({ mode }) => {
+export function LoadingPreview({ mode }: Props) {
   const { message, detail } = MESSAGES[mode];
   return (
     <div
@@ -28,7 +28,7 @@ export const LoadingPreview: FC<Props> = ({ mode }) => {
     >
       <div className="max-w-[28rem] flex flex-col items-center">
         <div className="mb-3 rounded-2xl bg-white p-2 shadow-sm ring-1 ring-black/5">
-          <img
+          <Image
             src="/cat-loader.gif"
             alt=""
             aria-hidden
@@ -36,6 +36,7 @@ export const LoadingPreview: FC<Props> = ({ mode }) => {
             height={150}
             className="block h-auto w-[200px] select-none rounded-xl"
             draggable={false}
+            unoptimized
           />
         </div>
         <div className="text-[0.9375rem] font-semibold text-[color:var(--fg)]">
@@ -47,4 +48,4 @@ export const LoadingPreview: FC<Props> = ({ mode }) => {
       </div>
     </div>
   );
-};
+}

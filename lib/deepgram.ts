@@ -10,7 +10,7 @@ export type DeepgramWord = {
   punctuated_word?: string;
 };
 
-export function getDeepgramClient(apiKey?: string | null): DeepgramClient {
+export function getDeepgramClient(apiKey?: string | null) {
   const key = apiKey ?? process.env.DEEPGRAM_API_KEY;
   if (!key) {
     throw new Error(
@@ -24,7 +24,7 @@ export async function transcribeBufferToWords(
   buffer: Uint8Array,
   mimeType: string,
   apiKey?: string | null,
-): Promise<DeepgramWord[]> {
+) {
   const client = getDeepgramClient(apiKey);
 
   // Cast to Blob-compatible uploadable; Deepgram SDK accepts a Blob/File/Buffer.
@@ -59,7 +59,7 @@ export async function transcribeBufferToWords(
   return words;
 }
 
-export function wordsToCaptions(words: DeepgramWord[]): Caption[] {
+export function wordsToCaptions(words: DeepgramWord[]) {
   return words.map((w, index) => {
     const text = (w.punctuated_word ?? w.word) ?? "";
     // First word in a caption stream doesn't get a leading space so caption

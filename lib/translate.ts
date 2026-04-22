@@ -41,7 +41,7 @@ export const LANGUAGES: Language[] = [
   { code: "vi", name: "Vietnamese", native: "Tiếng Việt" },
 ];
 
-export function getLanguage(code: LanguageCode): Language {
+export function getLanguage(code: LanguageCode) {
   return LANGUAGES.find((l) => l.code === code) ?? LANGUAGES[0];
 }
 

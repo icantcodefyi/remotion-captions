@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type CSSProperties, type FC } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { CAPTION_STYLES, type CaptionStyleId } from "@/lib/types";
@@ -13,7 +13,7 @@ type Props = {
 const PREVIEW_TEXT = "Make it pop.";
 const COLLAPSED_COUNT = 4;
 
-export const StyleGrid: FC<Props> = ({ value, onChange }) => {
+export function StyleGrid({ value, onChange }: Props) {
   const [expanded, setExpanded] = useState(false);
 
   const visibleStyles = useMemo(() => {
@@ -126,12 +126,14 @@ export const StyleGrid: FC<Props> = ({ value, onChange }) => {
       ) : null}
     </div>
   );
-};
+}
 
-const StylePreviewChip: FC<{
+type StylePreviewChipProps = {
   styleId: CaptionStyleId;
   accent: string;
-}> = ({ styleId, accent }) => {
+};
+
+function StylePreviewChip({ styleId, accent }: StylePreviewChipProps) {
   const base: CSSProperties = {
     display: "inline-block",
     fontWeight: 900,
@@ -391,4 +393,4 @@ const StylePreviewChip: FC<{
         </div>
       );
   }
-};
+}

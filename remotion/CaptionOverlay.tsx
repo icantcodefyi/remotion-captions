@@ -1,16 +1,16 @@
 "use client";
 
-import { type FC, useMemo } from "react";
+import { useMemo } from "react";
 import { AbsoluteFill, Sequence, useVideoConfig } from "remotion";
 import type { CaptionOverlayProps } from "@/lib/types";
 import { getCaptionPages } from "@/lib/caption-render";
 import { STYLE_REGISTRY } from "./styles";
 
-export const CaptionOverlay: FC<CaptionOverlayProps> = ({
+export function CaptionOverlay({
   captions,
   styleId,
   styleOptions,
-}) => {
+}: CaptionOverlayProps) {
   const { fps, durationInFrames } = useVideoConfig();
   const StyleComponent = STYLE_REGISTRY[styleId];
 
@@ -55,4 +55,4 @@ export const CaptionOverlay: FC<CaptionOverlayProps> = ({
       })}
     </AbsoluteFill>
   );
-};
+}

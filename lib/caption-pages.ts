@@ -116,8 +116,9 @@ export function redistributePage(
   // createTikTokStyleCaptions uses that leading space to detect page
   // boundaries — without it, the renderer collapses everything into a single
   // mega-page and all translated words show simultaneously.
-  const wordText = (globalIndex: number, word: string) =>
-    globalIndex === 0 ? word : ` ${word}`;
+  function wordText(globalIndex: number, word: string) {
+    return globalIndex === 0 ? word : ` ${word}`;
+  }
 
   if (newWords.length === count) {
     const next = captions.slice();

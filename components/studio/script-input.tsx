@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC, useEffect, useId, useMemo, useRef } from "react";
+import { useEffect, useId, useMemo, useRef } from "react";
 import type { Caption } from "@remotion/captions";
 import { RotateCcw } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,7 +32,7 @@ type Props = {
 const MIN_ROWS = 5;
 const MAX_HEIGHT_PX = 260;
 
-export const ScriptInput: FC<Props> = ({
+export function ScriptInput({
   script,
   onScriptChange,
   captions,
@@ -44,7 +44,7 @@ export const ScriptInput: FC<Props> = ({
   generationMode,
   hasSourceMedia,
   disabled,
-}) => {
+}: Props) {
   const id = useId();
   const hintId = `${id}-hint`;
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -212,7 +212,7 @@ export const ScriptInput: FC<Props> = ({
       </p>
     </div>
   );
-};
+}
 
 function normalize(s: string) {
   return s.replace(/\s+/g, " ").trim();

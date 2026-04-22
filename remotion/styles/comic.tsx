@@ -1,6 +1,5 @@
 "use client";
 
-import { type FC } from "react";
 import {
   AbsoluteFill,
   interpolate,
@@ -11,7 +10,11 @@ import {
 import { FONTS } from "../fonts";
 import { captionFrameStyle, type CaptionStyleProps } from "./types";
 
-export const ComicStyle: FC<CaptionStyleProps> = ({ page, options, pageIndex }) => {
+export function ComicStyle({
+  page,
+  options,
+  pageIndex,
+}: CaptionStyleProps) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const currentTimeMs = (frame / fps) * 1000;
@@ -84,4 +87,4 @@ export const ComicStyle: FC<CaptionStyleProps> = ({ page, options, pageIndex }) 
       </div>
     </AbsoluteFill>
   );
-};
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Eye, EyeOff, KeyRound, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
@@ -12,12 +12,12 @@ type Props = {
   onSave: (key: string | null) => void;
 };
 
-export const ApiKeyDialog: FC<Props> = ({
+export function ApiKeyDialog({
   open,
   onOpenChange,
   currentKey,
   onSave,
-}) => {
+}: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [visible, setVisible] = useState(false);
@@ -36,22 +36,24 @@ export const ApiKeyDialog: FC<Props> = ({
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    const onClose = () => onOpenChange(false);
+    function onClose() {
+      onOpenChange(false);
+    }
     dialog.addEventListener("close", onClose);
     return () => dialog.removeEventListener("close", onClose);
   }, [onOpenChange]);
 
-  const handleSave = () => {
+  function handleSave() {
     const trimmed = inputRef.current?.value.trim() ?? "";
     onSave(trimmed.length > 0 ? trimmed : null);
     onOpenChange(false);
-  };
+  }
 
-  const handleClear = () => {
+  function handleClear() {
     onSave(null);
     if (inputRef.current) inputRef.current.value = "";
     onOpenChange(false);
-  };
+  }
 
   return (
     <dialog
@@ -220,4 +222,4 @@ export const ApiKeyDialog: FC<Props> = ({
       </div>
     </dialog>
   );
-};
+}

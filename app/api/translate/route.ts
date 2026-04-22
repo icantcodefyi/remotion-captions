@@ -94,7 +94,7 @@ async function translateStrings({
   strings: string[];
   targetLanguage: string;
   apiKey: string;
-}): Promise<string[]> {
+}) {
   const system = [
     `You are a native ${targetLanguage} speaker localizing short-form video captions, not a dictionary.`,
     "Translate the MEANING and FEELING, not the words. Rewrite each segment the way a native speaker would actually say it — natural, idiomatic, conversational.",

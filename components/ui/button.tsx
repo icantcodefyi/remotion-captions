@@ -59,16 +59,18 @@ export interface ButtonProps
   ref?: Ref<HTMLButtonElement>;
 }
 
-export const Button = ({
+export function Button({
   ref,
   className,
   variant,
   size,
   ...props
-}: ButtonProps) => (
-  <button
-    ref={ref}
-    className={cn(buttonVariants({ variant, size }), className)}
-    {...props}
-  />
-);
+}: ButtonProps) {
+  return (
+    <button
+      ref={ref}
+      className={cn(buttonVariants({ variant, size }), className)}
+      {...props}
+    />
+  );
+}

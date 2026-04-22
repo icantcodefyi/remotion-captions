@@ -54,14 +54,6 @@ type BriefCollection = {
   posts: PostBrief[];
 };
 
-type RunOptions = {
-  limit: number | null;
-  cluster: string | null;
-  dryRun: boolean;
-  write: boolean;
-  overwrite: boolean;
-};
-
 type TelemetryRecord = {
   timestamp: string;
   slug: string;
@@ -101,7 +93,7 @@ const FACTS_PATH = path.join(ROOT, "docs", "facts.md");
 const FIXTURE_PATH = path.join(ROOT, "docs", "fixtures", "transcript-sample-1.json");
 const PIPELINE_VERSION = "briefed-local-author-v1";
 
-function parseArgs(argv: string[]): RunOptions {
+function parseArgs(argv: string[]) {
   let limit: number | null = null;
   let cluster: string | null = null;
   let dryRun = true;
@@ -170,7 +162,7 @@ function parseCsvLine(line: string) {
   return values.map((value) => value.trim());
 }
 
-function loadKeywords(): KeywordRow[] {
+function loadKeywords() {
   const raw = fs.readFileSync(KEYWORDS_PATH, "utf8").trim();
   const [headerLine, ...lines] = raw.split(/\r?\n/);
   const headers = parseCsvLine(headerLine);
@@ -195,7 +187,7 @@ function loadKeywords(): KeywordRow[] {
   });
 }
 
-function loadClusters(): Cluster[] {
+function loadClusters() {
   const raw = fs.readFileSync(CLUSTERS_PATH, "utf8");
   const parsed = JSON.parse(raw) as { clusters: Cluster[] };
   return parsed.clusters;
@@ -337,7 +329,7 @@ function buildAutoBrief(
   row: KeywordRow,
   cluster: Cluster,
   clusters: Cluster[],
-): PostBrief {
+) {
   const queryTitle = toTitleCase(row.query);
   const scenario = `${row.query} inside ${cluster.shortDescription.toLowerCase()}`;
   const titleSuffixByCluster: Record<string, string> = {
