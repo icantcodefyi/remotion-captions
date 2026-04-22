@@ -1,4 +1,3 @@
-import { cache } from "react";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import clustersSource from "../data/clusters.json";
@@ -13,7 +12,11 @@ import {
   type BlogSection,
 } from "./posts-schema";
 
-const POSTS_DIRECTORY = path.join(process.cwd(), "content", "blog");
+const POSTS_DIRECTORY = path.join(
+  /*turbopackIgnore: true*/ process.cwd(),
+  "content",
+  "blog",
+);
 
 const clusters = clusterCollectionSchema.parse(clustersSource).clusters;
 const clusterMap = new Map(clusters.map((cluster) => [cluster.slug, cluster]));
@@ -218,14 +221,14 @@ function getHref(slug: string) {
 }
 
 function listPostFiles() {
-  return readdirSync(POSTS_DIRECTORY)
+  return readdirSync(/*turbopackIgnore: true*/ POSTS_DIRECTORY)
     .filter((file) => file.endsWith(".md"))
     .sort();
 }
 
 function readPostSource(slug: string) {
-  const filePath = path.join(POSTS_DIRECTORY, `${slug}.md`);
-  const raw = readFileSync(filePath, "utf8");
+  const filePath = path.join(/*turbopackIgnore: true*/ POSTS_DIRECTORY, `${slug}.md`);
+  const raw = readFileSync(/*turbopackIgnore: true*/ filePath, "utf8");
   return { filePath, raw };
 }
 
@@ -260,24 +263,42 @@ function createSummary(frontmatter: BlogPostFrontmatter, body: string) {
   } satisfies BlogPostSummary;
 }
 
-const getCachedPostSlugs = cache(() => listPostFiles().map((file) => file.replace(/\.md$/, "")));
+let cachedSlugs: string[] | null = null;
+let cachedSummaries: BlogPostSummary[] | null = null;
+const cachedPosts = new Map<string, BlogPost>();
 
-const getCachedPostSummaries = cache(() => {
-  const summaries = getCachedPostSlugs().map((slug) => {
-    const { raw } = readPostSource(slug);
-    const { frontmatter, body } = parseFrontmatter(raw);
-    return createSummary(frontmatter, body);
-  });
+function getCachedPostSlugs() {
+  if (cachedSlugs === null) {
+    cachedSlugs = listPostFiles().map((file) => file.replace(/\.md$/, ""));
+  }
+  return cachedSlugs;
+}
 
-  summaries.sort(comparePostsByDate);
-  return summaries;
-});
+function getCachedPostSummaries() {
+  if (cachedSummaries === null) {
+    const summaries = getCachedPostSlugs().map((slug) => {
+      const { raw } = readPostSource(slug);
+      const { frontmatter, body } = parseFrontmatter(raw);
+      return createSummary(frontmatter, body);
+    });
+    summaries.sort(comparePostsByDate);
+    cachedSummaries = summaries;
+  }
+  return cachedSummaries;
+}
 
-const getCachedPosts = cache(() => {
-  const posts = getCachedPostSlugs().map((slug) => parsePost(slug));
-  posts.sort(comparePostsByDate);
-  return posts;
-});
+function getCachedPost(slug: string): BlogPost | null {
+  const existing = cachedPosts.get(slug);
+  if (existing) {
+    return existing;
+  }
+  if (!getCachedPostSummaries().some((summary) => summary.slug === slug)) {
+    return null;
+  }
+  const post = parsePost(slug);
+  cachedPosts.set(slug, post);
+  return post;
+}
 
 function ensurePostLinksResolve(post: BlogPostSummary, knownLinks: Set<string>) {
   for (const link of post.internalLinks) {
@@ -319,7 +340,13 @@ function validateClusterAssignments(posts: BlogPostSummary[]) {
   }
 }
 
-const validateCorpus = cache(() => {
+let corpusValidated = false;
+
+function validateCorpus() {
+  if (corpusValidated) {
+    return true;
+  }
+
   const summaries = getCachedPostSummaries();
   const slugs = new Set<string>();
 
@@ -343,8 +370,9 @@ const validateCorpus = cache(() => {
   }
 
   validateClusterAssignments(summaries);
+  corpusValidated = true;
   return true;
-});
+}
 
 export function getAllClusters() {
   return [...clusters];
@@ -360,11 +388,6 @@ export function getCluster(slug: string) {
   return cluster;
 }
 
-export function getAllPosts() {
-  validateCorpus();
-  return getCachedPosts();
-}
-
 export function getAllPostSummaries() {
   validateCorpus();
   return getCachedPostSummaries();
@@ -376,7 +399,7 @@ export function getPublishedPostSummaries() {
 
 export function getPost(slug: string) {
   validateCorpus();
-  return getCachedPosts().find((post) => post.slug === slug) ?? null;
+  return getCachedPost(slug);
 }
 
 export function getPostsByCluster(clusterSlug: string) {

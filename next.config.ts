@@ -45,6 +45,14 @@ const nextConfig: NextConfig = {
   experimental: {
     largePageDataBytes: 128 * 1000,
   },
+  outputFileTracingIncludes: {
+    "/blog": ["./content/blog/**/*.md"],
+    "/blog/**": ["./content/blog/**/*.md"],
+    "/llms.txt": ["./content/blog/**/*.md"],
+    "/llms-full.txt": ["./content/blog/**/*.md"],
+    "/sitemap.xml": ["./content/blog/**/*.md"],
+    "/sitemap-index.xml": ["./content/blog/**/*.md"],
+  },
 };
 
 export default nextConfig;
