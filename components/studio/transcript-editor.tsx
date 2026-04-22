@@ -1,6 +1,15 @@
 "use client";
 
-import { type FC, type ReactNode, type RefObject, type UIEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type FC,
+  type ReactNode,
+  type RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { PlayerRef } from "@remotion/player";
 import type { Caption } from "@remotion/captions";
 import { Undo2 } from "lucide-react";
@@ -8,19 +17,10 @@ import { toast } from "sonner";
 import { cn } from "@/lib/cn";
 import { SectionLabel } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import {
-  deleteWord,
-  findActiveWordIndex,
-  formatTimestamp,
-  mergeWithNext,
-  MIN_WORD_MS,
-  retimeWord,
-  splitWord,
-  updateText,
-} from "@/lib/caption-edits";
+import { formatTimestamp } from "@/lib/caption-edits";
+import { buildPages, redistributePage, type CaptionPage } from "@/lib/caption-pages";
 import { extractPeaks, type WaveformPeaks } from "@/lib/waveform";
 import { TranscriptWaveform } from "./transcript-waveform";
-import { TranscriptWordRow } from "./transcript-word-row";
 
 type Props = {
   captions: Caption[];
@@ -29,10 +29,9 @@ type Props = {
   playerRef: RefObject<PlayerRef | null>;
   durationMs: number;
   fps: number;
+  wordsPerPage: number;
 };
 
-const ROW_HEIGHT = 32;
-const OVERSCAN = 8;
 const UNDO_LIMIT = 50;
 const AUTOSCROLL_COOLDOWN_MS = 1600;
 
@@ -43,38 +42,36 @@ export const TranscriptEditor: FC<Props> = ({
   playerRef,
   durationMs,
   fps,
+  wordsPerPage,
 }) => {
   const [peaksFor, setPeaksFor] = useState<File | null>(null);
   const [peaks, setPeaks] = useState<WaveformPeaks | null>(null);
   const [currentMs, setCurrentMs] = useState(0);
-  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
   const [editingIndex, setEditingIndex] = useState<number>(-1);
-  const [scrollTop, setScrollTop] = useState(0);
-  const [containerHeight, setContainerHeight] = useState(480);
   const [undoDepth, setUndoDepth] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
   const undoStack = useRef<Caption[][]>([]);
   const lastManualScrollAt = useRef(0);
-
   const captionsRef = useRef(captions);
-  const selectedIndexRef = useRef(selectedIndex);
-  const editingIndexRef = useRef(editingIndex);
 
   useEffect(() => {
     captionsRef.current = captions;
   }, [captions]);
-  useEffect(() => {
-    selectedIndexRef.current = selectedIndex;
-  }, [selectedIndex]);
-  useEffect(() => {
-    editingIndexRef.current = editingIndex;
-  }, [editingIndex]);
 
-  const activeIndex = useMemo(
-    () => findActiveWordIndex(captions, currentMs),
-    [captions, currentMs],
+  const pages = useMemo<CaptionPage[]>(
+    () => buildPages(captions, wordsPerPage),
+    [captions, wordsPerPage],
   );
 
+  const activePageIndex = useMemo(() => {
+    for (let i = 0; i < pages.length; i++) {
+      const p = pages[i];
+      if (currentMs >= p.startMs && currentMs < p.endMs) return i;
+    }
+    return -1;
+  }, [pages, currentMs]);
+
+  // Load waveform peaks when file changes
   useEffect(() => {
     if (!file) return;
     const controller = new AbortController();
@@ -104,6 +101,8 @@ export const TranscriptEditor: FC<Props> = ({
   const peaksLoading = Boolean(file) && peaksFor !== file;
   const effectivePeaks = peaksReady ? peaks : null;
 
+  // Track player time via frameupdate events (cheap since we only need
+  // to know which page is active, not sub-frame precision)
   useEffect(() => {
     const player = playerRef.current;
     if (!player) return;
@@ -120,16 +119,6 @@ export const TranscriptEditor: FC<Props> = ({
       player.removeEventListener("seeked", onSeek);
     };
   }, [playerRef, fps]);
-
-  useEffect(() => {
-    const node = listRef.current;
-    if (!node) return;
-    const ro = new ResizeObserver((entries) => {
-      for (const e of entries) setContainerHeight(e.contentRect.height);
-    });
-    ro.observe(node);
-    return () => ro.disconnect();
-  }, []);
 
   const applyChange = useCallback(
     (next: Caption[]) => {
@@ -161,158 +150,61 @@ export const TranscriptEditor: FC<Props> = ({
     [playerRef, fps],
   );
 
-  const selectIndex = useCallback(
+  const selectPage = useCallback(
     (index: number) => {
-      const list = captionsRef.current;
-      if (index < 0 || index >= list.length) return;
-      setSelectedIndex(index);
-      setEditingIndex(-1);
-      seekToMs(list[index].startMs);
+      const p = pages[index];
+      if (!p) return;
+      seekToMs(p.startMs);
     },
-    [seekToMs],
+    [pages, seekToMs],
   );
 
-  const beginEdit = useCallback((index: number) => {
-    setSelectedIndex(index);
-    setEditingIndex(index);
-  }, []);
+  const deletePage = useCallback(
+    (index: number) => {
+      const p = pages[index];
+      if (!p) return;
+      const next = [
+        ...captionsRef.current.slice(0, p.startIndex),
+        ...captionsRef.current.slice(p.endIndex + 1),
+      ];
+      applyChange(next);
+      setEditingIndex(-1);
+    },
+    [pages, applyChange],
+  );
 
-  const cancelEdit = useCallback(() => setEditingIndex(-1), []);
-
-  const commitEdit = useCallback(
+  const commitPageText = useCallback(
     (index: number, text: string) => {
-      const list = captionsRef.current;
-      if (text.trim() === list[index]?.text) {
+      const p = pages[index];
+      if (!p) return;
+      const cleaned = text.trim();
+      if (cleaned === p.text.trim()) {
         setEditingIndex(-1);
         return;
       }
-      applyChange(updateText(list, index, text));
+      applyChange(redistributePage(captionsRef.current, p, cleaned));
       setEditingIndex(-1);
     },
-    [applyChange],
+    [pages, applyChange],
   );
 
-  const handleDelete = useCallback(
-    (index: number) => {
-      const list = captionsRef.current;
-      applyChange(deleteWord(list, index));
-      setEditingIndex(-1);
-      setSelectedIndex(Math.min(index, list.length - 2));
-    },
-    [applyChange],
-  );
-
-  const handleSplit = useCallback(
-    (index: number, first: string, second: string) => {
-      applyChange(splitWord(captionsRef.current, index, first, second));
-      setEditingIndex(-1);
-      setSelectedIndex(index + 1);
-    },
-    [applyChange],
-  );
-
-  const handleMergeNext = useCallback(
-    (index: number) => {
-      applyChange(mergeWithNext(captionsRef.current, index));
-      setEditingIndex(-1);
-    },
-    [applyChange],
-  );
-
-  const adjustActiveEdge = useCallback(
-    (edge: "start" | "end", deltaMs: number) => {
-      const index = selectedIndexRef.current;
-      const list = captionsRef.current;
-      if (index < 0) return;
-      const w = list[index];
-      if (!w) return;
-      applyChange(
-        retimeWord(list, index, {
-          startMs: edge === "start" ? w.startMs + deltaMs : w.startMs,
-          endMs: edge === "end" ? w.endMs + deltaMs : w.endMs,
-        }),
-      );
-    },
-    [applyChange],
-  );
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (editingIndexRef.current >= 0) return;
-      const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.isContentEditable)
-      ) {
-        return;
-      }
-      const mod = e.metaKey || e.ctrlKey;
-      if (mod && e.key.toLowerCase() === "z") {
-        e.preventDefault();
-        undo();
-        return;
-      }
-      const index = selectedIndexRef.current;
-      if (index < 0) return;
-      const list = captionsRef.current;
-      if (e.key === "ArrowDown" || e.key === "ArrowRight") {
-        e.preventDefault();
-        selectIndex(Math.min(list.length - 1, index + 1));
-      } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
-        e.preventDefault();
-        selectIndex(Math.max(0, index - 1));
-      } else if (e.key === "Enter") {
-        e.preventDefault();
-        beginEdit(index);
-      } else if (e.key === " ") {
-        e.preventDefault();
-        playerRef.current?.toggle();
-      } else if (e.key === "Backspace" || e.key === "Delete") {
-        e.preventDefault();
-        handleDelete(index);
-      } else if (e.key === "[") {
-        e.preventDefault();
-        adjustActiveEdge("start", e.shiftKey ? -20 : -80);
-      } else if (e.key === "]") {
-        e.preventDefault();
-        adjustActiveEdge("end", e.shiftKey ? 20 : 80);
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [undo, selectIndex, beginEdit, handleDelete, adjustActiveEdge, playerRef]);
-
+  // Auto-scroll active page into view
   useEffect(() => {
     const node = listRef.current;
-    if (!node || activeIndex < 0) return;
+    if (!node || activePageIndex < 0) return;
     if (Date.now() - lastManualScrollAt.current < AUTOSCROLL_COOLDOWN_MS) return;
-    const top = activeIndex * ROW_HEIGHT;
-    const viewportTop = node.scrollTop;
-    const viewportBottom = viewportTop + node.clientHeight;
-    if (top < viewportTop + ROW_HEIGHT || top > viewportBottom - ROW_HEIGHT * 3) {
-      node.scrollTo({
-        top: Math.max(0, top - node.clientHeight / 2),
-        behavior: "smooth",
-      });
+    const rows = node.querySelectorAll<HTMLElement>("[data-page-row]");
+    const row = rows[activePageIndex];
+    if (!row) return;
+    const nodeRect = node.getBoundingClientRect();
+    const rowRect = row.getBoundingClientRect();
+    if (
+      rowRect.top < nodeRect.top + 20 ||
+      rowRect.bottom > nodeRect.bottom - 20
+    ) {
+      row.scrollIntoView({ behavior: "smooth", block: "center" });
     }
-  }, [activeIndex]);
-
-  const totalHeight = captions.length * ROW_HEIGHT;
-  const startRow = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
-  const endRow = Math.min(
-    captions.length,
-    Math.ceil((scrollTop + containerHeight) / ROW_HEIGHT) + OVERSCAN,
-  );
-  const visible = captions.slice(startRow, endRow);
-
-  const handleScroll = (e: UIEvent<HTMLDivElement>) => {
-    setScrollTop(e.currentTarget.scrollTop);
-    lastManualScrollAt.current = Date.now();
-  };
-
-  const selected = selectedIndex >= 0 ? captions[selectedIndex] : null;
+  }, [activePageIndex]);
 
   return (
     <div className="flex flex-col gap-4 h-full min-h-0">
@@ -330,30 +222,21 @@ export const TranscriptEditor: FC<Props> = ({
           durationMs={durationMs || effectivePeaks?.durationMs || 1}
           captions={captions}
           currentMs={currentMs}
-          activeIndex={activeIndex}
+          activeIndex={pages[activePageIndex]?.startIndex ?? -1}
           isLoading={peaksLoading}
           onSeek={seekToMs}
-          onWordSelect={(i) => {
-            setSelectedIndex(i);
-            setEditingIndex(-1);
+          onWordSelect={() => {
+            /* no-op: page selection happens via rows below */
           }}
         />
       </div>
-
-      <SelectedWordCard
-        caption={selected}
-        activeIndex={selectedIndex}
-        onNudgeStart={(delta) => adjustActiveEdge("start", delta)}
-        onNudgeEnd={(delta) => adjustActiveEdge("end", delta)}
-        onEdit={() => selectedIndex >= 0 && beginEdit(selectedIndex)}
-      />
 
       <div className="flex flex-col min-h-0 flex-1 gap-2">
         <div className="flex items-center justify-between">
           <SectionLabel>Transcript</SectionLabel>
           <div className="flex items-center gap-2">
             <span className="ital-label text-[0.7rem] text-[color:var(--muted)] normal-case tracking-normal">
-              {captions.length} words
+              {pages.length} {pages.length === 1 ? "line" : "lines"}
             </span>
             <Button
               variant="ghost"
@@ -367,49 +250,37 @@ export const TranscriptEditor: FC<Props> = ({
           </div>
         </div>
 
-        {captions.length === 0 ? (
+        {pages.length === 0 ? (
           <EmptyTranscript />
         ) : (
           <div
             ref={listRef}
-            onScroll={handleScroll}
-            role="listbox"
-            aria-label="Transcript words"
-            tabIndex={0}
+            onScroll={() => {
+              lastManualScrollAt.current = Date.now();
+            }}
+            role="list"
+            aria-label="Transcript lines"
             className={cn(
               "flex-1 min-h-0 overflow-y-auto rounded-md",
               "border border-[color:var(--border)] bg-[var(--surface-2)]",
             )}
             style={{ scrollbarGutter: "stable" }}
           >
-            <div style={{ height: totalHeight, position: "relative" }}>
-              <div
-                style={{
-                  transform: `translateY(${startRow * ROW_HEIGHT}px)`,
-                }}
-              >
-                {visible.map((caption, offset) => {
-                  const index = startRow + offset;
-                  return (
-                    <TranscriptWordRow
-                      key={`${index}-${caption.startMs}`}
-                      caption={caption}
-                      index={index}
-                      isActive={index === activeIndex}
-                      isSelected={index === selectedIndex}
-                      isEditing={index === editingIndex}
-                      canMerge={index < captions.length - 1}
-                      onSelect={selectIndex}
-                      onBeginEdit={beginEdit}
-                      onCommitEdit={commitEdit}
-                      onCancelEdit={cancelEdit}
-                      onDelete={handleDelete}
-                      onSplit={handleSplit}
-                      onMergeNext={handleMergeNext}
-                    />
-                  );
-                })}
-              </div>
+            <div className="flex flex-col">
+              {pages.map((page, index) => (
+                <PageRow
+                  key={`${page.startIndex}-${page.startMs}`}
+                  page={page}
+                  index={index}
+                  isActive={index === activePageIndex}
+                  isEditing={index === editingIndex}
+                  onSelect={selectPage}
+                  onBeginEdit={(i) => setEditingIndex(i)}
+                  onCommit={commitPageText}
+                  onCancelEdit={() => setEditingIndex(-1)}
+                  onDelete={deletePage}
+                />
+              ))}
             </div>
           </div>
         )}
@@ -420,116 +291,168 @@ export const TranscriptEditor: FC<Props> = ({
   );
 };
 
-const SelectedWordCard: FC<{
-  caption: Caption | null;
-  activeIndex: number;
-  onNudgeStart: (deltaMs: number) => void;
-  onNudgeEnd: (deltaMs: number) => void;
-  onEdit: () => void;
-}> = ({ caption, activeIndex, onNudgeStart, onNudgeEnd, onEdit }) => {
-  if (!caption) {
-    return (
-      <div
-        className={cn(
-          "rounded-md border border-dashed border-[color:var(--border)]",
-          "p-3 bg-transparent",
-        )}
-      >
-        <p className="ital-label text-[0.75rem] text-[color:var(--muted)] normal-case tracking-normal">
-          pick a word to retime, split, or rewrite
-        </p>
-      </div>
-    );
-  }
-  const durationMs = Math.max(MIN_WORD_MS, caption.endMs - caption.startMs);
+type PageRowProps = {
+  page: CaptionPage;
+  index: number;
+  isActive: boolean;
+  isEditing: boolean;
+  onSelect: (index: number) => void;
+  onBeginEdit: (index: number) => void;
+  onCommit: (index: number, text: string) => void;
+  onCancelEdit: () => void;
+  onDelete: (index: number) => void;
+};
+
+const PageRow: FC<PageRowProps> = ({
+  page,
+  index,
+  isActive,
+  isEditing,
+  onSelect,
+  onBeginEdit,
+  onCommit,
+  onCancelEdit,
+  onDelete,
+}) => {
+  const editableRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isEditing) return;
+    const node = editableRef.current;
+    if (!node) return;
+    node.textContent = page.text;
+    node.focus();
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    // Seed DOM only on edit-mode entry; intentionally omit `page.text` so
+    // typing isn't clobbered by re-renders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditing]);
+
+  const wordCount = page.endIndex - page.startIndex + 1;
+  const durationSec = ((page.endMs - page.startMs) / 1000).toFixed(1);
+
   return (
     <div
+      role="listitem"
+      data-page-row
+      aria-current={isActive ? "true" : undefined}
       className={cn(
-        "rounded-md p-3 flex flex-col gap-2.5",
-        "bg-[var(--surface-2)] border border-[color:var(--border)]",
+        "group relative flex items-start gap-3 px-3 py-2.5",
+        "border-b border-[color:var(--border)] last:border-b-0",
+        "transition-[background,color] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        isActive
+          ? "bg-[color-mix(in_oklab,var(--accent-soft)_60%,transparent)]"
+          : "[@media(hover:hover)]:hover:bg-[var(--surface-1)]",
       )}
     >
-      <div className="flex items-center justify-between gap-2">
-        <button
-          type="button"
-          onClick={onEdit}
-          className="text-left group flex items-baseline gap-2 min-w-0 flex-1"
-          title="Edit text"
-        >
-          <span className="tnum-serif text-[0.7rem] italic text-[color:var(--muted)] shrink-0">
-            #{activeIndex + 1}
-          </span>
-          <span className="text-[0.9375rem] font-semibold text-[color:var(--fg)] truncate group-hover:underline decoration-[color:var(--accent)] underline-offset-4">
-            {caption.text}
-          </span>
-        </button>
-        <span className="tnum-serif text-[0.7rem] italic text-[color:var(--muted)] shrink-0">
-          {Math.round(durationMs)}ms
-        </span>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        <EdgeNudge
-          label="Start"
-          valueMs={caption.startMs}
-          onNudge={onNudgeStart}
+      <button
+        type="button"
+        onClick={() => onSelect(index)}
+        title={`Seek to ${formatTimestamp(page.startMs)}`}
+        className={cn(
+          "relative shrink-0 flex flex-col items-end justify-start gap-0.5",
+          "pt-[3px] w-[58px] text-right",
+          "cursor-pointer appearance-none bg-transparent border-0 p-0",
+          "[@media(hover:hover)]:hover:text-[color:var(--fg)]",
+          "transition-colors duration-150",
+        )}
+      >
+        <span
+          aria-hidden
+          className={cn(
+            "absolute -left-1 top-[9px] h-1.5 w-1.5 rounded-full",
+            "transition-[opacity,transform] duration-200",
+            isActive
+              ? "opacity-100 scale-100 bg-[var(--accent)] shadow-[0_0_0_3px_var(--accent-glow)]"
+              : "opacity-0 scale-75",
+          )}
         />
-        <EdgeNudge label="End" valueMs={caption.endMs} onNudge={onNudgeEnd} />
+        <span
+          className={cn(
+            "tnum-serif text-[0.72rem] italic leading-none",
+            isActive
+              ? "text-[color:var(--accent-ink)]"
+              : "text-[color:var(--muted)]",
+          )}
+        >
+          {formatTimestamp(page.startMs)}
+        </span>
+        <span className="ital-label text-[0.62rem] normal-case tracking-normal text-[color:var(--muted-soft)] leading-none">
+          {durationSec}s · {wordCount}w
+        </span>
+      </button>
+
+      <div className="flex-1 min-w-0">
+        {isEditing ? (
+          <div
+            ref={editableRef}
+            contentEditable
+            suppressContentEditableWarning
+            role="textbox"
+            aria-label={`Edit line at ${formatTimestamp(page.startMs)}`}
+            spellCheck={false}
+            onBlur={(e) =>
+              onCommit(index, e.currentTarget.textContent ?? "")
+            }
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                onCommit(index, e.currentTarget.textContent ?? "");
+              } else if (e.key === "Escape") {
+                e.preventDefault();
+                onCancelEdit();
+              }
+            }}
+            className={cn(
+              "outline-none rounded px-1.5 py-0.5 -mx-1.5 -my-0.5",
+              "text-[0.9375rem] leading-[1.4] font-medium",
+              "text-[color:var(--fg)]",
+              "bg-[var(--surface-1)]",
+              "shadow-[0_0_0_2px_var(--accent-edge),0_0_0_6px_var(--accent-glow)]",
+              "whitespace-pre-wrap",
+            )}
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => onBeginEdit(index)}
+            title="Click to edit"
+            className={cn(
+              "block w-full text-left appearance-none bg-transparent border-0 p-0",
+              "text-[0.9375rem] leading-[1.4]",
+              "text-[color:var(--fg)]",
+              "cursor-text",
+            )}
+          >
+            {page.text}
+          </button>
+        )}
       </div>
+
+      <button
+        type="button"
+        aria-label="Delete this line"
+        title="Delete line"
+        onClick={() => onDelete(index)}
+        className={cn(
+          "shrink-0 h-6 w-6 inline-flex items-center justify-center rounded",
+          "text-[color:var(--muted)]",
+          "opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
+          "transition-[background,color,opacity,transform] duration-150",
+          "[@media(hover:hover)]:hover:bg-[var(--surface-3)]",
+          "[@media(hover:hover)]:hover:text-[color:var(--danger)]",
+          "active:scale-95",
+        )}
+      >
+        ×
+      </button>
     </div>
   );
 };
-
-const EdgeNudge: FC<{
-  label: string;
-  valueMs: number;
-  onNudge: (deltaMs: number) => void;
-}> = ({ label, valueMs, onNudge }) => (
-  <div
-    className={cn(
-      "flex items-center justify-between rounded",
-      "bg-[var(--surface-1)] border border-[color:var(--border)] px-2 py-1.5",
-    )}
-  >
-    <div className="flex flex-col">
-      <span className="ital-label text-[0.65rem] text-[color:var(--muted)] normal-case tracking-normal">
-        {label}
-      </span>
-      <span className="tnum-serif text-[0.75rem] text-[color:var(--fg)]">
-        {formatTimestamp(valueMs)}
-      </span>
-    </div>
-    <div className="flex items-center gap-0.5">
-      <NudgeButton onClick={() => onNudge(-40)} title="Nudge -40ms ([)">
-        ‹
-      </NudgeButton>
-      <NudgeButton onClick={() => onNudge(40)} title="Nudge +40ms (])">
-        ›
-      </NudgeButton>
-    </div>
-  </div>
-);
-
-const NudgeButton: FC<{
-  onClick: () => void;
-  title: string;
-  children: ReactNode;
-}> = ({ onClick, title, children }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    title={title}
-    className={cn(
-      "h-6 w-6 rounded inline-flex items-center justify-center",
-      "text-[color:var(--muted)]",
-      "transition-[background,color,transform] duration-150",
-      "[@media(hover:hover)]:hover:bg-[var(--surface-3)]",
-      "[@media(hover:hover)]:hover:text-[color:var(--fg)]",
-      "active:scale-95",
-    )}
-  >
-    {children}
-  </button>
-);
 
 const EmptyTranscript: FC = () => (
   <div className="flex-1 min-h-0 flex items-center justify-center rounded-md border border-dashed border-[color:var(--border)] p-6">
@@ -543,17 +466,13 @@ const EmptyTranscript: FC = () => (
 
 const KeyboardLegend: FC = () => (
   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1">
-    <Hint k="↑ ↓">navigate</Hint>
-    <Hint k="Enter">edit</Hint>
-    <Hint k="[ ]">nudge edges</Hint>
-    <Hint k="⌘Z">undo</Hint>
+    <Hint k="Click">edit line</Hint>
+    <Hint k="Enter">save</Hint>
+    <Hint k="Esc">cancel</Hint>
   </div>
 );
 
-const Hint: FC<{ k: string; children: ReactNode }> = ({
-  k,
-  children,
-}) => (
+const Hint: FC<{ k: string; children: ReactNode }> = ({ k, children }) => (
   <span className="inline-flex items-center gap-1.5 text-[0.65rem] text-[color:var(--muted)]">
     <kbd
       className={cn(

@@ -11,7 +11,8 @@ type PageProps = {
   params: Promise<{ page: string }>;
 };
 
-export const revalidate = blogConfig.revalidateSeconds;
+// Must stay a literal: Next segment config values need to be statically analyzable.
+export const revalidate = 86400;
 export const dynamicParams = true;
 
 export function generateStaticParams() {

@@ -1,7 +1,8 @@
 import { getAllClusters } from "@/lib/posts";
-import { absoluteUrl, blogConfig } from "@/lib/site";
+import { absoluteUrl } from "@/lib/site";
 
-export const revalidate = blogConfig.revalidateSeconds;
+// Must stay a literal: Next segment config values need to be statically analyzable.
+export const revalidate = 86400;
 
 function renderSitemapIndex(urls: string[]) {
   const entries = urls

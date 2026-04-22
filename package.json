@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "blog:generate": "node --experimental-transform-types scripts/generate-posts.ts",
+    "blog:generate:dry": "node --experimental-transform-types scripts/generate-posts.ts --limit 10",
+    "blog:review": "node --experimental-transform-types scripts/review-queue.ts",
+    "blog:validate": "node --experimental-transform-types scripts/validate-posts.ts"
   },
   "dependencies": {
     "@deepgram/sdk": "^5.0.0",

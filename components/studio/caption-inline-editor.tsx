@@ -14,12 +14,13 @@ import type { PlayerRef } from "@remotion/player";
 import type { Caption } from "@remotion/captions";
 import { Pencil } from "lucide-react";
 import { cn } from "@/lib/cn";
-import type { CaptionPosition } from "@/lib/types";
+import type { CaptionPosition, CaptionStyleId, StyleOptions } from "@/lib/types";
 import {
   buildPages,
   redistributePage,
   type CaptionPage,
 } from "@/lib/caption-pages";
+import { getInlineCaptionAppearance } from "@/lib/inline-caption-style";
 
 type Props = {
   captions: Caption[];
@@ -28,6 +29,9 @@ type Props = {
   fps: number;
   position: CaptionPosition;
   wordsPerPage: number;
+  styleId: CaptionStyleId;
+  styleOptions: StyleOptions;
+  compositionWidth: number;
   onEditingPageChange: (pageIndex: number | null) => void;
 };
 
@@ -38,11 +42,14 @@ export const CaptionInlineEditor: FC<Props> = ({
   fps,
   position,
   wordsPerPage,
+  styleId,
+  styleOptions,
+  compositionWidth,
   onEditingPageChange,
 }) => {
   const [currentMs, setCurrentMs] = useState(0);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [draft, setDraft] = useState("");
+  const draftRef = useRef<string>("");
   const editorRef = useRef<HTMLDivElement>(null);
 
   const pages = useMemo<CaptionPage[]>(
@@ -50,8 +57,8 @@ export const CaptionInlineEditor: FC<Props> = ({
     [captions, wordsPerPage],
   );
 
-  // rAF poll keeps currentMs accurate for the hit-zone visibility regardless
-  // of Remotion event timing.
+  // rAF poll keeps currentMs accurate for hit-zone visibility regardless of
+  // Remotion event timing.
   useEffect(() => {
     let rafId = 0;
     let cancelled = false;
@@ -115,7 +122,7 @@ export const CaptionInlineEditor: FC<Props> = ({
       const idx = findPageIndexAt(nowMs);
       if (idx >= 0) {
         player.pause();
-        setDraft(pages[idx].text);
+        draftRef.current = pages[idx].text;
         setEditingIndex(idx);
       } else {
         player.toggle();
@@ -131,7 +138,7 @@ export const CaptionInlineEditor: FC<Props> = ({
       setEditingIndex(null);
       return;
     }
-    const cleaned = draft.trim();
+    const cleaned = draftRef.current.trim().replace(/\s+/g, " ");
     if (cleaned === page.text.trim()) {
       setEditingIndex(null);
       return;
@@ -139,73 +146,123 @@ export const CaptionInlineEditor: FC<Props> = ({
     const next = redistributePage(captions, page, cleaned);
     onCaptionsChange(next);
     setEditingIndex(null);
-  }, [draft, editingIndex, pages, captions, onCaptionsChange]);
+  }, [editingIndex, pages, captions, onCaptionsChange]);
 
   const cancel = useCallback(() => {
     setEditingIndex(null);
   }, []);
 
+  // Seed the contenteditable with the page text exactly once when editing
+  // begins, then leave the DOM alone so typing (including spaces) isn't
+  // stomped on by React re-renders.
   useEffect(() => {
     if (editingIndex == null) return;
     const node = editorRef.current;
     if (!node) return;
+    node.textContent = pages[editingIndex]?.text ?? "";
+    draftRef.current = node.textContent;
     node.focus();
-    // Select all text inside contenteditable
     const range = document.createRange();
     range.selectNodeContents(node);
     const selection = window.getSelection();
     selection?.removeAllRanges();
     selection?.addRange(range);
+    // Only re-seed when we enter edit mode for a given page — intentionally
+    // excludes `pages` so typing doesn't reset the DOM.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editingIndex]);
 
-  const zoneStyle = buildZoneStyle(position);
+  const zoneStyle = buildZoneStyle(position, compositionWidth);
+
   const hasActive = activeIndex >= 0;
 
   if (editingIndex != null && pages[editingIndex]) {
+    const appearance = getInlineCaptionAppearance(
+      styleId,
+      styleOptions,
+      compositionWidth,
+    );
+    const editable = (
+      <div
+        ref={editorRef}
+        contentEditable
+        suppressContentEditableWarning
+        role="textbox"
+        aria-label="Edit caption"
+        spellCheck={false}
+        onInput={(e) => {
+          draftRef.current = e.currentTarget.textContent ?? "";
+        }}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            commit();
+          } else if (e.key === "Escape") {
+            e.preventDefault();
+            cancel();
+          }
+        }}
+        className="outline-none max-w-full break-words"
+        style={{
+          ...appearance.textStyle,
+          whiteSpace: "pre-wrap",
+          caretColor: styleOptions.accentColor,
+          boxShadow: `inset 0 -2px 0 ${styleOptions.accentColor}`,
+        }}
+      />
+    );
+
+    // Match the Remotion caption frame's inner width (e.g. 80% for Minimal,
+    // 92% for Hormozi) so line-wrap happens at the same place as on render.
+    const frameScale = appearance.frameWidthPct / 92;
+    const inner = appearance.wrapperStyle ? (
+      <div
+        style={{
+          ...appearance.wrapperStyle,
+          maxWidth: `${frameScale * 100}%`,
+        }}
+      >
+        {editable}
+      </div>
+    ) : (
+      <div style={{ maxWidth: `${frameScale * 100}%` }}>{editable}</div>
+    );
+
+    const content =
+      appearance.leadingDecoration === "broadcast-bar" ? (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "stretch",
+            maxWidth: "100%",
+          }}
+        >
+          <div
+            style={{
+              width: 14,
+              background: styleOptions.accentColor,
+              flexShrink: 0,
+            }}
+          />
+          {inner}
+        </div>
+      ) : (
+        inner
+      );
+
     return (
       <div
-        className="absolute flex items-center justify-center z-20"
+        className="absolute flex z-20"
         style={{
           ...zoneStyle,
           pointerEvents: "auto",
+          alignItems:
+            appearance.textAlign === "left" ? "flex-start" : "center",
+          justifyContent: "center",
         }}
       >
-        <div
-          ref={editorRef}
-          contentEditable
-          suppressContentEditableWarning
-          role="textbox"
-          aria-label="Edit caption"
-          onInput={(e) => setDraft((e.currentTarget.textContent ?? "").trim())}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              commit();
-            } else if (e.key === "Escape") {
-              e.preventDefault();
-              cancel();
-            }
-          }}
-          className={cn(
-            "outline-none px-4 py-2 max-w-full",
-            "text-white text-center",
-            "font-[var(--font-body)] font-bold",
-            "break-words",
-          )}
-          style={{
-            fontSize: "clamp(1.5rem, 5.2cqw, 3.75rem)",
-            lineHeight: 1.12,
-            letterSpacing: "-0.01em",
-            WebkitTextStroke: "2px rgba(0,0,0,0.85)",
-            paintOrder: "stroke fill",
-            textShadow: "0 4px 14px rgba(0,0,0,0.55)",
-            caretColor: "var(--accent)",
-            borderBottom: "2px solid var(--accent)",
-          }}
-        >
-          {pages[editingIndex].text}
-        </div>
+        {content}
       </div>
     );
   }
@@ -264,7 +321,10 @@ export const CaptionInlineEditor: FC<Props> = ({
 /**
  * Mirrors the edge-anchoring logic in `remotion/styles/types.ts::captionFrameStyle`.
  */
-function buildZoneStyle(position: CaptionPosition): CSSProperties {
+function buildZoneStyle(
+  position: CaptionPosition,
+  _compositionWidth: number,
+): CSSProperties {
   const y = position.y;
   const widthPct = 92;
   const heightPct = 48;
@@ -272,7 +332,6 @@ function buildZoneStyle(position: CaptionPosition): CSSProperties {
     left: `${position.x * 100}%`,
     top: `${y * 100}%`,
     width: `${widthPct}%`,
-    maxWidth: 720,
     height: `${heightPct}%`,
     containerType: "inline-size",
   } satisfies Partial<CSSProperties>;

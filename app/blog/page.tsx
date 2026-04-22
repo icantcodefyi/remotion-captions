@@ -6,7 +6,7 @@ import {
   getPublishedPostSummaries,
   getPostsByCluster,
 } from "@/lib/posts";
-import { blogConfig, getStudioHref, siteConfig } from "@/lib/site";
+import { getStudioHref, siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Journal",
@@ -23,7 +23,8 @@ export const metadata: Metadata = {
   },
 };
 
-export const revalidate = blogConfig.revalidateSeconds;
+// Must stay a literal: Next segment config values need to be statically analyzable.
+export const revalidate = 86400;
 
 function formatDate(iso: string) {
   const date = new Date(iso);

@@ -1,20 +1,14 @@
-import { getAllClusters, getPostsByCluster } from "@/lib/posts";
-import { absoluteUrl, blogConfig } from "@/lib/site";
+import { getPostsByCluster } from "@/lib/posts";
+import { absoluteUrl } from "@/lib/site";
 
-type RouteProps = {
-  params: Promise<{ slug: string }>;
+type SitemapEntry = {
+  url: string;
+  lastModified?: string;
+  changeFrequency?: string;
+  priority?: number;
 };
 
-export const revalidate = blogConfig.revalidateSeconds;
-
-function renderUrlset(
-  urls: Array<{
-    url: string;
-    lastModified?: string;
-    changeFrequency?: string;
-    priority?: number;
-  }>,
-) {
+export function renderUrlset(urls: SitemapEntry[]) {
   const entries = urls
     .map((item) => {
       const lastmod = item.lastModified
@@ -36,7 +30,7 @@ function renderUrlset(
     `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${entries}</urlset>`;
 }
 
-function getCoreSitemapEntries() {
+export function getCoreSitemapEntries() {
   const now = new Date().toISOString();
 
   return [
@@ -67,27 +61,12 @@ function getCoreSitemapEntries() {
   ];
 }
 
-export async function GET(_: Request, { params }: RouteProps) {
-  const { slug } = await params;
+export function getClusterSitemapEntries(clusterSlug: string) {
+  const posts = getPostsByCluster(clusterSlug);
 
-  if (slug === "core") {
-    return new Response(renderUrlset(getCoreSitemapEntries()), {
-      headers: {
-        "Content-Type": "application/xml; charset=utf-8",
-      },
-    });
-  }
-
-  const cluster = getAllClusters().find((item) => item.sitemapId === slug);
-
-  if (!cluster) {
-    return new Response("Not Found", { status: 404 });
-  }
-
-  const posts = getPostsByCluster(cluster.slug);
-  const xml = renderUrlset([
+  return [
     {
-      url: absoluteUrl(`/blog/cluster/${cluster.slug}`),
+      url: absoluteUrl(`/blog/cluster/${clusterSlug}`),
       lastModified: new Date().toISOString(),
       changeFrequency: "weekly",
       priority: 0.7,
@@ -98,9 +77,11 @@ export async function GET(_: Request, { params }: RouteProps) {
       changeFrequency: "monthly",
       priority: post.isPillar ? 0.8 : 0.7,
     })),
-  ]);
+  ];
+}
 
-  return new Response(xml, {
+export function xmlResponse(body: string) {
+  return new Response(body, {
     headers: {
       "Content-Type": "application/xml; charset=utf-8",
     },

@@ -1,7 +1,8 @@
 import { getSearchEntries } from "@/lib/posts";
-import { blogConfig } from "@/lib/site";
+import { BLOG_REVALIDATE_SECONDS } from "@/lib/site";
 
-export const revalidate = blogConfig.revalidateSeconds;
+// Must stay a literal: Next segment config values need to be statically analyzable.
+export const revalidate = 86400;
 
 export function GET() {
   return Response.json(
@@ -11,7 +12,7 @@ export function GET() {
     },
     {
       headers: {
-        "Cache-Control": `public, max-age=0, s-maxage=${blogConfig.revalidateSeconds}`,
+        "Cache-Control": `public, max-age=0, s-maxage=${BLOG_REVALIDATE_SECONDS}`,
       },
     },
   );

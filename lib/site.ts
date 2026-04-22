@@ -19,9 +19,13 @@ export const siteConfig = {
   authors: [{ name: "MeowCap" }],
 };
 
+export const BLOG_REVALIDATE_SECONDS = 60 * 60 * 24;
+
 export const blogConfig = {
   archivePageSize: 24,
-  revalidateSeconds: 60 * 60 * 24,
+  // Safe to reuse in normal runtime code. Do not use this for
+  // `export const revalidate` in App Router segments; Next requires a literal.
+  revalidateSeconds: BLOG_REVALIDATE_SECONDS,
   hotStaticPostCount: 100,
   searchIndexPath: "/blog/search-index.json",
 } as const;

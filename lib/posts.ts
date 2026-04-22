@@ -11,7 +11,6 @@ import {
   type BlogPostSummary,
   type BlogSearchEntry,
   type BlogSection,
-  type ClusterDefinition,
 } from "./posts-schema";
 
 const POSTS_DIRECTORY = path.join(process.cwd(), "content", "blog");
@@ -150,8 +149,8 @@ function parseMarkdownBody(body: string): ParsedMarkdown {
   const intro: BlogContentBlock[] = [];
   const sections: BlogSection[] = [];
   let currentSection: BlogSection | null = null;
-  let paragraphLines: string[] = [];
-  let listItems: string[] = [];
+  const paragraphLines: string[] = [];
+  const listItems: string[] = [];
 
   const pushSubheading = (heading: string) => {
     const target = currentSection?.blocks ?? intro;
@@ -228,10 +227,6 @@ function readPostSource(slug: string) {
   const filePath = path.join(POSTS_DIRECTORY, `${slug}.md`);
   const raw = readFileSync(filePath, "utf8");
   return { filePath, raw };
-}
-
-function parsePostSummaryFromRaw(raw: string): BlogPostFrontmatter {
-  return parseFrontmatter(raw).frontmatter;
 }
 
 function parsePost(slug: string): BlogPost {

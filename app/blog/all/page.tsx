@@ -19,7 +19,8 @@ export const metadata: Metadata = {
   },
 };
 
-export const revalidate = blogConfig.revalidateSeconds;
+// Must stay a literal: Next segment config values need to be statically analyzable.
+export const revalidate = 86400;
 
 export default function AllBlogPostsPage() {
   const posts = getPublishedPostSummaries();

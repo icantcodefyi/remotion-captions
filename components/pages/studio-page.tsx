@@ -312,6 +312,9 @@ export function StudioPage() {
                       fps={FPS}
                       position={styleOptions.position}
                       wordsPerPage={styleOptions.wordsPerPage}
+                      styleId={styleId}
+                      styleOptions={styleOptions}
+                      compositionWidth={videoMeta.width}
                       onEditingPageChange={setEditingPageIndex}
                     />
                   ) : null}
@@ -383,6 +386,7 @@ export function StudioPage() {
               playerRef={playerRef}
               durationMs={totalDurationSec * 1000}
               fps={FPS}
+              wordsPerPage={styleOptions.wordsPerPage}
             />
           )}
         </aside>
