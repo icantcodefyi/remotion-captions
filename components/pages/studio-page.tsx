@@ -1,6 +1,7 @@
 "use client";
 
-import * as React from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FC } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { KeyRound, Languages, RotateCcw, Share, Sparkles } from "lucide-react";
@@ -17,17 +18,12 @@ import { SubtitleImport } from "@/components/studio/subtitle-import";
 import { ScriptInput } from "@/components/studio/script-input";
 import { StyleGrid } from "@/components/studio/style-grid";
 import { StyleControls } from "@/components/studio/style-controls";
-import { PreviewPlayer } from "@/components/studio/preview-player";
 import { CaptionPositionOverlay } from "@/components/studio/position-overlay";
 import { ApiKeyBanner } from "@/components/studio/api-key-banner";
-import { ApiKeyDialog } from "@/components/studio/api-key-dialog";
 import { EmptyPreview } from "@/components/studio/empty-preview";
 import { LoadingPreview } from "@/components/studio/loading-preview";
-import { TranscriptEditor } from "@/components/studio/transcript-editor";
-import { ExportDialog } from "@/components/studio/export-dialog";
 import { AspectControls } from "@/components/studio/aspect-controls";
 import { BrandKits, makeSignature } from "@/components/studio/brand-kits";
-import { TranslateDialog } from "@/components/studio/translate-dialog";
 import { SafeZoneOverlay } from "@/components/studio/safe-zone-overlay";
 import { WhatsNewBanner } from "@/components/studio/whats-new-banner";
 import { getVideoMetaFromFile, type VideoMeta } from "@/lib/video-meta";
@@ -56,6 +52,38 @@ import { getAspectPreset, reflowPosition, resolveCanvas } from "@/lib/aspect";
 import { getBlogHref } from "@/lib/site";
 import { changelogFeatureCount } from "@/lib/changelog";
 
+// Heavy client-only modules — kept out of the initial JS chunk for `/` so the
+// page hydrates fast. They load when the user actually reaches for them.
+const PreviewPlayer = dynamic(
+  () =>
+    import("@/components/studio/preview-player").then((m) => m.PreviewPlayer),
+  { ssr: false, loading: () => null },
+);
+const TranscriptEditor = dynamic(
+  () =>
+    import("@/components/studio/transcript-editor").then(
+      (m) => m.TranscriptEditor,
+    ),
+  { ssr: false, loading: () => null },
+);
+const ApiKeyDialog = dynamic(
+  () =>
+    import("@/components/studio/api-key-dialog").then((m) => m.ApiKeyDialog),
+  { ssr: false, loading: () => null },
+);
+const ExportDialog = dynamic(
+  () =>
+    import("@/components/studio/export-dialog").then((m) => m.ExportDialog),
+  { ssr: false, loading: () => null },
+);
+const TranslateDialog = dynamic(
+  () =>
+    import("@/components/studio/translate-dialog").then(
+      (m) => m.TranslateDialog,
+    ),
+  { ssr: false, loading: () => null },
+);
+
 const FPS = 30;
 
 type JobStatus = "idle" | "running" | "ready" | "error";
@@ -67,32 +95,51 @@ type ImportedTrackMeta = {
   format: "srt" | "vtt" | "json";
 };
 export function StudioPage() {
-  const [file, setFile] = React.useState<File | null>(null);
-  const [videoMeta, setVideoMeta] = React.useState<VideoMeta | null>(null);
-  const [script, setScript] = React.useState("");
-  const [captions, setCaptions] = React.useState<Caption[] | null>(null);
-  const [breaks, setBreaks] = React.useState<number[]>([]);
-  const [status, setStatus] = React.useState<JobStatus>("idle");
+  const [file, setFile] = useState<File | null>(null);
+  const [videoMeta, setVideoMeta] = useState<VideoMeta | null>(null);
+  const [script, setScript] = useState("");
+  const [captions, setCaptions] = useState<Caption[] | null>(null);
+  const [breaks, setBreaks] = useState<number[]>([]);
+  const [status, setStatus] = useState<JobStatus>("idle");
   const [generationMode, setGenerationMode] =
-    React.useState<GenerationMode>("transcribe");
+    useState<GenerationMode>("transcribe");
   const [importedTrack, setImportedTrack] =
-    React.useState<ImportedTrackMeta | null>(null);
-  const [styleId, setStyleId] = React.useState<CaptionStyleId>("tiktok");
-  const [styleOptions, setStyleOptions] = React.useState<StyleOptions>(
+    useState<ImportedTrackMeta | null>(null);
+  const [styleId, setStyleId] = useState<CaptionStyleId>("tiktok");
+  const [styleOptions, setStyleOptions] = useState<StyleOptions>(
     DEFAULT_STYLE_OPTIONS,
   );
   const [delimiter, setDelimiterId] = useDelimiter();
   const [deepgramKey, setDeepgramKey] = useDeepgramKey();
   const [openaiKey, setOpenaiKey] = useOpenAIKey();
-  const [keyDialogOpen, setKeyDialogOpen] = React.useState(false);
-  const [exportDialogOpen, setExportDialogOpen] = React.useState(false);
-  const [translateDialogOpen, setTranslateDialogOpen] = React.useState(false);
-  const [aspectId, setAspectId] = React.useState<AspectPresetId>("source");
-  const [rightTab, setRightTab] = React.useState<RightTab>("style");
+  const [keyDialogOpen, setKeyDialogOpen] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [translateDialogOpen, setTranslateDialogOpen] = useState(false);
+  // Sticky "has been opened at least once" flags so the dynamic-imported dialog
+  // chunks don't ship with the initial page JS. Once opened, they stay mounted
+  // so close animations and subsequent opens stay instant.
+  const [keyDialogTouched, setKeyDialogTouched] = useState(false);
+  const [exportDialogTouched, setExportDialogTouched] = useState(false);
+  const [translateDialogTouched, setTranslateDialogTouched] =
+    useState(false);
+  const openKeyDialog = useCallback(() => {
+    setKeyDialogTouched(true);
+    setKeyDialogOpen(true);
+  }, []);
+  const openExportDialog = useCallback(() => {
+    setExportDialogTouched(true);
+    setExportDialogOpen(true);
+  }, []);
+  const openTranslateDialog = useCallback(() => {
+    setTranslateDialogTouched(true);
+    setTranslateDialogOpen(true);
+  }, []);
+  const [aspectId, setAspectId] = useState<AspectPresetId>("source");
+  const [rightTab, setRightTab] = useState<RightTab>("style");
   const { kits, save: saveKit, remove: removeKit } = useBrandKits();
-  const playerRef = React.useRef<PlayerRef>(null);
+  const playerRef = useRef<PlayerRef>(null);
 
-  const clearCaptions = React.useCallback(() => {
+  const clearCaptions = useCallback(() => {
     setCaptions(null);
     setBreaks([]);
     setScript("");
@@ -102,17 +149,17 @@ export function StudioPage() {
     setRightTab("style");
   }, []);
 
-  const videoSrc = React.useMemo(
+  const videoSrc = useMemo(
     () => (file ? URL.createObjectURL(file) : null),
     [file],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!videoSrc) return;
     return () => URL.revokeObjectURL(videoSrc);
   }, [videoSrc]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!file) return;
     let cancelled = false;
     getVideoMetaFromFile(file)
@@ -133,8 +180,8 @@ export function StudioPage() {
   // Rejoin the transcript when the delimiter changes, but only if the current
   // script is still the canonical form of the previous delimiter (i.e. the user
   // hasn't started editing). Preserves edits across delimiter switches.
-  const prevDelimiterRef = React.useRef(delimiter);
-  React.useEffect(() => {
+  const prevDelimiterRef = useRef(delimiter);
+  useEffect(() => {
     const prev = prevDelimiterRef.current;
     prevDelimiterRef.current = delimiter;
     if (prev.id === delimiter.id) return;
@@ -165,7 +212,7 @@ export function StudioPage() {
     }));
   };
 
-  const handleAspectChange = React.useCallback(
+  const handleAspectChange = useCallback(
     (next: AspectPresetId) => {
       if (next === aspectId) return;
       setAspectId(next);
@@ -179,7 +226,7 @@ export function StudioPage() {
     [aspectId, videoMeta],
   );
 
-  const handleApplyKit = React.useCallback(
+  const handleApplyKit = useCallback(
     (kit: BrandKit) => {
       const aspectChanged = kit.aspectId !== aspectId;
       const nextPosition =
@@ -198,7 +245,7 @@ export function StudioPage() {
     [aspectId, videoMeta],
   );
 
-  const handleSaveKit = React.useCallback(
+  const handleSaveKit = useCallback(
     (name: string) => {
       const kit: BrandKit = {
         id: newKitId(),
@@ -214,7 +261,7 @@ export function StudioPage() {
     [styleId, styleOptions, aspectId, saveKit],
   );
 
-  const handleTranslated = React.useCallback(
+  const handleTranslated = useCallback(
     (nextCaptions: Caption[], language: LanguageCode) => {
       setCaptions(nextCaptions);
       setBreaks([]);
@@ -232,19 +279,19 @@ export function StudioPage() {
   const canGenerate = Boolean(file && videoMeta) && status !== "running";
   const hasCaptions = Boolean(captions && captions.length > 0);
 
-  const canvas = React.useMemo(() => {
+  const canvas = useMemo(() => {
     const source = videoMeta
       ? { width: videoMeta.width, height: videoMeta.height }
       : { width: 1080, height: 1920 };
     return resolveCanvas(aspectId, source);
   }, [aspectId, videoMeta]);
 
-  const activeKitSignature = React.useMemo(
+  const activeKitSignature = useMemo(
     () => makeSignature({ styleId, styleOptions, aspectId }),
     [styleId, styleOptions, aspectId],
   );
 
-  const runAlignment = React.useCallback(
+  const runAlignment = useCallback(
     async ({
       useScript,
       reAlign,
@@ -254,7 +301,7 @@ export function StudioPage() {
     }) => {
       if (!file) return;
       if (!deepgramKey) {
-        setKeyDialogOpen(true);
+        openKeyDialog();
         return;
       }
       const trimmed = script.trim();
@@ -306,20 +353,20 @@ export function StudioPage() {
         );
       }
     },
-    [file, script, deepgramKey, delimiter],
+    [file, script, deepgramKey, delimiter, openKeyDialog],
   );
 
-  const generate = React.useCallback(() => {
+  const generate = useCallback(() => {
     const useScript = script.trim().length > 0;
     void runAlignment({ useScript, reAlign: false });
   }, [runAlignment, script]);
 
-  const reAlign = React.useCallback(() => {
+  const reAlign = useCallback(() => {
     if (script.trim().length === 0) return;
     void runAlignment({ useScript: true, reAlign: true });
   }, [runAlignment, script]);
 
-  const handleImportSubtitles = React.useCallback(
+  const handleImportSubtitles = useCallback(
     async (subtitleFile: File) => {
       try {
         const input = await subtitleFile.text();
@@ -383,51 +430,57 @@ export function StudioPage() {
       <Header
         canExport={Boolean(file)}
         hasKey={Boolean(deepgramKey)}
-        onOpenKeyDialog={() => setKeyDialogOpen(true)}
-        onOpenExportDialog={() => setExportDialogOpen(true)}
+        onOpenKeyDialog={openKeyDialog}
+        onOpenExportDialog={openExportDialog}
       />
       <WhatsNewBanner />
 
-      <ApiKeyDialog
-        open={keyDialogOpen}
-        onOpenChange={setKeyDialogOpen}
-        currentKey={deepgramKey}
-        onSave={(k) => {
-          setDeepgramKey(k);
-          if (k) toast.success("Key saved");
-          else toast.message("Key removed");
-        }}
-      />
+      {keyDialogTouched ? (
+        <ApiKeyDialog
+          open={keyDialogOpen}
+          onOpenChange={setKeyDialogOpen}
+          currentKey={deepgramKey}
+          onSave={(k) => {
+            setDeepgramKey(k);
+            if (k) toast.success("Key saved");
+            else toast.message("Key removed");
+          }}
+        />
+      ) : null}
 
-      <ExportDialog
-        open={exportDialogOpen}
-        onOpenChange={setExportDialogOpen}
-        file={file}
-        captions={captions ?? []}
-        styleId={styleId}
-        styleOptions={styleOptions}
-        videoDimensions={videoMeta ? canvas : null}
-        videoDurationSec={videoMeta?.durationSec ?? 0}
-        baseName={baseName}
-        onDownloadSrt={handleDownloadSrt}
-        onDownloadJson={handleDownloadJson}
-        onVideoSaved={(filename) =>
-          toast.success("Saved", { description: filename })
-        }
-        onError={(message) =>
-          toast.error("Couldn't export", { description: message })
-        }
-      />
+      {exportDialogTouched ? (
+        <ExportDialog
+          open={exportDialogOpen}
+          onOpenChange={setExportDialogOpen}
+          file={file}
+          captions={captions ?? []}
+          styleId={styleId}
+          styleOptions={styleOptions}
+          videoDimensions={videoMeta ? canvas : null}
+          videoDurationSec={videoMeta?.durationSec ?? 0}
+          baseName={baseName}
+          onDownloadSrt={handleDownloadSrt}
+          onDownloadJson={handleDownloadJson}
+          onVideoSaved={(filename) =>
+            toast.success("Saved", { description: filename })
+          }
+          onError={(message) =>
+            toast.error("Couldn't export", { description: message })
+          }
+        />
+      ) : null}
 
-      <TranslateDialog
-        open={translateDialogOpen}
-        onOpenChange={setTranslateDialogOpen}
-        captions={captions}
-        wordsPerPage={styleOptions.wordsPerPage}
-        openaiKey={openaiKey}
-        onOpenaiKeyChange={setOpenaiKey}
-        onTranslated={handleTranslated}
-      />
+      {translateDialogTouched ? (
+        <TranslateDialog
+          open={translateDialogOpen}
+          onOpenChange={setTranslateDialogOpen}
+          captions={captions}
+          wordsPerPage={styleOptions.wordsPerPage}
+          openaiKey={openaiKey}
+          onOpenaiKeyChange={setOpenaiKey}
+          onTranslated={handleTranslated}
+        />
+      ) : null}
 
       <div
         className={cn(
@@ -449,7 +502,7 @@ export function StudioPage() {
           style={{ ["--i" as string]: 1 }}
         >
           {!deepgramKey ? (
-            <ApiKeyBanner onClick={() => setKeyDialogOpen(true)} />
+            <ApiKeyBanner onClick={openKeyDialog} />
           ) : null}
 
           <div className="flex flex-col gap-2.5">
@@ -510,7 +563,7 @@ export function StudioPage() {
           ) : (
             <div className="flex flex-col gap-1.5">
               <Button
-                onClick={() => setTranslateDialogOpen(true)}
+                onClick={openTranslateDialog}
                 disabled={status === "running"}
                 variant="secondary"
                 size="sm"
@@ -672,8 +725,23 @@ export function StudioPage() {
         className="hidden lg:flex items-center justify-between px-5 pb-3 pt-0 text-[0.7rem] text-[color:var(--muted)] fade-rise"
         style={{ ["--i" as string]: 4 }}
       >
-        <div className="ital-label">
-          Captions rendered with Remotion · transcription by Deepgram
+        <div className="flex min-w-0 items-center gap-2.5">
+          <div className="ital-label">
+            Captions rendered with Remotion · transcription by Deepgram
+          </div>
+          <span
+            aria-hidden
+            className="h-3.5 w-px bg-[color:var(--border)]/85"
+          />
+          <Link
+            href="/changelog"
+            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[0.72rem] font-medium text-[color:var(--fg-weak)] transition-[background,color] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] [@media(hover:hover)]:hover:bg-[var(--surface-2)] [@media(hover:hover)]:hover:text-[color:var(--fg)]"
+          >
+            <span>What&apos;s new</span>
+            <span className="tnum-serif text-[0.68rem] text-[color:var(--accent-ink)]">
+              {String(changelogFeatureCount).padStart(2, "0")}
+            </span>
+          </Link>
         </div>
         <div className="flex items-center gap-2">
           <kbd className="inline-flex items-center px-1.5 py-[1px] rounded border border-[color:var(--border)] bg-[var(--surface-2)] tnum-serif text-[0.7rem]">
@@ -689,7 +757,7 @@ export function StudioPage() {
   );
 }
 
-const Divider: React.FC = () => (
+const Divider: FC = () => (
   <div
     aria-hidden
     className="h-px w-full"
@@ -700,7 +768,7 @@ const Divider: React.FC = () => (
   />
 );
 
-const Header: React.FC<{
+const Header: FC<{
   canExport: boolean;
   hasKey: boolean;
   onOpenKeyDialog: () => void;
@@ -742,15 +810,6 @@ const Header: React.FC<{
           className="hidden sm:inline-flex items-center justify-center rounded-md h-8 px-3 text-[0.75rem] font-medium bg-transparent text-[color:var(--fg-weak)] transition-colors duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] [@media(hover:hover)]:hover:bg-[var(--surface-2)] [@media(hover:hover)]:hover:text-[color:var(--fg)]"
         >
           Guides
-        </Link>
-        <Link
-          href="/changelog"
-          className="hidden md:inline-flex items-center justify-center gap-2 rounded-full h-8 px-3 border border-[color:var(--border)] bg-[var(--surface-1)] text-[0.75rem] font-medium text-[color:var(--fg-weak)] shadow-[var(--shadow-soft)] transition-[background,border-color,color] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] [@media(hover:hover)]:hover:bg-[var(--surface-2)] [@media(hover:hover)]:hover:border-[color:var(--border-strong)] [@media(hover:hover)]:hover:text-[color:var(--fg)]"
-        >
-          <span>What&apos;s new</span>
-          <span className="tnum-serif text-[0.7rem] text-[color:var(--accent-ink)]">
-            {String(changelogFeatureCount).padStart(2, "0")}
-          </span>
         </Link>
         <ThemeToggle />
         <Button

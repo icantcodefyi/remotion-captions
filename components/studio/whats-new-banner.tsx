@@ -43,24 +43,24 @@ export function WhatsNewBanner() {
     return () => window.cancelAnimationFrame(frame);
   }, [ready]);
 
-  useEffect(() => {
-    if (!visible) return;
-    const timeout = window.setTimeout(() => setSettled(true), 560);
-    return () => window.clearTimeout(timeout);
-  }, [visible]);
-
   const markSeen = useCallback(() => {
     try {
       localStorage.setItem(CHANGELOG_SEEN_STORAGE_KEY, CHANGELOG_VERSION);
     } catch {}
   }, []);
 
-  const dismiss = useCallback(() => {
+  useEffect(() => {
+    if (!visible) return;
     markSeen();
+    const timeout = window.setTimeout(() => setSettled(true), 560);
+    return () => window.clearTimeout(timeout);
+  }, [visible, markSeen]);
+
+  const dismiss = useCallback(() => {
     setSettled(false);
     setVisible(false);
     window.setTimeout(() => setReady(false), 220);
-  }, [markSeen]);
+  }, []);
 
   if (!ready) return null;
 

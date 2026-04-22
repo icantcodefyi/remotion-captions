@@ -3,6 +3,9 @@ import { StudioPage } from "@/components/pages/studio-page";
 import { homeFaqs } from "@/lib/seo-content";
 import { absoluteUrl, siteConfig } from "@/lib/site";
 
+export const dynamic = "force-static";
+export const revalidate = false;
+
 export const metadata: Metadata = {
   title: "MeowCap",
   description:
