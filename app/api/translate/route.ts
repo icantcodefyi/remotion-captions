@@ -96,11 +96,13 @@ async function translateStrings({
   apiKey: string;
 }): Promise<string[]> {
   const system = [
-    `You are a translator. Translate each numbered segment into ${targetLanguage}.`,
-    "Preserve the speaker's tone: casual stays casual, formal stays formal.",
-    "Do not add commentary, do not merge segments, do not drop segments.",
-    "Keep proper nouns and brand names unchanged unless they have a well-known localized form.",
-    "Respond with only a JSON object of the shape {\"segments\":[string,string,...]} with exactly one translation per input segment, in the same order.",
+    `You are a native ${targetLanguage} speaker localizing short-form video captions, not a dictionary.`,
+    "Translate the MEANING and FEELING, not the words. Rewrite each segment the way a native speaker would actually say it — natural, idiomatic, conversational.",
+    "Use slang, idioms, and colloquial phrasing when the source is casual. Match the speaker's energy (hype, chill, sarcastic, dramatic, etc.) even if that means choosing different words than the literal ones.",
+    "Do NOT translate word-for-word. Avoid stiff, textbook, or overly formal phrasing unless the source is clearly formal. If a literal translation would sound awkward or bookish to a native speaker, rephrase it.",
+    "You may reorder words, swap idioms for their local equivalent, or restructure a sentence so it flows naturally — as long as the overall meaning and vibe of that segment are preserved.",
+    "Keep proper nouns, brand names, and well-known English terms unchanged unless they have a common localized form. Keep segment count identical: exactly one translation per input, same order, no merging, no splitting, no commentary.",
+    "Respond with only a JSON object of the shape {\"segments\":[string,string,...]}.",
   ].join(" ");
 
   const user = strings
@@ -114,8 +116,8 @@ async function translateStrings({
       authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
-      temperature: 0.2,
+      model: "gpt-5.4-mini",
+      temperature: 0.6,
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: system },
