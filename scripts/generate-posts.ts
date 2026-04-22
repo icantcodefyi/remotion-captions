@@ -339,8 +339,19 @@ function buildAutoBrief(
   clusters: Cluster[],
 ): PostBrief {
   const queryTitle = toTitleCase(row.query);
-  const clusterAudience = lowerFirst(cluster.audience);
-  const scenario = `${row.query} for teams working inside ${cluster.shortDescription.toLowerCase()}`;
+  const scenario = `${row.query} inside ${cluster.shortDescription.toLowerCase()}`;
+  const titleSuffixByCluster: Record<string, string> = {
+    "creator-workflow": "A Practical Creator Guide",
+    accessibility: "A Practical Accessibility Guide",
+    "agency-ops": "A Practical Agency Operations Guide",
+    "podcast-repurposing": "A Practical Repurposing Guide",
+  };
+  const readerRoleByCluster: Record<string, string> = {
+    "creator-workflow": "a creator, editor, or in-house social lead",
+    accessibility: "a video producer, marketer, or accessibility reviewer",
+    "agency-ops": "an agency lead, producer, or client services editor",
+    "podcast-repurposing": "a podcast producer, social editor, or repurposing lead",
+  };
   const problemByCluster: Record<string, string> = {
     "creator-workflow":
       `teams handling ${row.query} often lose time when caption timing, copy cleanup, and export happen in separate tools`,
@@ -537,7 +548,7 @@ function buildAutoBrief(
 
   return {
     slug: row.slug,
-    title: `${queryTitle}: A Practical ${cluster.title} Workflow`,
+    title: `${queryTitle}: ${titleSuffixByCluster[cluster.slug] ?? "A Practical Workflow Guide"}`,
     description: truncateText(
       `A practical guide to ${row.query} with a repeatable ${cluster.title.toLowerCase()} workflow for MeowCap teams.`,
       155,
@@ -552,7 +563,7 @@ function buildAutoBrief(
       `${cluster.title.toLowerCase()} captions`,
       `${row.query} guide`,
     ],
-    readerRole: `a member of ${clusterAudience}`,
+    readerRole: readerRoleByCluster[cluster.slug] ?? `a team working on ${row.query}`,
     scenario,
     problem: problemByCluster[cluster.slug] ?? `teams handling ${row.query} often lose time when the caption workflow is not clearly defined`,
     desiredOutcome:

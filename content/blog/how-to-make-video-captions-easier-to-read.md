@@ -17,11 +17,12 @@ internalLinks:
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
   - "/blog/transcripts-vs-subtitles-for-marketing-videos"
   - "/blog/srt-workflow-for-video-review"
+  - "/blog/subtitle-handoff-for-accessibility-review"
   - "/blog/animated-captions-for-short-form-video"
 status: "review"
 author: "meowcap"
 ---
-A marketer, editor, or publisher trying to make captions clearer usually run into the same issue with how to make video captions easier to read: captions become hard to scan when wording, timing, and styling are all decided too late. What works best for social clips, interviews, and short explainers watched quickly or on mute is a workflow that starts with timing, keeps the wording editable, and makes the finished subtitle layer reusable.
+A marketer, editor, or publisher trying to make captions clearer usually run into the same issue with how to make video captions easier to read: captions become hard to scan when wording, timing, and styling are all decided too late. What works best for social clips, interviews, and short explainers watched quickly or on mute is a workflow that starts with timing, keeps the wording editable, and makes how to make video captions easier to read reusable in the finished subtitle layer.
 
 This use case for how to make video captions easier to read sits inside accessible video text systems for teams balancing clarity, compliance, and distribution. The goal here is not flashier text on screen for social clips, interviews, and short explainers watched quickly or on mute. It is a repeatable operating system for getting accurate, readable captions out the door on social clips, interviews, and short explainers watched quickly or on mute.
 

@@ -17,6 +17,7 @@ internalLinks:
   - "/blog/podcast-clips-to-social-captions"
   - "/blog/edit-podcast-transcripts-for-social-clips"
   - "/blog/caption-workflow-for-interview-clips"
+  - "/blog/caption-workflow-for-podcast-trailers"
   - "/blog/how-to-add-captions-to-instagram-reels"
 status: "review"
 author: "meowcap"
@@ -25,7 +26,7 @@ If you are a podcast producer or social editor repackaging episodes for Reels, r
 
 For how to turn podcast clips into instagram reels, the caption workflow needs to feel more like production infrastructure than a finishing flourish. This guide stays practical for how to turn podcast clips into instagram reels: where the workflow breaks, what to standardize first, and how to use MeowCap without creating another cleanup layer.
 
-The fastest teams treat dialogue-heavy podcast moments being recut into short discovery clips like a production system, which means the text, timing, and review handoff all stay related even while the creative changes. That is also why the MeowCap workflow matters for how to turn podcast clips into instagram reels: it keeps the operational choices visible instead of hiding them across several tools.
+The fastest teams treat dialogue-heavy podcast moments being recut into short discovery clips like a production system, which means the text, timing, and review handoff for how to turn podcast clips into instagram reels all stay related even while the creative changes. That is also why the MeowCap workflow matters for how to turn podcast clips into instagram reels: it keeps the operational choices visible instead of hiding them across several tools.
 
 ## Pick moments that can survive silent viewing
 

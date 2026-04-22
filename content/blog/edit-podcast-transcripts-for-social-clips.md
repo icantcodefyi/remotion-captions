@@ -17,6 +17,7 @@ internalLinks:
   - "/blog/podcast-clips-to-social-captions"
   - "/blog/how-to-turn-podcast-clips-into-instagram-reels"
   - "/blog/caption-workflow-for-interview-clips"
+  - "/blog/caption-workflow-for-podcast-trailers"
   - "/blog/script-alignment-for-video-captions"
 status: "review"
 author: "meowcap"
@@ -25,7 +26,7 @@ If you are a producer or editor preparing podcast transcripts for short-form cli
 
 For edit podcast transcripts for social clips, the caption workflow needs to feel more like production infrastructure than a finishing flourish. This guide stays practical for edit podcast transcripts for social clips: where the workflow breaks, what to standardize first, and how to use MeowCap without creating another cleanup layer.
 
-The fastest teams treat turning long conversational material into tighter social moments like a production system, which means the text, timing, and review handoff all stay related even while the creative changes. That is also why the MeowCap workflow matters for edit podcast transcripts for social clips: it keeps the operational choices visible instead of hiding them across several tools.
+The fastest teams treat turning long conversational material into tighter social moments like a production system, which means the text, timing, and review handoff for edit podcast transcripts for social clips all stay related even while the creative changes. That is also why the MeowCap workflow matters for edit podcast transcripts for social clips: it keeps the operational choices visible instead of hiding them across several tools.
 
 ## Edit for meaning before you edit for style
 

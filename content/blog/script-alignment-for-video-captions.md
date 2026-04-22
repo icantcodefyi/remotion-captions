@@ -17,11 +17,12 @@ internalLinks:
   - "/blog/animated-captions-for-short-form-video"
   - "/blog/how-to-add-captions-to-instagram-reels"
   - "/blog/youtube-shorts-caption-workflow"
+  - "/blog/tiktok-captions-workflow"
   - "/blog/podcast-clips-to-social-captions"
 status: "review"
 author: "meowcap"
 ---
-An editor or producer cleaning up subtitles before publish usually run into the same issue with script alignment for video captions: manual transcript edits often break timing or create a second version of the words that no longer matches the audio rhythm. What works best for marketing clips, demos, and interviews where the approved copy reads cleaner than the raw take is a workflow that starts with timing, keeps the wording editable, and makes the finished subtitle layer reusable.
+An editor or producer cleaning up subtitles before publish usually run into the same issue with script alignment for video captions: manual transcript edits often break timing or create a second version of the words that no longer matches the audio rhythm. What works best for marketing clips, demos, and interviews where the approved copy reads cleaner than the raw take is a workflow that starts with timing, keeps the wording editable, and makes script alignment for video captions reusable in the finished subtitle layer.
 
 This use case for script alignment for video captions sits inside caption systems for creators, editors, and social teams shipping short-form video fast. The goal here is not flashier text on screen for marketing clips, demos, and interviews where the approved copy reads cleaner than the raw take. It is a repeatable operating system for getting accurate, readable captions out the door on marketing clips, demos, and interviews where the approved copy reads cleaner than the raw take.
 

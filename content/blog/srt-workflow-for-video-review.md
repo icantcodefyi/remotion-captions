@@ -17,6 +17,7 @@ internalLinks:
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
   - "/blog/how-to-make-video-captions-easier-to-read"
   - "/blog/transcripts-vs-subtitles-for-marketing-videos"
+  - "/blog/subtitle-handoff-for-accessibility-review"
   - "/blog/script-alignment-for-video-captions"
 status: "review"
 author: "meowcap"
@@ -25,7 +26,7 @@ If you are an editor, producer, or reviewer passing subtitle files through a vid
 
 For srt workflow for video review, the caption workflow needs to feel more like production infrastructure than a finishing flourish. This guide stays practical for srt workflow for video review: where the workflow breaks, what to standardize first, and how to use MeowCap without creating another cleanup layer.
 
-The fastest teams treat approval rounds where transcript text, subtitle timing, and edit notes all need to stay aligned like a production system, which means the text, timing, and review handoff all stay related even while the creative changes. That is also why the MeowCap workflow matters for srt workflow for video review: it keeps the operational choices visible instead of hiding them across several tools.
+The fastest teams treat approval rounds where transcript text, subtitle timing, and edit notes all need to stay aligned like a production system, which means the text, timing, and review handoff for srt workflow for video review all stay related even while the creative changes. That is also why the MeowCap workflow matters for srt workflow for video review: it keeps the operational choices visible instead of hiding them across several tools.
 
 ## Know why you are exporting SRT in the first place
 

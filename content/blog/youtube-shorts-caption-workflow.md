@@ -17,6 +17,7 @@ internalLinks:
   - "/blog/animated-captions-for-short-form-video"
   - "/blog/how-to-add-captions-to-instagram-reels"
   - "/blog/script-alignment-for-video-captions"
+  - "/blog/tiktok-captions-workflow"
   - "/blog/transcript-vs-subtitles-vs-closed-captions"
 status: "review"
 author: "meowcap"
@@ -25,7 +26,7 @@ If you are an editor or social producer packaging YouTube Shorts, short-form tea
 
 For youtube shorts caption workflow, the caption workflow needs to feel more like production infrastructure than a finishing flourish. This guide stays practical for youtube shorts caption workflow: where the workflow breaks, what to standardize first, and how to use MeowCap without creating another cleanup layer.
 
-The fastest teams treat educational clips, product snippets, and recycled webinar moments for Shorts like a production system, which means the text, timing, and review handoff all stay related even while the creative changes. That is also why the MeowCap workflow matters for youtube shorts caption workflow: it keeps the operational choices visible instead of hiding them across several tools.
+The fastest teams treat educational clips, product snippets, and recycled webinar moments for Shorts like a production system, which means the text, timing, and review handoff for youtube shorts caption workflow all stay related even while the creative changes. That is also why the MeowCap workflow matters for youtube shorts caption workflow: it keeps the operational choices visible instead of hiding them across several tools.
 
 ## Treat the caption pass as part of packaging, not decoration
 
