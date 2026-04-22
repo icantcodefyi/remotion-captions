@@ -317,14 +317,14 @@ function buildIntroParagraphs(row: KeywordRow, cluster: Cluster, brief: PostBrie
   ]);
 
   const context = pickVariant(`${row.slug}:intro:2`, [
-    `${brief.scenario} sits inside ${cluster.shortDescription.toLowerCase()}`,
+    `This use case for ${row.query} sits inside ${cluster.shortDescription.toLowerCase()}`,
     `That matters in ${brief.scenario.toLowerCase()} because small caption decisions compound once the team is publishing on a schedule`,
-    `For this kind of asset, the caption workflow needs to feel more like production infrastructure than a finishing flourish`,
+    `For ${row.query}, the caption workflow needs to feel more like production infrastructure than a finishing flourish`,
   ]);
 
   const promise = pickVariant(`${row.slug}:intro:3`, [
     `This guide stays practical for ${row.query}: where the workflow breaks, what to standardize first, and how to use MeowCap without creating another cleanup layer`,
-    `The goal here is not flashier text on screen for ${brief.scenario}. It is a repeatable operating system for getting accurate, readable captions out the door`,
+    `The goal here is not flashier text on screen for ${brief.scenario}. It is a repeatable operating system for getting accurate, readable captions out the door on ${brief.scenario}`,
     `That is the useful angle for ${row.query}: remove rework, keep the caption layer flexible, and give the next reviewer a cleaner handoff`,
   ]);
 
@@ -405,20 +405,18 @@ function buildSectionParagraphs(
   index: number,
 ) {
   const stageContext = sentenceCase(
-    `In ${brief.scenario}, this part of the workflow is where ${lowerFirst(brief.problem)}`,
+    `In ${brief.scenario}, this is usually the moment when "${section.heading}" turns from a good idea into a real production constraint`,
   );
   const jobContext = sentenceCase(
-    `For ${brief.readerRole}, that usually determines whether ${lowerFirst(brief.desiredOutcome)}`,
+    `For ${brief.readerRole}, doing "${section.heading}" well is one of the clearest ways to support ${lowerFirst(
+      brief.desiredOutcome,
+    )}`,
   );
   const systemContext = sentenceCase(
-    `${row.query} becomes easier to repeat when ${lowerFirst(
-      section.heading,
-    )} is treated like an operating rule instead of a one-off fix`,
+    `${row.query} becomes easier to repeat when the team can standardize "${section.heading}" instead of improvising it on each asset`,
   );
   const clusterContext = sentenceCase(
-    `That is why ${lowerFirst(
-      section.heading,
-    )} matters inside this ${cluster.title.toLowerCase()} workflow: it protects ${row.query} from drifting away from the rest of production`,
+    `Inside this ${cluster.title.toLowerCase()} workflow, "${section.heading}" is one of the steps that decides whether ${row.query} stays connected to the edit`,
   );
 
   const firstParagraph = `${sentenceCase(section.focus)} ${stageContext}`;
@@ -446,9 +444,7 @@ function buildSectionParagraphs(
     index === brief.sections.length - 1
       ? `${clusterContext} ${sentenceCase(brief.ctaText)}`
       : `${clusterContext} ${sentenceCase(
-          `Once ${lowerFirst(
-            section.heading,
-          )} is stable, the next review round on ${row.query} has much less chance of turning into preventable rework`,
+          `Once "${section.heading}" is stable, the next review round on ${row.query} has much less chance of turning into preventable rework`,
         )}`;
 
   return {
