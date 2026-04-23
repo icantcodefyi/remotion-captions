@@ -22,7 +22,11 @@ import type {
 } from "@/lib/video-export";
 import type { RenderInputProps } from "@/remotion/Root";
 import type { Caption } from "@remotion/captions";
-import type { CaptionStyleId, StyleOptions } from "@/lib/types";
+import type {
+  CaptionAssistOptions,
+  CaptionStyleId,
+  StyleOptions,
+} from "@/lib/types";
 
 export const runtime = "nodejs";
 export const maxDuration = 600;
@@ -32,6 +36,8 @@ type RenderBody = {
   captions: Caption[];
   styleId: CaptionStyleId;
   styleOptions: StyleOptions;
+  assistOptions: CaptionAssistOptions;
+  forcedBreaks?: number[] | null;
   width: number;
   height: number;
   durationInFrames: number;
@@ -86,6 +92,7 @@ const H264_PRESET_BY_QUALITY: Record<
 };
 
 const JOB_RETENTION_MS = 5 * 60 * 1000;
+const JOB_ID_PATTERN = /^[0-9a-f-]{36}$/i;
 
 const globalForRenderJobs = globalThis as typeof globalThis & {
   __captionRenderJobs?: Map<string, RenderJob>;
@@ -94,6 +101,77 @@ const globalForRenderJobs = globalThis as typeof globalThis & {
 const renderJobs =
   globalForRenderJobs.__captionRenderJobs ??
   (globalForRenderJobs.__captionRenderJobs = new Map<string, RenderJob>());
+
+type PersistedJobState = {
+  id: string;
+  state: RenderJobState;
+  progress: ExportProgress;
+  outputPath: string | null;
+  contentType: string | null;
+  error: string | null;
+  createdAt: number;
+};
+
+function jobDirFor(jobId: string) {
+  return path.join(tmpdir(), `captions-${jobId}`);
+}
+
+function isValidJobId(jobId: string) {
+  return JOB_ID_PATTERN.test(jobId);
+}
+
+async function persistJobState(jobId: string) {
+  const job = renderJobs.get(jobId);
+  if (!job) return;
+  const statePath = path.join(job.jobDir, "state.json");
+  const payload: PersistedJobState = {
+    id: job.id,
+    state: job.state,
+    progress: job.progress,
+    outputPath: job.outputPath,
+    contentType: job.contentType,
+    error: job.error,
+    createdAt: job.createdAt,
+  };
+  try {
+    await mkdir(job.jobDir, { recursive: true });
+    await writeFile(statePath, JSON.stringify(payload));
+  } catch {
+    // best-effort persistence; never fail the render for this
+  }
+}
+
+async function readPersistedJob(jobId: string): Promise<RenderJob | null> {
+  if (!isValidJobId(jobId)) return null;
+  const jobDir = jobDirFor(jobId);
+  try {
+    const raw = await readFile(path.join(jobDir, "state.json"), "utf8");
+    const parsed = JSON.parse(raw) as Partial<PersistedJobState>;
+    if (!parsed.id || parsed.id !== jobId || !parsed.state || !parsed.progress) {
+      return null;
+    }
+    return {
+      id: parsed.id,
+      state: parsed.state,
+      progress: parsed.progress,
+      createdAt: parsed.createdAt ?? Date.now(),
+      outputPath: parsed.outputPath ?? null,
+      contentType: parsed.contentType ?? null,
+      jobDir,
+      error: parsed.error ?? null,
+      cancel: null,
+      cleanupTimer: null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function lookupJob(jobId: string): Promise<RenderJob | null> {
+  const inMemory = renderJobs.get(jobId);
+  if (inMemory) return inMemory;
+  return readPersistedJob(jobId);
+}
 
 export async function POST(req: NextRequest) {
   const form = await req.formData();
@@ -125,7 +203,7 @@ export async function POST(req: NextRequest) {
   }
 
   const jobId = randomUUID();
-  const jobDir = path.join(tmpdir(), `captions-${jobId}`);
+  const jobDir = jobDirFor(jobId);
 
   renderJobs.set(jobId, {
     id: jobId,
@@ -147,6 +225,8 @@ export async function POST(req: NextRequest) {
     cleanupTimer: null,
   });
 
+  await persistJobState(jobId);
+
   void runRenderJob({
     jobId,
     file,
@@ -163,11 +243,11 @@ export async function GET(req: NextRequest) {
   const jobId = req.nextUrl.searchParams.get("jobId");
   const download = req.nextUrl.searchParams.get("download") === "1";
 
-  if (!jobId) {
-    return NextResponse.json({ error: "Missing 'jobId'." }, { status: 400 });
+  if (!jobId || !isValidJobId(jobId)) {
+    return NextResponse.json({ error: "Missing or invalid 'jobId'." }, { status: 400 });
   }
 
-  const job = renderJobs.get(jobId);
+  const job = await lookupJob(jobId);
   if (!job) {
     return NextResponse.json({ error: "Render job not found." }, { status: 404 });
   }
@@ -200,17 +280,17 @@ export async function GET(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const jobId = req.nextUrl.searchParams.get("jobId");
 
-  if (!jobId) {
-    return NextResponse.json({ error: "Missing 'jobId'." }, { status: 400 });
+  if (!jobId || !isValidJobId(jobId)) {
+    return NextResponse.json({ error: "Missing or invalid 'jobId'." }, { status: 400 });
   }
 
-  const job = renderJobs.get(jobId);
+  const job = await lookupJob(jobId);
   if (!job) {
     return NextResponse.json({ error: "Render job not found." }, { status: 404 });
   }
 
   job.cancel?.();
-  updateJob(jobId, {
+  await updateJob(jobId, {
     state: "cancelled",
     progress: {
       ...job.progress,
@@ -275,6 +355,8 @@ async function runRenderJob({
       captions: body.captions,
       styleId: body.styleId,
       styleOptions: body.styleOptions,
+      assistOptions: body.assistOptions,
+      forcedBreaks: body.forcedBreaks ?? null,
       width: body.width,
       height: body.height,
       durationInFrames: body.durationInFrames,
@@ -404,10 +486,20 @@ async function runRenderJob({
   }
 }
 
-function updateJob(jobId: string, patch: Partial<RenderJob>) {
+async function updateJob(jobId: string, patch: Partial<RenderJob>) {
   const current = renderJobs.get(jobId);
   if (!current) return;
   renderJobs.set(jobId, { ...current, ...patch });
+  const persistableKeys: Array<keyof RenderJob> = [
+    "state",
+    "progress",
+    "outputPath",
+    "contentType",
+    "error",
+  ];
+  if (persistableKeys.some((key) => key in patch)) {
+    await persistJobState(jobId);
+  }
 }
 
 function getJob(jobId: string) {
@@ -436,12 +528,14 @@ function scheduleCleanup(jobId: string) {
 
 async function cleanupJob(jobId: string) {
   const job = renderJobs.get(jobId);
-  if (!job) return;
-  if (job.cleanupTimer) {
+  if (job?.cleanupTimer) {
     clearTimeout(job.cleanupTimer);
   }
   renderJobs.delete(jobId);
-  await rm(job.jobDir, { recursive: true, force: true }).catch(() => undefined);
+  const jobDir = job?.jobDir ?? (isValidJobId(jobId) ? jobDirFor(jobId) : null);
+  if (jobDir) {
+    await rm(jobDir, { recursive: true, force: true }).catch(() => undefined);
+  }
 }
 
 function resolveExportQuality(raw: FormDataEntryValue | null) {
