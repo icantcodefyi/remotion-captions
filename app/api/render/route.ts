@@ -22,11 +22,7 @@ import type {
 } from "@/lib/video-export";
 import type { RenderInputProps } from "@/remotion/Root";
 import type { Caption } from "@remotion/captions";
-import type {
-  CaptionAssistOptions,
-  CaptionStyleId,
-  StyleOptions,
-} from "@/lib/types";
+import type { CaptionStyleId, StyleOptions } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const maxDuration = 600;
@@ -36,8 +32,6 @@ type RenderBody = {
   captions: Caption[];
   styleId: CaptionStyleId;
   styleOptions: StyleOptions;
-  assistOptions: CaptionAssistOptions;
-  forcedBreaks?: number[] | null;
   width: number;
   height: number;
   durationInFrames: number;
@@ -355,8 +349,6 @@ async function runRenderJob({
       captions: body.captions,
       styleId: body.styleId,
       styleOptions: body.styleOptions,
-      assistOptions: body.assistOptions,
-      forcedBreaks: body.forcedBreaks ?? null,
       width: body.width,
       height: body.height,
       durationInFrames: body.durationInFrames,
