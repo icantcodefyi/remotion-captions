@@ -444,16 +444,9 @@ function RenderingBlock({ onCancel, progress }: RenderingBlockProps) {
         />
       </div>
       <div className="flex items-baseline justify-between gap-3 text-[0.7rem] text-[color:var(--muted)] leading-relaxed">
-        <p className="ital-label">
-          {progress?.phase === "muxing"
-            ? "Final encode pass in progress."
-            : "Uploading and rendering with live progress."}
-        </p>
+        <p>{getProgressDetails(progress)}</p>
         <span className="tnum-serif">{percent}%</span>
       </div>
-      <p className="text-[0.72rem] text-[color:var(--muted)] leading-relaxed">
-        {getProgressDetails(progress)}
-      </p>
     </div>
   );
 }
@@ -542,25 +535,13 @@ function getQualityHint(quality: ExportQuality) {
 }
 
 function getProgressDetails(progress: ExportProgress | null) {
-  if (!progress) {
-    return "Preparing export…";
+  if (!progress) return "Preparing export…";
+  if (
+    progress.phase === "rendering" &&
+    progress.totalFrames > 0 &&
+    progress.renderedFrames > 0
+  ) {
+    return `${Math.min(progress.renderedFrames, progress.totalFrames)} / ${progress.totalFrames} frames`;
   }
-
-  if (progress.totalFrames <= 0) {
-    return progress.label;
-  }
-
-  if (progress.phase === "rendering") {
-    return `${Math.min(progress.renderedFrames, progress.totalFrames)} of ${progress.totalFrames} frames rendered`;
-  }
-
-  if (progress.phase === "muxing") {
-    return `${Math.min(progress.encodedFrames, progress.totalFrames)} of ${progress.totalFrames} frames encoded`;
-  }
-
-  if (progress.phase === "done") {
-    return "Export ready";
-  }
-
-  return progress.label;
+  return "";
 }

@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";
+import { openSync } from "node:fs";
 import {
   mkdir,
   readFile,
@@ -120,8 +121,8 @@ export async function POST(req: NextRequest) {
     state: "queued",
     progress: {
       phase: "preparing",
-      progress: 0.04,
-      label: "Starting render worker…",
+      progress: 0.02,
+      label: "Preparing export…",
       renderedFrames: 0,
       encodedFrames: 0,
       totalFrames: body.durationInFrames,
@@ -135,12 +136,14 @@ export async function POST(req: NextRequest) {
   await writeJobState(jobId, initialState);
 
   const workerScript = path.join(process.cwd(), "scripts", "render-worker.ts");
+  const logPath = path.join(jobDir, "worker.log");
+  const logFd = openSync(logPath, "a");
   const child = spawn(
     process.execPath,
     ["--experimental-transform-types", workerScript, jobId],
     {
       detached: true,
-      stdio: ["ignore", "ignore", "ignore"],
+      stdio: ["ignore", logFd, logFd],
       cwd: process.cwd(),
       env: process.env,
     },
@@ -256,9 +259,13 @@ async function readJobStateWithStaleness(
   const stale = Date.now() - mtime > STALE_JOB_THRESHOLD_MS;
 
   if (!workerAlive || stale) {
-    const reason = !workerAlive
-      ? "Render worker died unexpectedly. Please try again."
-      : "Render worker stopped responding. Please try again.";
+    const baseReason = !workerAlive
+      ? "Render worker died unexpectedly."
+      : "Render worker stopped responding.";
+    const tail = await readWorkerLogTail(jobId);
+    const reason = tail
+      ? `${baseReason} Last log lines:\n${tail}`
+      : `${baseReason} Please try again.`;
     const failed: PersistedJobState = {
       ...state,
       state: "failed",
@@ -275,6 +282,16 @@ async function readJobStateWithStaleness(
   }
 
   return state;
+}
+
+async function readWorkerLogTail(jobId: string, lines = 12) {
+  try {
+    const raw = await readFile(path.join(jobDirFor(jobId), "worker.log"), "utf8");
+    const all = raw.split("\n").filter(Boolean);
+    return all.slice(-lines).join("\n");
+  } catch {
+    return null;
+  }
 }
 
 function toResponse(state: PersistedJobState) {

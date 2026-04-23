@@ -12,7 +12,7 @@ import {
 import {
   getServeUrl,
   subscribeToBundleProgress,
-} from "../lib/remotion-bundle";
+} from "../lib/remotion-bundle.ts";
 import {
   HEARTBEAT_INTERVAL_MS,
   PERSIST_THROTTLE_MS,
@@ -22,8 +22,8 @@ import {
   touchJobState,
   writeJobState,
   type PersistedJobState,
-} from "../lib/render-job";
-import type { ExportProgress, ExportQuality } from "../lib/video-export";
+} from "../lib/render-job.ts";
+import type { ExportProgress, ExportQuality } from "../lib/video-export.ts";
 
 const jobId = process.argv[2];
 if (!jobId || !isValidJobId(jobId)) {
@@ -147,8 +147,8 @@ async function main() {
     state: "queued",
     progress: existing?.progress ?? {
       phase: "preparing",
-      progress: 0.05,
-      label: "Starting render worker…",
+      progress: 0.04,
+      label: "Preparing export…",
       renderedFrames: 0,
       encodedFrames: 0,
       totalFrames: config.durationInFrames,
@@ -196,30 +196,7 @@ async function main() {
   let assetServer: AssetServer | null = null;
 
   try {
-    await update(
-      {
-        state: "queued",
-        progress: {
-          ...currentState.progress,
-          progress: 0.07,
-          label: "Starting asset server…",
-        },
-      },
-      true,
-    );
-
     assetServer = await startAssetServer(config.sourcePath);
-
-    await update(
-      {
-        progress: {
-          ...currentState.progress,
-          progress: 0.1,
-          label: "Preparing Remotion bundle…",
-        },
-      },
-      true,
-    );
 
     const unsubscribeBundle = subscribeToBundleProgress((percent) => {
       if (percent <= 0 || percent >= 100) return;
@@ -227,8 +204,8 @@ async function main() {
         state: "queued",
         progress: {
           ...currentState.progress,
-          progress: 0.1 + (percent / 100) * 0.03,
-          label: `Preparing Remotion bundle… ${percent}%`,
+          progress: 0.04 + (percent / 100) * 0.08,
+          label: "Preparing export…",
         },
       });
     });
@@ -239,17 +216,6 @@ async function main() {
     } finally {
       unsubscribeBundle();
     }
-
-    await update(
-      {
-        progress: {
-          ...currentState.progress,
-          progress: 0.13,
-          label: "Loading composition…",
-        },
-      },
-      true,
-    );
 
     const inputProps = {
       videoSrc: assetServer.url,
@@ -275,7 +241,7 @@ async function main() {
         progress: {
           phase: "rendering",
           progress: 0.15,
-          label: "Rendering frames…",
+          label: "Rendering…",
           renderedFrames: 0,
           encodedFrames: 0,
           totalFrames: config.durationInFrames,
@@ -297,10 +263,7 @@ async function main() {
         progress: {
           phase,
           progress: clampProgress(progress),
-          label:
-            phase === "muxing"
-              ? "Muxing audio and video…"
-              : `Rendering frames… ${Math.min(renderedFrames, config.durationInFrames)}/${config.durationInFrames}`,
+          label: phase === "muxing" ? "Finalizing…" : "Rendering…",
           renderedFrames,
           encodedFrames,
           totalFrames: config.durationInFrames,
@@ -340,7 +303,7 @@ async function main() {
         progress: {
           phase: "done",
           progress: 1,
-          label: "Render complete",
+          label: "Export ready",
           renderedFrames: config.durationInFrames,
           encodedFrames: config.durationInFrames,
           totalFrames: config.durationInFrames,
