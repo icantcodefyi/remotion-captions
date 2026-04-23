@@ -1,39 +1,34 @@
 import { randomUUID } from "node:crypto";
-import { createReadStream } from "node:fs";
+import { spawn } from "node:child_process";
 import {
   mkdir,
   readFile,
   readdir,
   rm,
   stat,
-  utimes,
   writeFile,
 } from "node:fs/promises";
-import { createServer, type Server } from "node:http";
-import { availableParallelism, platform, tmpdir } from "node:os";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
-import type {
-  Codec,
-  RenderMediaOnProgress,
-} from "@remotion/renderer";
-import {
-  makeCancelSignal,
-  renderMedia,
-  selectComposition,
-} from "@remotion/renderer";
-import {
-  getServeUrl,
-  subscribeToBundleProgress,
-} from "@/lib/remotion-bundle";
-import type {
-  ExportProgress,
-  ExportQuality,
-  ExportRenderPhase,
-} from "@/lib/video-export";
-import type { RenderInputProps } from "@/remotion/Root";
 import type { Caption } from "@remotion/captions";
 import type { CaptionStyleId, StyleOptions } from "@/lib/types";
+import type { ExportQuality } from "@/lib/video-export";
+import {
+  JOB_RETENTION_MS,
+  STALE_JOB_THRESHOLD_MS,
+  isProcessAlive,
+  isTerminalState,
+  isValidJobId,
+  jobDirFor,
+  readJobState,
+  stateFileFor,
+  writeJobConfig,
+  writeJobState,
+  cleanupJobDir,
+  type JobConfig,
+  type PersistedJobState,
+} from "@/lib/render-job";
 
 export const runtime = "nodejs";
 export const maxDuration = 600;
@@ -50,233 +45,18 @@ type RenderBody = {
   format: "mp4" | "webm";
 };
 
-type RenderJobState =
-  | "queued"
-  | "rendering"
-  | "completed"
-  | "failed"
-  | "cancelled";
-
-type RenderJob = {
-  id: string;
-  state: RenderJobState;
-  progress: ExportProgress;
-  createdAt: number;
-  outputPath: string | null;
-  contentType: string | null;
-  jobDir: string;
-  error: string | null;
-  cancel: (() => void) | null;
-  cleanupTimer: ReturnType<typeof setTimeout> | null;
-};
-
-const CODEC_BY_FORMAT: Record<RenderBody["format"], Codec> = {
+const CODEC_BY_FORMAT: Record<RenderBody["format"], JobConfig["codec"]> = {
   mp4: "h264",
   webm: "vp8",
 };
 
-const BITRATE_BY_QUALITY: Record<ExportQuality, string> = {
-  high: "8M",
-  medium: "4M",
-  low: "2M",
-};
-
-const SCALE_BY_QUALITY: Record<ExportQuality, number> = {
-  high: 1,
-  medium: 1,
-  low: 0.75,
-};
-
-const H264_PRESET_BY_QUALITY: Record<
-  ExportQuality,
-  "medium" | "fast" | "veryfast"
-> = {
-  high: "medium",
-  medium: "fast",
-  low: "veryfast",
-};
-
-const JOB_RETENTION_MS = 5 * 60 * 1000;
-const JOB_ID_PATTERN = /^[0-9a-f-]{36}$/i;
-const PERSIST_THROTTLE_MS = 400;
-const HEARTBEAT_INTERVAL_MS = 5_000;
-const STALE_JOB_THRESHOLD_MS = 60_000;
-
-const globalForRenderJobs = globalThis as typeof globalThis & {
-  __captionRenderJobs?: Map<string, RenderJob>;
-  __captionRenderPersistAt?: Map<string, number>;
+const globalForRender = globalThis as typeof globalThis & {
   __captionRenderSwept?: boolean;
 };
 
-const renderJobs =
-  globalForRenderJobs.__captionRenderJobs ??
-  (globalForRenderJobs.__captionRenderJobs = new Map<string, RenderJob>());
-
-const lastPersistAt =
-  globalForRenderJobs.__captionRenderPersistAt ??
-  (globalForRenderJobs.__captionRenderPersistAt = new Map<string, number>());
-
-type PersistedJobState = {
-  id: string;
-  state: RenderJobState;
-  progress: ExportProgress;
-  outputPath: string | null;
-  contentType: string | null;
-  error: string | null;
-  createdAt: number;
-};
-
-function jobDirFor(jobId: string) {
-  return path.join(tmpdir(), `captions-${jobId}`);
-}
-
-function isValidJobId(jobId: string) {
-  return JOB_ID_PATTERN.test(jobId);
-}
-
-function isTerminalState(state: RenderJobState) {
-  return state === "completed" || state === "failed" || state === "cancelled";
-}
-
-async function persistJobState(
-  jobId: string,
-  opts: { force?: boolean } = {},
-) {
-  const job = renderJobs.get(jobId);
-  if (!job) return;
-  const now = Date.now();
-  const force = opts.force ?? isTerminalState(job.state);
-  const last = lastPersistAt.get(jobId) ?? 0;
-  if (!force && now - last < PERSIST_THROTTLE_MS) return;
-  lastPersistAt.set(jobId, now);
-  const statePath = path.join(job.jobDir, "state.json");
-  const payload: PersistedJobState = {
-    id: job.id,
-    state: job.state,
-    progress: job.progress,
-    outputPath: job.outputPath,
-    contentType: job.contentType,
-    error: job.error,
-    createdAt: job.createdAt,
-  };
-  try {
-    await mkdir(job.jobDir, { recursive: true });
-    await writeFile(statePath, JSON.stringify(payload));
-  } catch {
-    // best-effort persistence; never fail the render for this
-  }
-}
-
-async function touchJobHeartbeat(jobId: string) {
-  const statePath = path.join(jobDirFor(jobId), "state.json");
-  try {
-    const now = new Date();
-    await utimes(statePath, now, now);
-  } catch {
-    // state file may not exist yet; ignore
-  }
-}
-
-async function readPersistedJob(jobId: string): Promise<RenderJob | null> {
-  if (!isValidJobId(jobId)) return null;
-  const jobDir = jobDirFor(jobId);
-  try {
-    const raw = await readFile(path.join(jobDir, "state.json"), "utf8");
-    const parsed = JSON.parse(raw) as Partial<PersistedJobState>;
-    if (!parsed.id || parsed.id !== jobId || !parsed.state || !parsed.progress) {
-      return null;
-    }
-    return {
-      id: parsed.id,
-      state: parsed.state,
-      progress: parsed.progress,
-      createdAt: parsed.createdAt ?? Date.now(),
-      outputPath: parsed.outputPath ?? null,
-      contentType: parsed.contentType ?? null,
-      jobDir,
-      error: parsed.error ?? null,
-      cancel: null,
-      cleanupTimer: null,
-    };
-  } catch {
-    return null;
-  }
-}
-
-async function readPersistedJobWithStaleness(
-  jobId: string,
-): Promise<RenderJob | null> {
-  const persisted = await readPersistedJob(jobId);
-  if (!persisted) return null;
-  if (isTerminalState(persisted.state)) return persisted;
-  try {
-    const { mtimeMs } = await stat(path.join(persisted.jobDir, "state.json"));
-    if (Date.now() - mtimeMs <= STALE_JOB_THRESHOLD_MS) return persisted;
-  } catch {
-    return persisted;
-  }
-  const staleJob: RenderJob = {
-    ...persisted,
-    state: "failed",
-    error:
-      "Render worker stopped responding. This usually means the dev server restarted mid-render. Please try again.",
-    progress: {
-      ...persisted.progress,
-      phase: "finalizing",
-      label: "Render failed",
-    },
-  };
-  renderJobs.set(jobId, staleJob);
-  await persistJobState(jobId, { force: true });
-  return staleJob;
-}
-
-async function lookupJob(jobId: string): Promise<RenderJob | null> {
-  const inMemory = renderJobs.get(jobId);
-  if (inMemory) return inMemory;
-  return readPersistedJobWithStaleness(jobId);
-}
-
-async function sweepStaleJobsOnce() {
-  if (globalForRenderJobs.__captionRenderSwept) return;
-  globalForRenderJobs.__captionRenderSwept = true;
-  try {
-    const entries = await readdir(tmpdir());
-    for (const name of entries) {
-      if (!name.startsWith("captions-")) continue;
-      const jobId = name.slice("captions-".length);
-      if (!isValidJobId(jobId)) continue;
-      const jobDir = path.join(tmpdir(), name);
-      const statePath = path.join(jobDir, "state.json");
-      try {
-        const raw = await readFile(statePath, "utf8");
-        const parsed = JSON.parse(raw) as Partial<PersistedJobState>;
-        const stateStr = parsed.state ?? "failed";
-        const { mtimeMs } = await stat(statePath);
-        const age = Date.now() - mtimeMs;
-        if (isTerminalState(stateStr as RenderJobState)) {
-          if (age > JOB_RETENTION_MS) {
-            await rm(jobDir, { recursive: true, force: true }).catch(
-              () => undefined,
-            );
-          }
-        } else if (age > STALE_JOB_THRESHOLD_MS) {
-          await rm(jobDir, { recursive: true, force: true }).catch(
-            () => undefined,
-          );
-        }
-      } catch {
-        // no state.json or unreadable — leave alone; likely an unrelated dir
-      }
-    }
-  } catch {
-    // tmpdir unreadable; ignore
-  }
-}
-
-void sweepStaleJobsOnce();
-
 export async function POST(req: NextRequest) {
+  void sweepStaleJobsOnce();
+
   const form = await req.formData();
   const file = form.get("file");
   const propsRaw = form.get("props");
@@ -285,7 +65,6 @@ export async function POST(req: NextRequest) {
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "Missing 'file' upload." }, { status: 400 });
   }
-
   if (typeof propsRaw !== "string") {
     return NextResponse.json({ error: "Missing 'props' payload." }, { status: 400 });
   }
@@ -307,37 +86,73 @@ export async function POST(req: NextRequest) {
 
   const jobId = randomUUID();
   const jobDir = jobDirFor(jobId);
+  await mkdir(jobDir, { recursive: true });
 
-  renderJobs.set(jobId, {
+  const sourceExt = guessExtension(file.name, file.type);
+  const sourcePath = path.join(jobDir, `source${sourceExt}`);
+  const outputPath = path.join(
+    jobDir,
+    `output.${body.format === "mp4" ? "mp4" : "webm"}`,
+  );
+
+  const arrayBuffer = await file.arrayBuffer();
+  await writeFile(sourcePath, Buffer.from(arrayBuffer));
+
+  const config: JobConfig = {
+    jobId,
+    sourcePath,
+    outputPath,
+    format: body.format,
+    quality,
+    codec,
+    captions: body.captions,
+    styleId: body.styleId,
+    styleOptions: body.styleOptions,
+    width: body.width,
+    height: body.height,
+    durationInFrames: body.durationInFrames,
+    fps: body.fps,
+  };
+  await writeJobConfig(jobId, config);
+
+  const initialState: PersistedJobState = {
     id: jobId,
     state: "queued",
     progress: {
       phase: "preparing",
-      progress: 0.02,
-      label: "Preparing render job…",
+      progress: 0.04,
+      label: "Starting render worker…",
       renderedFrames: 0,
       encodedFrames: 0,
       totalFrames: body.durationInFrames,
     },
-    createdAt: Date.now(),
     outputPath: null,
     contentType: null,
-    jobDir,
     error: null,
-    cancel: null,
-    cleanupTimer: null,
-  });
+    createdAt: Date.now(),
+    workerPid: null,
+  };
+  await writeJobState(jobId, initialState);
 
-  await persistJobState(jobId);
-
-  void runRenderJob({
-    jobId,
-    file,
-    body,
-    codec,
-    quality,
-    jobDir,
+  const workerScript = path.join(process.cwd(), "scripts", "render-worker.ts");
+  const child = spawn(
+    process.execPath,
+    ["--experimental-transform-types", workerScript, jobId],
+    {
+      detached: true,
+      stdio: ["ignore", "ignore", "ignore"],
+      cwd: process.cwd(),
+      env: process.env,
+    },
+  );
+  child.on("error", (err) => {
+    console.error(`[render:${jobId}] spawn error`, err);
   });
+  child.unref();
+
+  if (child.pid) {
+    await writeJobState(jobId, { ...initialState, workerPid: child.pid });
+  }
 
   return NextResponse.json({ jobId });
 }
@@ -347,28 +162,31 @@ export async function GET(req: NextRequest) {
   const download = req.nextUrl.searchParams.get("download") === "1";
 
   if (!jobId || !isValidJobId(jobId)) {
-    return NextResponse.json({ error: "Missing or invalid 'jobId'." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing or invalid 'jobId'." },
+      { status: 400 },
+    );
   }
 
-  const job = await lookupJob(jobId);
-  if (!job) {
+  const state = await readJobStateWithStaleness(jobId);
+  if (!state) {
     return NextResponse.json({ error: "Render job not found." }, { status: 404 });
   }
 
   if (!download) {
-    return NextResponse.json(toResponse(job));
+    return NextResponse.json(toResponse(state));
   }
 
-  if (job.state !== "completed" || !job.outputPath || !job.contentType) {
+  if (state.state !== "completed" || !state.outputPath || !state.contentType) {
     return NextResponse.json(
       { error: "Render job is not ready for download." },
       { status: 409 },
     );
   }
 
-  const rendered = await readFile(job.outputPath);
-  const contentType = job.contentType;
-  void cleanupJob(jobId);
+  const rendered = await readFile(state.outputPath);
+  const contentType = state.contentType;
+  void cleanupJobDir(jobId);
 
   return new NextResponse(new Uint8Array(rendered), {
     status: 200,
@@ -382,21 +200,32 @@ export async function GET(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   const jobId = req.nextUrl.searchParams.get("jobId");
-
   if (!jobId || !isValidJobId(jobId)) {
-    return NextResponse.json({ error: "Missing or invalid 'jobId'." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing or invalid 'jobId'." },
+      { status: 400 },
+    );
   }
 
-  const job = await lookupJob(jobId);
-  if (!job) {
+  const state = await readJobState(jobId);
+  if (!state) {
     return NextResponse.json({ error: "Render job not found." }, { status: 404 });
   }
 
-  job.cancel?.();
-  await updateJob(jobId, {
+  if (state.workerPid) {
+    try {
+      process.kill(state.workerPid, "SIGTERM");
+    } catch {
+      // already dead
+    }
+  }
+
+  await writeJobState(jobId, {
+    ...state,
     state: "cancelled",
+    workerPid: null,
     progress: {
-      ...job.progress,
+      ...state.progress,
       phase: "finalizing",
       label: "Cancelling render…",
     },
@@ -406,389 +235,60 @@ export async function DELETE(req: NextRequest) {
   return NextResponse.json({ ok: true });
 }
 
-async function runRenderJob({
-  jobId,
-  file,
-  body,
-  codec,
-  quality,
-  jobDir,
-}: {
-  jobId: string;
-  file: File;
-  body: RenderBody;
-  codec: Codec;
-  quality: ExportQuality;
-  jobDir: string;
-}) {
-  let assetServer: AssetServer | null = null;
-  const heartbeat = setInterval(() => {
-    void touchJobHeartbeat(jobId);
-  }, HEARTBEAT_INTERVAL_MS);
+async function readJobStateWithStaleness(
+  jobId: string,
+): Promise<PersistedJobState | null> {
+  const state = await readJobState(jobId);
+  if (!state) return null;
+  if (isTerminalState(state.state)) return state;
 
+  const workerAlive = state.workerPid
+    ? isProcessAlive(state.workerPid)
+    : true;
+
+  let mtime = 0;
   try {
-    const { cancelSignal, cancel } = makeCancelSignal();
-    updateJob(jobId, { cancel });
+    mtime = (await stat(stateFileFor(jobId))).mtimeMs;
+  } catch {
+    return state;
+  }
 
-    await mkdir(jobDir, { recursive: true });
+  const stale = Date.now() - mtime > STALE_JOB_THRESHOLD_MS;
 
-    const sourceExt = guessExtension(file.name, file.type);
-    const sourcePath = path.join(jobDir, `source${sourceExt}`);
-    const outputPath = path.join(
-      jobDir,
-      `output.${body.format === "mp4" ? "mp4" : "webm"}`,
-    );
-
-    updateJob(jobId, {
-      state: "queued",
+  if (!workerAlive || stale) {
+    const reason = !workerAlive
+      ? "Render worker died unexpectedly. Please try again."
+      : "Render worker stopped responding. Please try again.";
+    const failed: PersistedJobState = {
+      ...state,
+      state: "failed",
+      workerPid: null,
+      error: reason,
       progress: {
-        phase: "preparing",
-        progress: 0.06,
-        label: "Uploading source video…",
-        renderedFrames: 0,
-        encodedFrames: 0,
-        totalFrames: body.durationInFrames,
-      },
-    });
-
-    const arrayBuffer = await file.arrayBuffer();
-    await writeFile(sourcePath, Buffer.from(arrayBuffer));
-
-    assetServer = await startAssetServer(sourcePath);
-
-    const inputProps: RenderInputProps = {
-      videoSrc: assetServer.url,
-      captions: body.captions,
-      styleId: body.styleId,
-      styleOptions: body.styleOptions,
-      width: body.width,
-      height: body.height,
-      durationInFrames: body.durationInFrames,
-      fps: body.fps,
-    };
-
-    updateJob(jobId, {
-      state: "queued",
-      progress: {
-        phase: "preparing",
-        progress: 0.09,
-        label: "Preparing Remotion bundle (first run can take ~1 min)…",
-        renderedFrames: 0,
-        encodedFrames: 0,
-        totalFrames: body.durationInFrames,
-      },
-    });
-
-    const unsubscribeBundle = subscribeToBundleProgress((percent) => {
-      if (percent <= 0 || percent >= 100) return;
-      updateJob(jobId, {
-        state: "queued",
-        progress: {
-          phase: "preparing",
-          progress: 0.09 + (percent / 100) * 0.03,
-          label: `Preparing Remotion bundle… ${percent}%`,
-          renderedFrames: 0,
-          encodedFrames: 0,
-          totalFrames: body.durationInFrames,
-        },
-      });
-    });
-
-    let serveUrl: string;
-    try {
-      serveUrl = await getServeUrl();
-    } finally {
-      unsubscribeBundle();
-    }
-
-    updateJob(jobId, {
-      state: "queued",
-      progress: {
-        phase: "preparing",
-        progress: 0.12,
-        label: "Loading Remotion composition…",
-        renderedFrames: 0,
-        encodedFrames: 0,
-        totalFrames: body.durationInFrames,
-      },
-    });
-
-    const composition = await selectComposition({
-      serveUrl,
-      id: "captioned-video",
-      inputProps,
-      offthreadVideoThreads: getOffthreadVideoThreads(),
-    });
-
-    updateJob(jobId, {
-      state: "rendering",
-      progress: {
-        phase: "rendering",
-        progress: 0.15,
-        label: "Rendering frames…",
-        renderedFrames: 0,
-        encodedFrames: 0,
-        totalFrames: body.durationInFrames,
-      },
-    });
-
-    const onProgress: RenderMediaOnProgress = ({
-      progress,
-      renderedFrames,
-      encodedFrames,
-      stitchStage,
-    }) => {
-      const phase = stitchStageToPhase(stitchStage);
-      updateJob(jobId, {
-        state: "rendering",
-        progress: {
-          phase,
-          progress: clampProgress(progress),
-          label: getProgressLabel(phase, renderedFrames, body.durationInFrames),
-          renderedFrames,
-          encodedFrames,
-          totalFrames: body.durationInFrames,
-        },
-      });
-    };
-
-    await renderMedia({
-      composition,
-      serveUrl,
-      codec,
-      outputLocation: outputPath,
-      inputProps,
-      videoBitrate: BITRATE_BY_QUALITY[quality],
-      concurrency: getRenderConcurrency(quality),
-      scale: SCALE_BY_QUALITY[quality],
-      x264Preset: codec === "h264" ? H264_PRESET_BY_QUALITY[quality] : undefined,
-      hardwareAcceleration:
-        codec === "h264" && platform() === "darwin" ? "if-possible" : undefined,
-      offthreadVideoThreads: getOffthreadVideoThreads(),
-      cancelSignal,
-      onProgress,
-      logLevel: "warn",
-    });
-
-    updateJob(jobId, {
-      state: "completed",
-      outputPath,
-      contentType: body.format === "mp4" ? "video/mp4" : "video/webm",
-      cancel: null,
-      progress: {
-        phase: "done",
-        progress: 1,
-        label: "Render complete",
-        renderedFrames: body.durationInFrames,
-        encodedFrames: body.durationInFrames,
-        totalFrames: body.durationInFrames,
-      },
-    });
-    scheduleCleanup(jobId);
-  } catch (err) {
-    const isCancelled =
-      err instanceof Error && err.message.includes("got cancelled");
-    const currentProgress = getJob(jobId)?.progress ?? {
-      phase: "finalizing" as const,
-      progress: 0,
-      label: "Render failed",
-      renderedFrames: 0,
-      encodedFrames: 0,
-      totalFrames: body.durationInFrames,
-    };
-
-    updateJob(jobId, {
-      state: isCancelled ? "cancelled" : "failed",
-      cancel: null,
-      error: isCancelled
-        ? "Render cancelled"
-        : err instanceof Error
-          ? err.message
-          : "Render failed",
-      progress: {
-        ...currentProgress,
+        ...state.progress,
         phase: "finalizing",
-        label: isCancelled ? "Render cancelled" : "Render failed",
+        label: "Render failed",
       },
-    });
-
-    if (isCancelled) {
-      void cleanupJob(jobId);
-    } else {
-      scheduleCleanup(jobId);
-    }
-  } finally {
-    clearInterval(heartbeat);
-    assetServer?.close();
+    };
+    await writeJobState(jobId, failed);
+    return failed;
   }
+
+  return state;
 }
 
-async function updateJob(jobId: string, patch: Partial<RenderJob>) {
-  const current = renderJobs.get(jobId);
-  if (!current) return;
-  renderJobs.set(jobId, { ...current, ...patch });
-  const persistableKeys: Array<keyof RenderJob> = [
-    "state",
-    "progress",
-    "outputPath",
-    "contentType",
-    "error",
-  ];
-  if (persistableKeys.some((key) => key in patch)) {
-    await persistJobState(jobId);
-  }
-}
-
-function getJob(jobId: string) {
-  return renderJobs.get(jobId) ?? null;
-}
-
-function toResponse(job: RenderJob) {
+function toResponse(state: PersistedJobState) {
   return {
-    id: job.id,
-    state: job.state,
-    progress: job.progress,
-    error: job.error,
+    id: state.id,
+    state: state.state,
+    progress: state.progress,
+    error: state.error,
   };
 }
 
-function scheduleCleanup(jobId: string) {
-  const job = renderJobs.get(jobId);
-  if (!job) return;
-  if (job.cleanupTimer) {
-    clearTimeout(job.cleanupTimer);
-  }
-  job.cleanupTimer = setTimeout(() => {
-    void cleanupJob(jobId);
-  }, JOB_RETENTION_MS);
-}
-
-async function cleanupJob(jobId: string) {
-  const job = renderJobs.get(jobId);
-  if (job?.cleanupTimer) {
-    clearTimeout(job.cleanupTimer);
-  }
-  renderJobs.delete(jobId);
-  lastPersistAt.delete(jobId);
-  const jobDir = job?.jobDir ?? (isValidJobId(jobId) ? jobDirFor(jobId) : null);
-  if (jobDir) {
-    await rm(jobDir, { recursive: true, force: true }).catch(() => undefined);
-  }
-}
-
-function resolveExportQuality(raw: FormDataEntryValue | null) {
-  if (raw === "high" || raw === "medium" || raw === "low") {
-    return raw;
-  }
+function resolveExportQuality(raw: FormDataEntryValue | null): ExportQuality {
+  if (raw === "high" || raw === "medium" || raw === "low") return raw;
   return "high";
-}
-
-function getRenderConcurrency(quality: ExportQuality) {
-  const cpuThreads = availableParallelism();
-  const cpuShare =
-    quality === "high" ? 0.6 : quality === "medium" ? 0.75 : 0.9;
-  return Math.max(2, Math.floor(cpuThreads * cpuShare));
-}
-
-function getOffthreadVideoThreads() {
-  return Math.min(4, Math.max(2, Math.floor(availableParallelism() / 2)));
-}
-
-function stitchStageToPhase(
-  stitchStage: "encoding" | "muxing" | undefined,
-) {
-  if (stitchStage === "muxing") {
-    return "muxing";
-  }
-  return "rendering";
-}
-
-function clampProgress(progress: number) {
-  return Math.max(0.15, Math.min(progress, 0.99));
-}
-
-function getProgressLabel(
-  phase: ExportRenderPhase,
-  renderedFrames: number,
-  totalFrames: number,
-) {
-  if (phase === "muxing") {
-    return "Muxing audio and video…";
-  }
-  return `Rendering frames… ${Math.min(renderedFrames, totalFrames)}/${totalFrames}`;
-}
-
-type AssetServer = {
-  url: string;
-  close: () => void;
-};
-
-async function startAssetServer(filePath: string) {
-  const size = (await stat(filePath)).size;
-  const basename = path.basename(filePath);
-  const server: Server = createServer((req, res) => {
-    if (!req.url || !req.url.startsWith(`/${basename}`)) {
-      res.statusCode = 404;
-      res.end();
-      return;
-    }
-
-    const range = req.headers.range;
-    const mime = mimeFromPath(filePath);
-
-    if (range) {
-      const match = /^bytes=(\d*)-(\d*)$/.exec(range);
-      if (match) {
-        const start = match[1] ? parseInt(match[1], 10) : 0;
-        const end = match[2] ? parseInt(match[2], 10) : size - 1;
-        if (isNaN(start) || isNaN(end) || start > end || end >= size) {
-          res.statusCode = 416;
-          res.setHeader("Content-Range", `bytes */${size}`);
-          res.end();
-          return;
-        }
-        res.statusCode = 206;
-        res.setHeader("Content-Range", `bytes ${start}-${end}/${size}`);
-        res.setHeader("Accept-Ranges", "bytes");
-        res.setHeader("Content-Length", String(end - start + 1));
-        res.setHeader("Content-Type", mime);
-        createReadStream(filePath, { start, end }).pipe(res);
-        return;
-      }
-    }
-
-    res.statusCode = 200;
-    res.setHeader("Content-Length", String(size));
-    res.setHeader("Content-Type", mime);
-    res.setHeader("Accept-Ranges", "bytes");
-    createReadStream(filePath).pipe(res);
-  });
-
-  await new Promise<void>((resolve) => {
-    server.listen(0, "127.0.0.1", resolve);
-  });
-
-  const address = server.address();
-  if (!address || typeof address === "string") {
-    server.close();
-    throw new Error("Failed to bind asset server");
-  }
-
-  return {
-    url: `http://127.0.0.1:${address.port}/${basename}`,
-    close: () => {
-      server.closeAllConnections?.();
-      server.close();
-    },
-  };
-}
-
-function mimeFromPath(p: string) {
-  const ext = path.extname(p).toLowerCase();
-  if (ext === ".mp4" || ext === ".m4v") return "video/mp4";
-  if (ext === ".webm") return "video/webm";
-  if (ext === ".mov") return "video/quicktime";
-  return "application/octet-stream";
 }
 
 function guessExtension(name: string, type: string) {
@@ -799,3 +299,40 @@ function guessExtension(name: string, type: string) {
   if (type.includes("quicktime")) return ".mov";
   return ".mp4";
 }
+
+async function sweepStaleJobsOnce() {
+  if (globalForRender.__captionRenderSwept) return;
+  globalForRender.__captionRenderSwept = true;
+  try {
+    const entries = await readdir(tmpdir());
+    for (const name of entries) {
+      if (!name.startsWith("captions-")) continue;
+      const jobId = name.slice("captions-".length);
+      if (!isValidJobId(jobId)) continue;
+      const jobDir = path.join(tmpdir(), name);
+      const statePath = path.join(jobDir, "state.json");
+      try {
+        const raw = await readFile(statePath, "utf8");
+        const parsed = JSON.parse(raw) as PersistedJobState;
+        const { mtimeMs } = await stat(statePath);
+        const age = Date.now() - mtimeMs;
+        const terminal = isTerminalState(parsed.state);
+        const workerAlive = isProcessAlive(parsed.workerPid);
+        if (terminal && age > JOB_RETENTION_MS) {
+          await rm(jobDir, { recursive: true, force: true }).catch(
+            () => undefined,
+          );
+        } else if (!terminal && !workerAlive && age > STALE_JOB_THRESHOLD_MS) {
+          await rm(jobDir, { recursive: true, force: true }).catch(
+            () => undefined,
+          );
+        }
+      } catch {
+        // unrelated dir or unreadable state; ignore
+      }
+    }
+  } catch {
+    // tmpdir unreadable; ignore
+  }
+}
+

@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && npm run remotion:bundle",
     "start": "next start",
     "lint": "eslint",
+    "remotion:bundle": "node --experimental-transform-types scripts/bundle-remotion.ts",
     "blog:generate": "node --experimental-transform-types scripts/generate-posts.ts",
     "blog:generate:dry": "node --experimental-transform-types scripts/generate-posts.ts --limit 10",
     "blog:review": "node --experimental-transform-types scripts/review-queue.ts",
