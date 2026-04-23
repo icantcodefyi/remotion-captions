@@ -1,6 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { createReadStream } from "node:fs";
-import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import {
+  mkdir,
+  readFile,
+  readdir,
+  rm,
+  stat,
+  utimes,
+  writeFile,
+} from "node:fs/promises";
 import { createServer, type Server } from "node:http";
 import { availableParallelism, platform, tmpdir } from "node:os";
 import path from "node:path";
@@ -14,7 +22,10 @@ import {
   renderMedia,
   selectComposition,
 } from "@remotion/renderer";
-import { getServeUrl } from "@/lib/remotion-bundle";
+import {
+  getServeUrl,
+  subscribeToBundleProgress,
+} from "@/lib/remotion-bundle";
 import type {
   ExportProgress,
   ExportQuality,
@@ -87,14 +98,23 @@ const H264_PRESET_BY_QUALITY: Record<
 
 const JOB_RETENTION_MS = 5 * 60 * 1000;
 const JOB_ID_PATTERN = /^[0-9a-f-]{36}$/i;
+const PERSIST_THROTTLE_MS = 400;
+const HEARTBEAT_INTERVAL_MS = 5_000;
+const STALE_JOB_THRESHOLD_MS = 60_000;
 
 const globalForRenderJobs = globalThis as typeof globalThis & {
   __captionRenderJobs?: Map<string, RenderJob>;
+  __captionRenderPersistAt?: Map<string, number>;
+  __captionRenderSwept?: boolean;
 };
 
 const renderJobs =
   globalForRenderJobs.__captionRenderJobs ??
   (globalForRenderJobs.__captionRenderJobs = new Map<string, RenderJob>());
+
+const lastPersistAt =
+  globalForRenderJobs.__captionRenderPersistAt ??
+  (globalForRenderJobs.__captionRenderPersistAt = new Map<string, number>());
 
 type PersistedJobState = {
   id: string;
@@ -114,9 +134,21 @@ function isValidJobId(jobId: string) {
   return JOB_ID_PATTERN.test(jobId);
 }
 
-async function persistJobState(jobId: string) {
+function isTerminalState(state: RenderJobState) {
+  return state === "completed" || state === "failed" || state === "cancelled";
+}
+
+async function persistJobState(
+  jobId: string,
+  opts: { force?: boolean } = {},
+) {
   const job = renderJobs.get(jobId);
   if (!job) return;
+  const now = Date.now();
+  const force = opts.force ?? isTerminalState(job.state);
+  const last = lastPersistAt.get(jobId) ?? 0;
+  if (!force && now - last < PERSIST_THROTTLE_MS) return;
+  lastPersistAt.set(jobId, now);
   const statePath = path.join(job.jobDir, "state.json");
   const payload: PersistedJobState = {
     id: job.id,
@@ -132,6 +164,16 @@ async function persistJobState(jobId: string) {
     await writeFile(statePath, JSON.stringify(payload));
   } catch {
     // best-effort persistence; never fail the render for this
+  }
+}
+
+async function touchJobHeartbeat(jobId: string) {
+  const statePath = path.join(jobDirFor(jobId), "state.json");
+  try {
+    const now = new Date();
+    await utimes(statePath, now, now);
+  } catch {
+    // state file may not exist yet; ignore
   }
 }
 
@@ -161,11 +203,78 @@ async function readPersistedJob(jobId: string): Promise<RenderJob | null> {
   }
 }
 
+async function readPersistedJobWithStaleness(
+  jobId: string,
+): Promise<RenderJob | null> {
+  const persisted = await readPersistedJob(jobId);
+  if (!persisted) return null;
+  if (isTerminalState(persisted.state)) return persisted;
+  try {
+    const { mtimeMs } = await stat(path.join(persisted.jobDir, "state.json"));
+    if (Date.now() - mtimeMs <= STALE_JOB_THRESHOLD_MS) return persisted;
+  } catch {
+    return persisted;
+  }
+  const staleJob: RenderJob = {
+    ...persisted,
+    state: "failed",
+    error:
+      "Render worker stopped responding. This usually means the dev server restarted mid-render. Please try again.",
+    progress: {
+      ...persisted.progress,
+      phase: "finalizing",
+      label: "Render failed",
+    },
+  };
+  renderJobs.set(jobId, staleJob);
+  await persistJobState(jobId, { force: true });
+  return staleJob;
+}
+
 async function lookupJob(jobId: string): Promise<RenderJob | null> {
   const inMemory = renderJobs.get(jobId);
   if (inMemory) return inMemory;
-  return readPersistedJob(jobId);
+  return readPersistedJobWithStaleness(jobId);
 }
+
+async function sweepStaleJobsOnce() {
+  if (globalForRenderJobs.__captionRenderSwept) return;
+  globalForRenderJobs.__captionRenderSwept = true;
+  try {
+    const entries = await readdir(tmpdir());
+    for (const name of entries) {
+      if (!name.startsWith("captions-")) continue;
+      const jobId = name.slice("captions-".length);
+      if (!isValidJobId(jobId)) continue;
+      const jobDir = path.join(tmpdir(), name);
+      const statePath = path.join(jobDir, "state.json");
+      try {
+        const raw = await readFile(statePath, "utf8");
+        const parsed = JSON.parse(raw) as Partial<PersistedJobState>;
+        const stateStr = parsed.state ?? "failed";
+        const { mtimeMs } = await stat(statePath);
+        const age = Date.now() - mtimeMs;
+        if (isTerminalState(stateStr as RenderJobState)) {
+          if (age > JOB_RETENTION_MS) {
+            await rm(jobDir, { recursive: true, force: true }).catch(
+              () => undefined,
+            );
+          }
+        } else if (age > STALE_JOB_THRESHOLD_MS) {
+          await rm(jobDir, { recursive: true, force: true }).catch(
+            () => undefined,
+          );
+        }
+      } catch {
+        // no state.json or unreadable — leave alone; likely an unrelated dir
+      }
+    }
+  } catch {
+    // tmpdir unreadable; ignore
+  }
+}
+
+void sweepStaleJobsOnce();
 
 export async function POST(req: NextRequest) {
   const form = await req.formData();
@@ -313,6 +422,9 @@ async function runRenderJob({
   jobDir: string;
 }) {
   let assetServer: AssetServer | null = null;
+  const heartbeat = setInterval(() => {
+    void touchJobHeartbeat(jobId);
+  }, HEARTBEAT_INTERVAL_MS);
 
   try {
     const { cancelSignal, cancel } = makeCancelSignal();
@@ -355,7 +467,39 @@ async function runRenderJob({
       fps: body.fps,
     };
 
-    const serveUrl = await getServeUrl();
+    updateJob(jobId, {
+      state: "queued",
+      progress: {
+        phase: "preparing",
+        progress: 0.09,
+        label: "Preparing Remotion bundle (first run can take ~1 min)…",
+        renderedFrames: 0,
+        encodedFrames: 0,
+        totalFrames: body.durationInFrames,
+      },
+    });
+
+    const unsubscribeBundle = subscribeToBundleProgress((percent) => {
+      if (percent <= 0 || percent >= 100) return;
+      updateJob(jobId, {
+        state: "queued",
+        progress: {
+          phase: "preparing",
+          progress: 0.09 + (percent / 100) * 0.03,
+          label: `Preparing Remotion bundle… ${percent}%`,
+          renderedFrames: 0,
+          encodedFrames: 0,
+          totalFrames: body.durationInFrames,
+        },
+      });
+    });
+
+    let serveUrl: string;
+    try {
+      serveUrl = await getServeUrl();
+    } finally {
+      unsubscribeBundle();
+    }
 
     updateJob(jobId, {
       state: "queued",
@@ -474,6 +618,7 @@ async function runRenderJob({
       scheduleCleanup(jobId);
     }
   } finally {
+    clearInterval(heartbeat);
     assetServer?.close();
   }
 }
@@ -524,6 +669,7 @@ async function cleanupJob(jobId: string) {
     clearTimeout(job.cleanupTimer);
   }
   renderJobs.delete(jobId);
+  lastPersistAt.delete(jobId);
   const jobDir = job?.jobDir ?? (isValidJobId(jobId) ? jobDirFor(jobId) : null);
   if (jobDir) {
     await rm(jobDir, { recursive: true, force: true }).catch(() => undefined);
