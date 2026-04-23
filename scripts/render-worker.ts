@@ -57,15 +57,35 @@ type AssetServer = {
   close: () => void;
 };
 
+function parseIntEnv(name: string): number | null {
+  const raw = process.env[name];
+  if (!raw) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 1 ? Math.floor(n) : null;
+}
+
 function getRenderConcurrency(quality: ExportQuality) {
+  const override = parseIntEnv("REMOTION_CONCURRENCY");
+  if (override) return override;
   const cpuThreads = availableParallelism();
   const cpuShare =
-    quality === "high" ? 0.6 : quality === "medium" ? 0.75 : 0.9;
-  return Math.max(2, Math.floor(cpuThreads * cpuShare));
+    quality === "high" ? 0.5 : quality === "medium" ? 0.65 : 0.8;
+  const byCpu = Math.max(1, Math.floor(cpuThreads * cpuShare));
+  // Containerized deploys (Railway, Fly, etc.) usually have far less RAM
+  // than the host CPU count would suggest. Each Chrome tab ≈ 200-400MB,
+  // so we cap at 2 unless REMOTION_CONCURRENCY says otherwise.
+  return Math.min(2, byCpu);
 }
 
 function getOffthreadVideoThreads() {
-  return Math.min(4, Math.max(2, Math.floor(availableParallelism() / 2)));
+  const override = parseIntEnv("REMOTION_OFFTHREAD_THREADS");
+  if (override) return override;
+  return Math.min(2, Math.max(1, Math.floor(availableParallelism() / 4)));
+}
+
+function getOffthreadVideoCacheBytes() {
+  const mb = parseIntEnv("REMOTION_VIDEO_CACHE_MB") ?? 256;
+  return mb * 1024 * 1024;
 }
 
 function mimeFromPath(p: string) {
@@ -271,6 +291,13 @@ async function main() {
       });
     };
 
+    const concurrency = getRenderConcurrency(config.quality);
+    const offthreadThreads = getOffthreadVideoThreads();
+    const videoCache = getOffthreadVideoCacheBytes();
+    console.log(
+      `[render-worker:${jobId}] starting renderMedia concurrency=${concurrency} offthreadThreads=${offthreadThreads} videoCache=${(videoCache / 1024 / 1024).toFixed(0)}MB cpuThreads=${availableParallelism()}`,
+    );
+
     await renderMedia({
       composition,
       serveUrl,
@@ -278,7 +305,7 @@ async function main() {
       outputLocation: config.outputPath,
       inputProps,
       videoBitrate: BITRATE_BY_QUALITY[config.quality],
-      concurrency: getRenderConcurrency(config.quality),
+      concurrency,
       scale: SCALE_BY_QUALITY[config.quality],
       x264Preset:
         config.codec === "h264"
@@ -288,7 +315,8 @@ async function main() {
         config.codec === "h264" && platform() === "darwin"
           ? "if-possible"
           : undefined,
-      offthreadVideoThreads: getOffthreadVideoThreads(),
+      offthreadVideoThreads: offthreadThreads,
+      offthreadVideoCacheSizeInBytes: videoCache,
       cancelSignal,
       onProgress,
       logLevel: "warn",
@@ -316,17 +344,22 @@ async function main() {
     assetServer?.close();
     process.exit(0);
   } catch (err) {
-    const isCancelled =
-      err instanceof Error && err.message.includes("got cancelled");
+    const rawMsg = err instanceof Error ? err.message : String(err);
+    const isCancelled = rawMsg.includes("got cancelled");
+    const isOom =
+      rawMsg.includes("SIGKILL") ||
+      rawMsg.includes("Compositor quit") ||
+      rawMsg.includes("out of memory");
+    const friendlyError = isCancelled
+      ? "Render cancelled"
+      : isOom
+        ? "Render ran out of memory. Upgrade the Railway plan for more RAM, or lower REMOTION_CONCURRENCY / pick a lower export quality."
+        : rawMsg || "Render failed";
     await update(
       {
         state: isCancelled ? "cancelled" : "failed",
         workerPid: null,
-        error: isCancelled
-          ? "Render cancelled"
-          : err instanceof Error
-            ? err.message
-            : "Render failed",
+        error: friendlyError,
         progress: {
           ...currentState.progress,
           phase: "finalizing",
